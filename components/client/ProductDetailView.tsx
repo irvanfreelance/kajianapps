@@ -6,7 +6,7 @@ import {
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const fmt = (n) => "Rp " + (n || 0).toLocaleString("id-ID");
+const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 
 export default function ProductDetailView({ product }: { product: any }) {
   const router = useRouter();

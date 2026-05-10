@@ -6,7 +6,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-const fmt = (n) => "Rp " + (n || 0).toLocaleString("id-ID");
+const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 
 export default function KajianDetailView({ kajian }: { kajian: any }) {
   const router = useRouter();
