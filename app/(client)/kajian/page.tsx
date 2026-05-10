@@ -1,16 +1,7 @@
 import KajianListView from '@/components/client/KajianListView';
-import { getBaseUrl } from '@/lib/url';
-
-async function getKajian() {
-  try {
-    const res = await fetch(`${getBaseUrl()}/api/kajian/list?limit=3`, { cache: 'no-store' });
-    if (!res.ok) return [];
-    const json = await res.json();
-    return json.data || [];
-  } catch { return []; }
-}
+import { getKajianList } from '@/lib/services/kajian';
 
 export default async function KajianListPage() {
-  const kajian = await getKajian();
+  const kajian = await getKajianList(3).catch(() => []);
   return <KajianListView initialKajian={kajian} />;
 }
