@@ -38,8 +38,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 }
 
 const styles = {
-  container: { display: "flex", minHeight: "100vh", background: "#F1F5F9", overflow: "hidden" },
-  mainContent: { flex: 1, display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", transition: "margin-left 0.3s ease" },
-  viewContainer: { flex: 1, padding: 24, overflowY: "auto" as const },
-  overlay: { position: "fixed" as const, inset: 0, background: "rgba(15,23,42,0.4)", zIndex: 40, backdropFilter: "blur(2px)" }
+  container: { display: "flex", minHeight: "100vh", background: "#F1F5F9", overflow: "hidden" } as const,
+  mainContent: { flex: 1, display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", transition: "margin-left 0.3s ease" } as const,
+  viewContainer: { flex: 1, padding: 24, overflowY: "auto" } as const,
+  overlay: { position: "fixed", inset: 0, background: "rgba(15,23,42,0.4)", zIndex: 40, backdropFilter: "blur(2px)" } as const
 };

@@ -22,16 +22,16 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 }
 
 const styles = {
-  outer: { background: "#ffffff", minHeight: "100vh", display: "flex", justifyContent: "center" },
+  outer: { background: "#ffffff", minHeight: "100vh", display: "flex", justifyContent: "center" } as const,
   container: { 
     width: "100%", 
     maxWidth: 430, 
     minHeight: "100vh", 
     background: "#fff", 
-    position: "relative" as const, 
+    position: "relative", 
     boxShadow: "0 0 40px rgba(0,0,0,0.05)", 
     display: "flex", 
-    flexDirection: "column" as const 
-  },
-  main: { flex: 1, paddingBottom: 100, display: "flex", flexDirection: "column" as const },
+    flexDirection: "column"
+  } as const,
+  main: { flex: 1, paddingBottom: 100, display: "flex", flexDirection: "column" } as const,
 };
