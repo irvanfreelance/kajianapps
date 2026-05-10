@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
-import { ShoppingBag, ChevronRight, User, Package, LogOut, Ticket } from "lucide-react";
+import { ShoppingBag, ChevronRight, User, Package, LogOut, Ticket, LucideIcon } from "lucide-react";
 import Link from "next/link";
 
-const fmt = (n) => "Rp " + (n || 0).toLocaleString("id-ID");
+const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 const CATEGORIES_SHOP = ["Semua", "Fashion", "Merchandise", "Parfum", "Ibadah", "Buku"];
 
 export function TokoView({ initialProducts }: { initialProducts: any[] }) {
@@ -98,7 +98,13 @@ export function ProfilView() {
   );
 }
 
-const MenuBtn = ({ icon: Icon, label, color = "#0F172A" }) => (
+interface MenuBtnProps {
+  icon: LucideIcon;
+  label: string;
+  color?: string;
+}
+
+const MenuBtn = ({ icon: Icon, label, color = "#0F172A" }: MenuBtnProps) => (
   <button style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "16px 20px", background: "#fff", borderRadius: 16, border: "1px solid #F1F5F9", cursor: "pointer" }}>
     <Icon size={20} color={color} />
     <span style={{ flex: 1, textAlign: "left", fontSize: 14, fontWeight: 600, color }}>{label}</span>
@@ -107,5 +113,5 @@ const MenuBtn = ({ icon: Icon, label, color = "#0F172A" }) => (
 );
 
 const styles = {
-  chip: { padding: "8px 20px", borderRadius: 20, border: "1px solid #E2E8F0", background: "#fff", color: "#64748B", fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" as const },
+  chip: { padding: "8px 20px", borderRadius: 20, border: "1px solid #E2E8F0", background: "#fff", color: "#64748B", fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" } as const,
 };

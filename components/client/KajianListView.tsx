@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { User, Calendar, Clock, ChevronRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 
-const fmt = (n) => "Rp " + (n || 0).toLocaleString("id-ID");
+const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 const CATEGORIES_KAJIAN = ["Semua", "Fiqh", "Tahsin", "Sirah", "Bahasa", "Hadits", "Tarbiyah"];
 
 export default function KajianListView({ initialKajian }: { initialKajian: any[] }) {

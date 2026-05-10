@@ -5,7 +5,7 @@ import {
 import { useState } from "react";
 import Link from "next/link";
 
-const fmt = (n) => "Rp " + (n || 0).toLocaleString("id-ID");
+const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 
 export default function HomeView({ kajian, products }: { kajian: any[], products: any[] }) {
   const [user, setUser] = useState<any>(null); // Simulation
