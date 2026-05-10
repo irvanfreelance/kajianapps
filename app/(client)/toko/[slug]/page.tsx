@@ -1,11 +1,14 @@
 import ProductDetailView from '@/components/client/ProductDetailView';
 import { notFound } from 'next/navigation';
+import { getBaseUrl } from '@/lib/url';
 
 async function getProduct(slug: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/products/get?slug=${slug}`, { cache: 'no-store' });
-  if (!res.ok) return null;
-  const json = await res.json();
-  return json.data;
+  try {
+    const res = await fetch(`${getBaseUrl()}/api/products/get?slug=${slug}`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data;
+  } catch { return null; }
 }
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
