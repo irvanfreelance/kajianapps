@@ -1,26 +1,6 @@
 "use client";
 import { DollarSign, Package, BookOpen, ShoppingBag, Calendar, Users, LucideIcon } from "lucide-react";
-
-const fmt = (n: number) => "Rp " + n.toLocaleString("id-ID");
-
-const getStatusStyle = (status: string) => {
-  switch(status) {
-    case "pending": return { bg: "#FFFBEB", color: "#B45309", label: "Menunggu Pembayaran" };
-    case "packed": return { bg: "#F0FDF4", color: "#15803D", label: "Sedang Dikemas" };
-    case "shipped": return { bg: "#ECFEFF", color: "#0891B2", label: "Dalam Pengiriman" };
-    case "completed": return { bg: "#F8FAFC", color: "#475569", label: "Pesanan Selesai" };
-    default: return { bg: "#F1F5F9", color: "#64748B", label: status };
-  }
-};
-
-const OrderStatusBadge = ({ status }: { status: string }) => {
-  const { bg, color, label } = getStatusStyle(status);
-  return (
-    <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: bg, color: color, display: "inline-block", marginTop: 4 }}>
-      {label}
-    </span>
-  );
-}
+import { fmt, getStatusStyle, OrderStatusBadge, styles } from "./shared";
 
 interface StatCardProps {
   title: string;
@@ -105,7 +85,3 @@ export default function DashboardView({ kajian, products, orders }: { kajian: an
     </div>
   );
 }
-
-const styles = {
-  card: { background: "#fff", borderRadius: 16, padding: 24, boxShadow: "0 2px 10px rgba(0,0,0,0.02)", border: "1px solid #E2E8F0" } as const,
-};

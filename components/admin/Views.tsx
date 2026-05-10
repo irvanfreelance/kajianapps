@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Search, Plus, Edit, Trash2, X } from "lucide-react";
-import { styles, fmt, Pagination, Toast } from "./shared";
+import { styles, fmt, Pagination, Toast, getStatusStyle } from "./shared";
 
 export function ProductView({ initialData }: { initialData: any[] }) {
   const [data, setData] = useState(initialData);
