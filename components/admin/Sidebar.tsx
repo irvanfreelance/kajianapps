@@ -19,7 +19,10 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen, isTable
   const pathname = usePathname();
 
   return (
-    <aside style={{ ...styles.sidebar, transform: (isTablet && !isMobileMenuOpen) ? "translateX(-100%)" : "translateX(0)" }}>
+    <aside style={{ 
+      ...styles.sidebar, 
+      transform: (isTablet && !isMobileMenuOpen) ? "translateX(-100%)" : "translateX(0)" 
+    } as React.CSSProperties}>
       <div style={styles.sidebarHeader}>
         <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #0E7490, #06B6D4)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 18 }}>MI</div>
         <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0F172A" }}>Admin Panel</h2>
@@ -54,9 +57,9 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen, isTable
 }
 
 const styles = {
-  sidebar: { width: 260, background: "#fff", borderRight: "1px solid #E2E8F0", display: "flex", flexDirection: "column", position: "fixed" as const, top: 0, bottom: 0, left: 0, zIndex: 50, transition: "transform 0.3s ease" },
-  sidebarHeader: { padding: "24px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid #F1F5F9" },
-  navContainer: { flex: 1, padding: "20px 12px", display: "flex", flexDirection: "column", gap: 8, overflowY: "auto" as const },
-  navButton: { width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", fontSize: 14, cursor: "pointer", transition: "all 0.2s", textAlign: "left" as const },
-  sidebarFooter: { padding: "20px 12px", borderTop: "1px solid #F1F5F9" },
+  sidebar: { width: 260, background: "#fff", borderRight: "1px solid #E2E8F0", display: "flex", flexDirection: "column", position: "fixed", top: 0, bottom: 0, left: 0, zIndex: 50, transition: "transform 0.3s ease" } as const,
+  sidebarHeader: { padding: "24px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid #F1F5F9" } as const,
+  navContainer: { flex: 1, padding: "20px 12px", display: "flex", flexDirection: "column", gap: 8, overflowY: "auto" } as const,
+  navButton: { width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", fontSize: 14, cursor: "pointer", transition: "all 0.2s", textAlign: "left" } as const,
+  sidebarFooter: { padding: "20px 12px", borderTop: "1px solid #F1F5F9" } as const,
 };

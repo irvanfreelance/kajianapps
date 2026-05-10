@@ -54,7 +54,7 @@ export default function Header({ setIsMobileMenuOpen, isTablet, isMobile }: { se
 }
 
 const styles = {
-  header: { height: 72, background: "#fff", borderBottom: "1px solid #E2E8F0", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 },
-  mobileMenuBtn: { background: "none", border: "none", cursor: "pointer" },
-  searchInput: { padding: "10px 16px 10px 36px", borderRadius: 20, border: "1px solid #E2E8F0", fontSize: 13, background: "#F8FAFC", width: 240, transition: "all 0.2s" },
+  header: { height: 72, background: "#fff", borderBottom: "1px solid #E2E8F0", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 } as const,
+  mobileMenuBtn: { background: "none", border: "none", cursor: "pointer" } as const,
+  searchInput: { padding: "10px 16px 10px 36px", borderRadius: 20, border: "1px solid #E2E8F0", fontSize: 13, background: "#F8FAFC", width: 240, transition: "all 0.2s" } as const,
 };
