@@ -1,9 +1,9 @@
 "use client";
-import { DollarSign, Package, BookOpen, ShoppingBag, Calendar, Users } from "lucide-react";
+import { DollarSign, Package, BookOpen, ShoppingBag, Calendar, Users, LucideIcon } from "lucide-react";
 
-const fmt = (n) => "Rp " + n.toLocaleString("id-ID");
+const fmt = (n: number) => "Rp " + n.toLocaleString("id-ID");
 
-const getStatusStyle = (status) => {
+const getStatusStyle = (status: string) => {
   switch(status) {
     case "pending": return { bg: "#FFFBEB", color: "#B45309", label: "Menunggu Pembayaran" };
     case "packed": return { bg: "#F0FDF4", color: "#15803D", label: "Sedang Dikemas" };
@@ -13,7 +13,7 @@ const getStatusStyle = (status) => {
   }
 };
 
-const OrderStatusBadge = ({ status }) => {
+const OrderStatusBadge = ({ status }: { status: string }) => {
   const { bg, color, label } = getStatusStyle(status);
   return (
     <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: bg, color: color, display: "inline-block", marginTop: 4 }}>
@@ -22,7 +22,16 @@ const OrderStatusBadge = ({ status }) => {
   );
 }
 
-const StatCard = ({ title, value, icon: Icon, color, bg, trend }) => (
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: LucideIcon;
+  color: string;
+  bg: string;
+  trend: string;
+}
+
+const StatCard = ({ title, value, icon: Icon, color, bg, trend }: StatCardProps) => (
   <div style={{ background: "#fff", padding: 24, borderRadius: 16, border: "1px solid #E2E8F0", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
     <div>
       <p style={{ fontSize: 14, color: "#64748B", marginBottom: 8, fontWeight: 500 }}>{title}</p>
@@ -36,7 +45,7 @@ const StatCard = ({ title, value, icon: Icon, color, bg, trend }) => (
 );
 
 export default function DashboardView({ kajian, products, orders }: { kajian: any[], products: any[], orders: any[] }) {
-  const totalRevenue = orders.filter(o => o.status === 'completed' || o.status === 'shipped').reduce((sum, o) => sum + o.total, 0);
+  const totalRevenue = orders.filter(o => o.status === 'completed' || o.status === 'shipped').reduce((sum, o) => sum + (o.total || 0), 0);
   const pendingOrders = orders.filter(o => o.status === 'pending').length;
 
   return (
@@ -62,7 +71,7 @@ export default function DashboardView({ kajian, products, orders }: { kajian: an
                   <p style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>{o.customer || 'Customer'} • {o.items || 1} Item</p>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: "#0891B2" }}>{fmt(o.total)}</p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: "#0891B2" }}>{fmt(o.total || 0)}</p>
                   <OrderStatusBadge status={o.status} />
                 </div>
               </div>
@@ -84,7 +93,7 @@ export default function DashboardView({ kajian, products, orders }: { kajian: an
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{k.title}</p>
                   <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-                    <span style={{ fontSize: 12, color: "#64748B", display: "flex", alignItems: "center", gap: 4 }}><Calendar size={12}/> {k.date?.split(',')[0]}</span>
+                    <span style={{ fontSize: 12, color: "#64748B", display: "flex", alignItems: "center", gap: 4 }}><Calendar size={12}/> {k.date_display?.split(',')[0]}</span>
                     <span style={{ fontSize: 12, color: "#64748B", display: "flex", alignItems: "center", gap: 4 }}><Users size={12}/> {k.filled}/{k.spot}</span>
                   </div>
                 </div>
@@ -98,5 +107,5 @@ export default function DashboardView({ kajian, products, orders }: { kajian: an
 }
 
 const styles = {
-  card: { background: "#fff", borderRadius: 16, padding: 24, boxShadow: "0 2px 10px rgba(0,0,0,0.02)", border: "1px solid #E2E8F0" },
+  card: { background: "#fff", borderRadius: 16, padding: 24, boxShadow: "0 2px 10px rgba(0,0,0,0.02)", border: "1px solid #E2E8F0" } as const,
 };

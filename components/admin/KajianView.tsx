@@ -19,7 +19,7 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleDelete = async (id: any) => {
+  const handleDelete = async (id: number | string) => {
     if(window.confirm("Hapus kajian ini?")) {
       try {
         const res = await fetch('/api/kajian/delete', {

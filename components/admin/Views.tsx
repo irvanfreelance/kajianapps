@@ -19,7 +19,7 @@ export function ProductView({ initialData }: { initialData: any[] }) {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleDelete = async (id: any) => {
+  const handleDelete = async (id: number | string) => {
     if(window.confirm("Hapus produk ini?")) {
       try {
         const res = await fetch('/api/products/delete', {
@@ -188,7 +188,7 @@ export function OrderView({ initialData }: { initialData: any[] }) {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleStatusChange = async (id: any, newStatus: string) => {
+  const handleStatusChange = async (id: number | string, newStatus: string) => {
     try {
       const res = await fetch('/api/orders/update', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
