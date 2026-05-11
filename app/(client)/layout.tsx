@@ -5,9 +5,9 @@ import { usePathname } from "next/navigation";
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
-  // Hide BottomNav on detail pages as they have their own floating action bars
-  const isDetailPage = pathname.startsWith('/kajian/') && pathname !== '/kajian' || 
-                       pathname.startsWith('/toko/') && pathname !== '/toko';
+  // Show BottomNav only on main tab routes
+  const mainTabs = ["/", "/kajian", "/toko", "/tiket", "/profil"];
+  const showNav = mainTabs.includes(pathname);
 
   return (
     <div style={styles.outer}>
@@ -15,23 +15,24 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         <main style={styles.main}>
           {children}
         </main>
-        {!isDetailPage && <BottomNav />}
+        {showNav && <BottomNav />}
       </div>
     </div>
   );
 }
 
 const styles = {
-  outer: { background: "#ffffff", minHeight: "100vh", display: "flex", justifyContent: "center" } as const,
+  outer: { background: "#F8FAFC", minHeight: "100vh", display: "flex", justifyContent: "center" } as const,
   container: { 
     width: "100%", 
     maxWidth: 430, 
     minHeight: "100vh", 
     background: "#fff", 
     position: "relative", 
-    boxShadow: "0 0 40px rgba(0,0,0,0.05)", 
+    boxShadow: "0 0 50px rgba(0,0,0,0.04)", 
     display: "flex", 
-    flexDirection: "column"
+    flexDirection: "column",
+    overflow: "hidden"
   } as const,
   main: { flex: 1, paddingBottom: 100, display: "flex", flexDirection: "column" } as const,
 };

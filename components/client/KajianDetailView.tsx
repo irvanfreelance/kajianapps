@@ -4,12 +4,42 @@ import {
   Share2, Heart, Info, BookOpen, Video, Play
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 
 export default function KajianDetailView({ kajian }: { kajian: any }) {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  const handleRegister = async () => {
+    if (kajian.type === "paid") {
+      router.push(`/checkout?type=kajian&id=${kajian.id}`);
+      return;
+    }
+
+    if (loading) return;
+    setLoading(true);
+    try {
+      const res = await fetch('/api/kajian/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: 1, // Simulated user
+          kajianId: kajian.id,
+          paidAmount: 0
+        })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      router.push(`/checkout/success?type=kajian&code=${data.id}`);
+    } catch (err: any) {
+      alert("Gagal mendaftar: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={{ background: "#F8FAFC", minHeight: "100vh" }}>
@@ -105,8 +135,12 @@ export default function KajianDetailView({ kajian }: { kajian: any }) {
           <p style={{ fontSize: 12, color: "#64748B" }}>Biaya Pendaftaran</p>
           <p style={{ fontSize: 20, fontWeight: 700, color: "#0891B2" }}>{kajian.type === "free" ? "GRATIS" : fmt(kajian.price)}</p>
         </div>
-        <button style={{ background: "#0891B2", color: "#fff", padding: "14px 28px", borderRadius: 16, border: "none", fontSize: 15, fontWeight: 600, cursor: "pointer", boxShadow: "0 10px 20px rgba(8,145,178,0.2)" }}>
-           Daftar Sekarang
+        <button 
+           onClick={handleRegister}
+           disabled={loading}
+           style={{ background: loading ? "#94A3B8" : "#0891B2", color: "#fff", padding: "14px 28px", borderRadius: 16, border: "none", fontSize: 15, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", boxShadow: "0 10px 20px rgba(8,145,178,0.2)" }}
+        >
+           {loading ? "Memproses..." : "Daftar Sekarang"}
         </button>
       </div>
     </div>

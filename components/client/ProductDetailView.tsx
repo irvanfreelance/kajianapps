@@ -11,6 +11,11 @@ const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 export default function ProductDetailView({ product }: { product: any }) {
   const router = useRouter();
   const [qty, setQty] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  const handleCheckout = () => {
+    router.push(`/checkout?type=product&id=${product.id}&qty=${qty}`);
+  };
 
   return (
     <div style={{ background: "#F8FAFC", minHeight: "100vh" }}>
@@ -89,7 +94,10 @@ export default function ProductDetailView({ product }: { product: any }) {
         <button style={{ flex: 1, height: 56, borderRadius: 16, border: "2px solid #0891B2", background: "#fff", color: "#0891B2", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
            + Keranjang
         </button>
-        <button style={{ flex: 1.5, height: 56, borderRadius: 16, border: "none", background: "#0891B2", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 10px 20px rgba(8,145,178,0.2)" }}>
+        <button 
+           onClick={handleCheckout}
+           style={{ flex: 1.5, height: 56, borderRadius: 16, border: "none", background: "#0891B2", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 10px 20px rgba(8,145,178,0.2)" }}
+        >
            Beli Sekarang
         </button>
       </div>
