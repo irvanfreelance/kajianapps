@@ -3,7 +3,9 @@ import { CheckCircle2, ChevronLeft, Ticket, Package } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function SuccessPage() {
+import { Suspense } from "react";
+
+function SuccessView() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const type = searchParams.get("type");
@@ -48,5 +50,13 @@ export default function SuccessPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={<div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>Memuat...</div>}>
+      <SuccessView />
+    </Suspense>
   );
 }
