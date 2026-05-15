@@ -67,12 +67,20 @@ export async function getKajianById(id: string | number) {
   return rows[0] ?? null;
 }
 
-export async function registerKajian(userId: number, kajianId: number, paidAmount: number) {
+export async function registerKajian(
+  userId: number, 
+  kajianId: number, 
+  paidAmount: number, 
+  paymentMethodId?: number,
+  vendorPaymentId?: string,
+  paymentUrl?: string,
+  status: string = 'PENDING'
+) {
   const result = await sql(`
-    INSERT INTO kajian_registrations (user_id, kajian_id, paid_amount)
-    VALUES ($1, $2, $3)
+    INSERT INTO kajian_registrations (user_id, kajian_id, payment_method_id, vendor_payment_id, payment_url, paid_amount, status)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING id
-  `, [userId, kajianId, paidAmount]);
+  `, [userId, kajianId, paymentMethodId ?? null, vendorPaymentId ?? null, paymentUrl ?? null, paidAmount, status]);
 
   // Update filled spot
   await sql(`
@@ -91,7 +99,7 @@ export async function registerKajian(userId: number, kajianId: number, paidAmoun
 export async function getUserRegistrations(userId: number) {
   const rows = await sql(`
     SELECT 
-      kr.id, kr.registered_at as date, kr.paid_amount as price,
+      kr.id, kr.registered_at as date, kr.paid_amount as price, kr.status,
       k.title, k.ustadz, k.date_display, k.time_display, k.image, k.location, k.slug
     FROM kajian_registrations kr
     JOIN kajian k ON kr.kajian_id = k.id

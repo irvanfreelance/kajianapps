@@ -3,10 +3,13 @@ import { useState, useEffect } from "react";
 import Sidebar from "@/components/admin/Sidebar";
 import Header from "@/components/admin/Header";
 
+import { usePathname } from "next/navigation";
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleResize = () => {
@@ -17,6 +20,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  if (pathname === "/panel/login") {
+    return <>{children}</>;
+  }
 
   return (
     <div style={styles.container}>

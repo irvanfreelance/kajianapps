@@ -91,12 +91,9 @@ export default function ProductDetailView({ product }: { product: any }) {
         <button style={{ width: 56, height: 56, borderRadius: 16, border: "1px solid #E2E8F0", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
            <MessageCircle size={24} color="#0891B2" />
         </button>
-        <button style={{ flex: 1, height: 56, borderRadius: 16, border: "2px solid #0891B2", background: "#fff", color: "#0891B2", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
-           + Keranjang
-        </button>
         <button 
            onClick={handleCheckout}
-           style={{ flex: 1.5, height: 56, borderRadius: 16, border: "none", background: "#0891B2", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 10px 20px rgba(8,145,178,0.2)" }}
+           style={{ flex: 1, height: 56, borderRadius: 16, border: "none", background: "#0891B2", color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", boxShadow: "0 10px 20px rgba(8,145,178,0.2)" }}
         >
            Beli Sekarang
         </button>

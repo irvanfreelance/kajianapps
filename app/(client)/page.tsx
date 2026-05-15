@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import HomeView from '@/components/client/HomeView';
 import { getKajianList } from '@/lib/services/kajian';
 import { getProductsList } from '@/lib/services/products';
@@ -7,5 +8,9 @@ export default async function HomePage() {
     getKajianList().catch(() => []),
     getProductsList().catch(() => []),
   ]);
-  return <HomeView kajian={kajian} products={products} />;
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
+      <HomeView kajian={kajian} products={products} />
+    </Suspense>
+  );
 }

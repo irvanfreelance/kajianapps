@@ -22,8 +22,8 @@ export async function GET() {
       ORDER BY o.id DESC
     `);
 
-    // Cache less time for orders since they change more often
-    await redis.set(cacheKey, rows, { ex: 60 });
+    // Cache forever
+    await redis.set(cacheKey, rows);
 
     return NextResponse.json({ success: true, data: rows, source: 'db' });
   } catch (error) {

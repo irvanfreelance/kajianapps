@@ -3,10 +3,11 @@ import { useState, useEffect } from "react";
 import { 
   ShoppingBag, ChevronRight, User, Package, 
   LogOut, Ticket, LucideIcon, Calendar, 
-  MapPin, Clock 
+  MapPin, Clock, CheckCircle, AlertCircle, Clock3
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 const CATEGORIES_SHOP = ["Semua", "Fashion", "Merchandise", "Parfum", "Ibadah", "Buku"];
@@ -14,10 +15,9 @@ const CATEGORIES_SHOP = ["Semua", "Fashion", "Merchandise", "Parfum", "Ibadah", 
 export function TokoView({ initialProducts }: { initialProducts: any[] }) {
   const router = useRouter();
   const [cat, setCat] = useState("Semua");
-  const [loading, setLoading] = useState<number | null>(null);
 
   const handleCheckout = (p: any, e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent Link navigation
+    e.preventDefault();
     router.push(`/checkout?type=product&id=${p.id}&qty=1`);
   };
 
@@ -35,7 +35,7 @@ export function TokoView({ initialProducts }: { initialProducts: any[] }) {
         ))}
       </div>
       <div style={{ padding: "0 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-        {filtered.map((p, i) => (
+        {filtered.map((p) => (
           <Link key={p.id} href={`/toko/${p.slug}`} style={{ background: "#fff", borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 15px rgba(0,0,0,0.04)", border: "1px solid #F1F5F9", cursor: "pointer", textDecoration: 'none', color: 'inherit' }}>
             <div style={{ height: 160, background: "#F8FAFC", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                <img src={p.image} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -58,16 +58,35 @@ export function TokoView({ initialProducts }: { initialProducts: any[] }) {
   );
 }
 
+function StatusBadge({ status }: { status: string }) {
+  const s = (status || '').toUpperCase();
+  const map: Record<string, { bg: string, color: string, label: string, Icon: any }> = {
+    PAID: { bg: "#DCFCE7", color: "#166534", label: "Lunas", Icon: CheckCircle },
+    PENDING: { bg: "#FEF3C7", color: "#92400E", label: "Menunggu", Icon: Clock3 },
+    FAILED: { bg: "#FEE2E2", color: "#991B1B", label: "Gagal", Icon: AlertCircle },
+  };
+  const cfg = map[s] || map.PENDING;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 4, background: cfg.bg, color: cfg.color, fontSize: 10, fontWeight: 700, padding: "4px 10px", borderRadius: 8, textTransform: "uppercase" }}>
+      <cfg.Icon size={10} />
+      {cfg.label}
+    </div>
+  );
+}
+
 export function TiketView() {
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetch("/api/user/registrations")
       .then(res => res.json())
       .then(data => {
         if (data.success) setRegistrations(data.data);
+        else setError(data.error || 'Gagal memuat data');
       })
+      .catch(() => setError('Gagal menghubungi server'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -79,20 +98,24 @@ export function TiketView() {
       </div>
       <div style={{ padding: "0 20px" }}>
         {loading ? (
-          <div style={{ textAlign: "center", padding: 40, color: "#64748B" }}>Memuat tiket...</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {[1,2].map(i => (
+              <div key={i} style={{ background: "#F8FAFC", borderRadius: 24, padding: 20, height: 160, animation: "pulse 1.5s infinite" }} />
+            ))}
+          </div>
+        ) : error ? (
+          <div style={{ textAlign: "center", padding: 40, color: "#EF4444" }}>{error}</div>
         ) : registrations.length > 0 ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {registrations.map((reg) => (
               <div key={reg.id} style={{ background: "#fff", borderRadius: 24, padding: 20, border: "1px solid #F1F5F9", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
                 <div style={{ display: "flex", gap: 16 }}>
-                   <img src={reg.image} style={{ width: 80, height: 80, borderRadius: 16, objectFit: "cover" }} />
-                   <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>{reg.title}</p>
+                   <img src={reg.image || '/placeholder.png'} style={{ width: 80, height: 80, borderRadius: 16, objectFit: "cover", background: "#F1F5F9", flexShrink: 0 }} />
+                   <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{reg.title}</p>
                       <p style={{ fontSize: 13, color: "#64748B", marginTop: 4 }}>{reg.ustadz}</p>
-                      <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 8 }}>
-                         <div style={{ background: reg.price > 0 ? "#FFF1F2" : "#F0FDF4", color: reg.price > 0 ? "#E11D48" : "#15803D", fontSize: 10, fontWeight: 700, padding: "4px 8px", borderRadius: 6, textTransform: "uppercase" }}>
-                            {reg.price > 0 ? "Berbayar" : "Gratis"}
-                         </div>
+                      <div style={{ marginTop: 8 }}>
+                        <StatusBadge status={reg.price === 0 ? 'PAID' : reg.status} />
                       </div>
                    </div>
                 </div>
@@ -111,12 +134,21 @@ export function TiketView() {
                       <p style={{ fontSize: 13, color: "#475569", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{reg.location}</p>
                    </div>
                 </div>
-                <button 
-                  onClick={() => window.location.href = `/kajian/${reg.slug}`}
-                  style={{ width: "100%", marginTop: 20, padding: "12px 0", borderRadius: 12, background: "#0891B2", color: "#fff", border: "none", fontWeight: 600, fontSize: 14, cursor: "pointer" }}
-                >
-                  Lihat Detail
-                </button>
+                {reg.status === 'PENDING' && reg.price > 0 ? (
+                  <Link 
+                    href={`/status/REG-${reg.id}`}
+                    style={{ display: "block", width: "100%", marginTop: 20, padding: "12px 0", borderRadius: 12, background: "#0891B2", color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", textAlign: "center", textDecoration: "none" }}
+                  >
+                    Bayar Sekarang
+                  </Link>
+                ) : (
+                  <Link 
+                    href={`/kajian/${reg.slug}`}
+                    style={{ display: "block", width: "100%", marginTop: 20, padding: "12px 0", borderRadius: 12, background: "#F1F5F9", color: "#475569", border: "none", fontWeight: 600, fontSize: 14, cursor: "pointer", textAlign: "center", textDecoration: "none" }}
+                  >
+                    Lihat Detail Kajian
+                  </Link>
+                )}
               </div>
             ))}
           </div>
@@ -136,9 +168,12 @@ export function TiketView() {
 }
 
 export function ProfilView() {
+  const { data: session } = useSession();
+  const router = useRouter();
   const [stats, setStats] = useState({ kajian: 0, orders: 0 });
   const [orders, setOrders] = useState<any[]>([]);
   const [showOrders, setShowOrders] = useState(false);
+  const [loadingOrders, setLoadingOrders] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -153,28 +188,40 @@ export function ProfilView() {
     });
   }, []);
 
+  const handleLogout = () => {
+    signOut({ callbackUrl: '/login' });
+  };
+
+  const userName = session?.user?.name || 'Jamaah Majelis';
+  const userEmail = session?.user?.email || '';
+  const userInitial = userName.charAt(0).toUpperCase();
+
   return (
     <div style={{ paddingBottom: 20 }}>
        <div style={{ background: "linear-gradient(160deg, #155E75, #06B6D4)", padding: "40px 20px 60px", borderRadius: "0 0 40px 40px", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={{ width: 90, height: 90, borderRadius: "50%", background: "#fff", padding: 4, boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}>
-             <div style={{ width: "100%", height: "100%", borderRadius: "50%", background: "#CFFAFE", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <User size={40} color="#0891B2" />
+             <div style={{ width: "100%", height: "100%", borderRadius: "50%", background: "linear-gradient(135deg, #CFFAFE, #0891B2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+               {session?.user?.image ? (
+                 <img src={session.user.image} alt={userName} style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+               ) : (
+                 <span style={{ fontSize: 36, fontWeight: 700, color: "#fff" }}>{userInitial}</span>
+               )}
              </div>
           </div>
-          <h2 style={{ color: "#fff", fontSize: 20, fontWeight: 700, marginTop: 16 }}>Jamaah Majelis</h2>
-          <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 14, marginTop: 4 }}>jamaah@majelis.id</p>
+          <h2 style={{ color: "#fff", fontSize: 20, fontWeight: 700, marginTop: 16 }}>{userName}</h2>
+          <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 14, marginTop: 4 }}>{userEmail}</p>
        </div>
 
        <div style={{ padding: "0 20px", marginTop: -30 }}>
           <div style={{ background: "#fff", borderRadius: 24, padding: 20, boxShadow: "0 10px 30px rgba(0,0,0,0.05)", border: "1px solid #F1F5F9" }}>
              <div style={{ display: "flex", justifyContent: "space-around" }}>
                 <div style={{ textAlign: "center" }}>
-                   <p style={{ fontSize: 18, fontWeight: 700, color: "#0F172A" }}>{stats.kajian}</p>
-                   <p style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>Kajian</p>
+                   <p style={{ fontSize: 22, fontWeight: 700, color: "#0891B2" }}>{stats.kajian}</p>
+                   <p style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>Kajian Diikuti</p>
                 </div>
-                <div style={{ width: 1, height: 30, background: "#E2E8F0", marginTop: 10 }}></div>
+                <div style={{ width: 1, height: 40, background: "#E2E8F0", alignSelf: "center" }}></div>
                 <div style={{ textAlign: "center" }}>
-                   <p style={{ fontSize: 18, fontWeight: 700, color: "#0F172A" }}>{stats.orders}</p>
+                   <p style={{ fontSize: 22, fontWeight: 700, color: "#0891B2" }}>{stats.orders}</p>
                    <p style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>Pesanan</p>
                 </div>
              </div>
@@ -184,17 +231,15 @@ export function ProfilView() {
              <MenuButton icon={Package} label="Riwayat Pesanan" onClick={() => setShowOrders(!showOrders)} />
              
              {showOrders && (
-               <div style={{ animation: "fadeUp 0.3s ease", display: "flex", flexDirection: "column", gap: 12, marginTop: 8, padding: "0 8px" }}>
+               <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4, padding: "0 4px" }}>
                  {orders.length > 0 ? orders.map(order => (
-                   <div key={order.id} style={{ background: "#F8FAFC", borderRadius: 16, padding: 16, border: "1px solid #F1F5F9" }}>
+                   <div key={order.id} style={{ background: "#F8FAFC", borderRadius: 20, padding: 16, border: "1px solid #F1F5F9" }}>
                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                        <div>
                          <p style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>{order.orderCode}</p>
                          <p style={{ fontSize: 11, color: "#64748B", marginTop: 2 }}>{order.date}</p>
                        </div>
-                       <div style={{ fontSize: 10, fontWeight: 700, background: order.status === 'pending' ? "#FEF3C7" : "#DCFCE7", color: order.status === 'pending' ? "#92400E" : "#166534", padding: "4px 8px", borderRadius: 6, textTransform: "uppercase" }}>
-                         {order.status}
-                       </div>
+                       <StatusBadge status={order.status} />
                      </div>
                      <div style={{ height: 1, background: "#E2E8F0", margin: "12px 0" }} />
                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -209,6 +254,14 @@ export function ProfilView() {
                         <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>Total</span>
                         <span style={{ fontSize: 14, fontWeight: 800, color: "#0891B2" }}>{fmt(order.total)}</span>
                      </div>
+                     {order.status?.toUpperCase() === 'PENDING' && (
+                       <Link 
+                         href={`/status/${order.orderCode}`}
+                         style={{ display: "block", textAlign: "center", marginTop: 12, padding: "10px", borderRadius: 10, background: "#0891B2", color: "#fff", fontSize: 12, fontWeight: 600, textDecoration: "none" }}
+                       >
+                         Lihat Instruksi Bayar
+                       </Link>
+                     )}
                    </div>
                  )) : (
                    <p style={{ textAlign: "center", padding: 20, color: "#94A3B8", fontSize: 13 }}>Belum ada riwayat pesanan.</p>
@@ -216,8 +269,8 @@ export function ProfilView() {
                </div>
              )}
 
-             <MenuButton icon={User} label="Edit Profil" />
-             <MenuButton icon={LogOut} label="Keluar" color="#EF4444" />
+             <MenuButton icon={User} label="Edit Profil" onClick={() => router.push('/profil/edit')} />
+             <MenuButton icon={LogOut} label="Keluar" color="#EF4444" onClick={handleLogout} />
           </div>
        </div>
     </div>
@@ -235,5 +288,5 @@ function MenuButton({ icon: Icon, label, onClick, color = "#0F172A" }: { icon: L
 }
 
 const styles = {
-  chip: { padding: "8px 20px", borderRadius: 20, border: "1px solid #E2E8F0", background: "#fff", color: "#64748B", fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" } as const,
+  chip: { padding: "8px 20px", borderRadius: 20, border: "1px solid #E2E8F0", background: "#fff", color: "#64748B", fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" } as React.CSSProperties,
 };

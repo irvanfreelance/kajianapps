@@ -19,7 +19,7 @@ export async function GET() {
       ORDER BY id ASC
     `);
 
-    await redis.set(cacheKey, rows, { ex: 300 });
+    await redis.set(cacheKey, rows);
 
     return NextResponse.json({ success: true, data: rows, source: 'db' });
   } catch (error) {

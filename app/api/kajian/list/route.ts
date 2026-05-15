@@ -42,8 +42,8 @@ export async function GET(request: Request) {
       `, [limit, offset]);
     }
 
-    // Save to cache (expire in 5 minutes)
-    await redis.set(cacheKey, rows, { ex: 300 });
+    // Save to cache (forever)
+    await redis.set(cacheKey, rows);
 
     return NextResponse.json({ success: true, data: rows, source: 'db' });
   } catch (error) {

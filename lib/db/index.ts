@@ -2,7 +2,8 @@ import { Pool } from 'pg';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  max: 10, // Adjust as needed
+  max: 10,
+  ssl: process.env.DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false },
 });
 
 export const sql = async (text: string, params?: any[]) => {

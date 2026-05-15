@@ -30,16 +30,22 @@ export async function getOrdersList() {
   return rows;
 }
 
-export async function createOrder(userId: number, items: { productId: number, qty: number, price: number }[]) {
+export async function createOrder(
+  userId: number, 
+  items: { productId: number, qty: number, price: number }[], 
+  paymentMethodId?: number,
+  vendorPaymentId?: string,
+  paymentUrl?: string
+) {
   const orderCode = 'ORD-' + Math.random().toString(36).substring(2, 10).toUpperCase();
   const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
   const orderDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
   const orderResult = await sql(`
-    INSERT INTO orders (order_code, user_id, order_date, total, status)
-    VALUES ($1, $2, $3, $4, $5)
+    INSERT INTO orders (order_code, user_id, payment_method_id, vendor_payment_id, payment_url, order_date, total, status)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     RETURNING id
-  `, [orderCode, userId, orderDate, total, 'pending']);
+  `, [orderCode, userId, paymentMethodId ?? null, vendorPaymentId ?? null, paymentUrl ?? null, orderDate, total, 'pending']);
 
   const orderId = orderResult[0].id;
 
