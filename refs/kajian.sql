@@ -55,7 +55,7 @@ CREATE TABLE kajian (
     id BIGSERIAL PRIMARY KEY,
     title VARCHAR(150) NOT NULL,
     ustadz VARCHAR(100) NOT NULL,
-    date_display VARCHAR(50) NOT NULL,
+    date DATE NOT NULL,
     time_display VARCHAR(20) NOT NULL,
     type VARCHAR(20) NOT NULL, -- ex: 'free', 'paid'
     price INT DEFAULT 0,
@@ -100,7 +100,13 @@ CREATE TABLE kajian_registrations (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     kajian_id BIGINT NOT NULL REFERENCES kajian(id) ON DELETE CASCADE,
+    payment_method_id BIGINT,
+    vendor_payment_id VARCHAR(100),
+    payment_url TEXT,
     paid_amount INT DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'PENDING',
+    is_checkout_sent BOOLEAN DEFAULT FALSE,
+    is_paid_sent BOOLEAN DEFAULT FALSE,
     registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -233,7 +239,9 @@ INSERT INTO users (id, user_code, name, email, phone, joined_date) VALUES
 (1, 'USR-001', 'Abdullah Fulan', 'abdullah@gmail.com', '081234567890', '1 Mei 2026'),
 (2, 'USR-002', 'Siti Aisyah', 'aisyah.s@yahoo.com', '085711223344', '20 April 2026'),
 (3, 'USR-003', 'Ahmad Zain', 'zain.ahmad@gmail.com', '081199887766', '15 April 2026'),
-(4, 'USR-004', 'Budi Santoso', 'budi.santoso@gmail.com', '081988776655', '3 Mei 2026');
+(4, 'USR-004', 'Budi Santoso', 'budi.santoso@gmail.com', '081988776655', '3 Mei 2026'),
+(7, 'USR-20260515-1006', 'Muhammad Irvan', 'irvan.freelance@gmail.com', '081462206437', '2026-05-15'),
+(8, 'USR-20260515-4505', 'M. Irvan Adrian', 'irvan@cnt.id', '081462206437', '2026-05-15');
 SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
 
 -- 2. Insert Admins
@@ -243,13 +251,13 @@ INSERT INTO admins (id, name, email, password_hash, role, status, created_at) VA
 SELECT setval('admins_id_seq', (SELECT MAX(id) FROM admins));
 
 -- 3. Insert Kajian
-INSERT INTO kajian (id, title, ustadz, date_display, time_display, type, price, spot, filled, image, category, description, location, slug) VALUES
-(1, 'Fiqh Muamalah', 'Ust. Ahmad Zainuddin', 'Jum''at, 2 Mei 2026', '19:30 WIB', 'free', 0, 120, 87, 'https://images.pexels.com/photos/8164575/pexels-photo-8164575.jpeg?auto=compress&cs=tinysrgb&w=600', 'Fiqh', 'Pembahasan mendalam tentang hukum-hukum transaksi dalam Islam, termasuk jual beli, sewa-menyewa, dan kerja sama bisnis syariah.', 'Masjid Al-Ikhlas, Bandung', 'fiqh-muamalah'),
-(2, 'Tahsin Al-Quran Lv.2', 'Ust. Muhammad Ridwan', 'Sabtu, 3 Mei 2026', '08:00 WIB', 'paid', 150000, 30, 28, 'https://images.pexels.com/photos/8164568/pexels-photo-8164568.jpeg?auto=compress&cs=tinysrgb&w=600', 'Tahsin', 'Kelas intensif perbaikan bacaan Al-Quran dengan metode talaqqi. Level menengah untuk yang sudah menguasai dasar tajwid.', 'Graha Dakwah, Bandung', 'tahsin-al-quran-lv2'),
-(3, 'Sirah Nabawiyah', 'Ust. Khalid Basalamah', 'Ahad, 4 Mei 2026', '09:00 WIB', 'free', 0, 200, 156, 'https://images.pexels.com/photos/8164563/pexels-photo-8164563.jpeg?auto=compress&cs=tinysrgb&w=600', 'Sirah', 'Menelusuri perjalanan hidup Rasulullah ﷺ dari kelahiran hingga hijrah ke Madinah.', 'Online via Zoom', 'sirah-nabawiyah'),
-(4, 'Bahasa Arab Dasar', 'Ust. Fuad Abdurrahman', 'Senin, 5 Mei 2026', '19:00 WIB', 'paid', 200000, 25, 12, 'https://images.pexels.com/photos/4559592/pexels-photo-4559592.jpeg?auto=compress&cs=tinysrgb&w=600', 'Bahasa', 'Kelas bahasa Arab untuk pemula. Belajar nahwu shorof dasar dengan pendekatan praktis.', 'Wisma Dakwah, Bandung', 'bahasa-arab-dasar'),
-(5, 'Kitab Riyadhus Shalihin', 'Ust. Syafiq Basalamah', 'Rabu, 7 Mei 2026', '16:00 WIB', 'free', 0, 150, 98, 'https://images.pexels.com/photos/8164627/pexels-photo-8164627.jpeg?auto=compress&cs=tinysrgb&w=600', 'Hadits', 'Kajian rutin pembahasan kitab Riyadhus Shalihin karya Imam An-Nawawi.', 'Masjid Al-Ikhlas, Bandung', 'kitab-riyadhus-shalihin'),
-(6, 'Parenting Islami', 'Ustzh. Haneen Akira', 'Sabtu, 10 Mei 2026', '10:00 WIB', 'paid', 75000, 50, 43, 'https://images.pexels.com/photos/8164571/pexels-photo-8164571.jpeg?auto=compress&cs=tinysrgb&w=600', 'Tarbiyah', 'Seminar mendidik anak sesuai sunnah Rasulullah ﷺ di era digital.', 'Hall Gedung Sate, Bandung', 'parenting-islami');
+INSERT INTO kajian (id, title, ustadz, date, time_display, type, price, spot, filled, image, category, description, location, slug) VALUES
+(1, 'Fiqh Muamalah', 'Ust. Ahmad Zainuddin', '2026-05-02', '19:30 WIB', 'free', 0, 120, 87, 'https://images.pexels.com/photos/8164575/pexels-photo-8164575.jpeg?auto=compress&cs=tinysrgb&w=600', 'Fiqh', 'Pembahasan mendalam tentang hukum-hukum transaksi dalam Islam, termasuk jual beli, sewa-menyewa, dan kerja sama bisnis syariah.', 'Masjid Al-Ikhlas, Bandung', 'fiqh-muamalah'),
+(2, 'Tahsin Al-Quran Lv.2', 'Ust. Muhammad Ridwan', '2026-05-03', '08:00 WIB', 'paid', 150000, 30, 28, 'https://images.pexels.com/photos/8164568/pexels-photo-8164568.jpeg?auto=compress&cs=tinysrgb&w=600', 'Tahsin', 'Kelas intensif perbaikan bacaan Al-Quran dengan metode talaqqi. Level menengah untuk yang sudah menguasai dasar tajwid.', 'Graha Dakwah, Bandung', 'tahsin-al-quran-lv2'),
+(3, 'Sirah Nabawiyah', 'Ust. Khalid Basalamah', '2026-05-04', '09:00 WIB', 'free', 0, 200, 156, 'https://images.pexels.com/photos/8164563/pexels-photo-8164563.jpeg?auto=compress&cs=tinysrgb&w=600', 'Sirah', 'Menelusuri perjalanan hidup Rasulullah ﷺ dari kelahiran hingga hijrah ke Madinah.', 'Online via Zoom', 'sirah-nabawiyah'),
+(4, 'Bahasa Arab Dasar', 'Ust. Fuad Abdurrahman', '2026-05-05', '19:00 WIB', 'paid', 200000, 25, 12, 'https://images.pexels.com/photos/4559592/pexels-photo-4559592.jpeg?auto=compress&cs=tinysrgb&w=600', 'Bahasa', 'Kelas bahasa Arab untuk pemula. Belajar nahwu shorof dasar dengan pendekatan praktis.', 'Wisma Dakwah, Bandung', 'bahasa-arab-dasar'),
+(5, 'Kitab Riyadhus Shalihin', 'Ust. Syafiq Basalamah', '2026-05-07', '16:00 WIB', 'free', 0, 150, 98, 'https://images.pexels.com/photos/8164627/pexels-photo-8164627.jpeg?auto=compress&cs=tinysrgb&w=600', 'Hadits', 'Kajian rutin pembahasan kitab Riyadhus Shalihin karya Imam An-Nawawi.', 'Masjid Al-Ikhlas, Bandung', 'kitab-riyadhus-shalihin'),
+(6, 'Parenting Islami', 'Ustzh. Haneen Akira', '2026-05-10', '10:00 WIB', 'paid', 75000, 50, 43, 'https://images.pexels.com/photos/8164571/pexels-photo-8164571.jpeg?auto=compress&cs=tinysrgb&w=600', 'Tarbiyah', 'Seminar mendidik anak sesuai sunnah Rasulullah ﷺ di era digital.', 'Hall Gedung Sate, Bandung', 'parenting-islami');
 SELECT setval('kajian_id_seq', (SELECT MAX(id) FROM kajian));
 
 -- 4. Insert Products
@@ -392,3 +400,10 @@ SELECT setval('notification_logs_id_seq', (SELECT MAX(id) FROM notification_logs
 INSERT INTO settings (config_key, config_value) VALUES 
 ('app_name', 'Aplikasi Majelis Ilmu'),
 ('app_theme', 'Cyan-Tosca');
+
+-- 12. Insert Kajian Registrations (Sample)
+INSERT INTO kajian_registrations (user_id, kajian_id, paid_amount, status, registered_at) VALUES
+(1, 1, 0, 'PAID', '2026-05-10 10:00:00'),
+(2, 1, 0, 'PAID', '2026-05-11 11:30:00'),
+(3, 2, 50000, 'PAID', '2026-05-12 09:15:00'),
+(1, 2, 50000, 'PAID', '2026-05-13 14:20:00');

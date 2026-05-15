@@ -17,7 +17,7 @@ export default withAuth(
         if (token.role === 'ADMIN') {
           return NextResponse.redirect(new URL('/panel', req.url));
         }
-        if (token.role === 'USER') {
+        if (token.role === 'USER' && !isAdminLogin) {
           return NextResponse.redirect(new URL('/', req.url));
         }
         if (token.role === 'NEW_USER' && !isRegister) {

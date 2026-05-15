@@ -2,6 +2,20 @@
 import { ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 
 export const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
+export const formatDate = (dateStr: string) => {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("id-ID", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+};
 
 export const getStatusStyle = (status: string) => {
   switch(status) {
@@ -71,6 +85,7 @@ export const styles = {
   secondaryBtn: { padding: "10px 20px", borderRadius: 12, background: "transparent", color: "#64748B", fontSize: 14, fontWeight: 600, border: "1px solid #E2E8F0", cursor: "pointer" } as const,
   actionBtnEdit: { width: 32, height: 32, borderRadius: 8, background: "#EFF6FF", border: "none", color: "#2563EB", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" } as const,
   actionBtnDel: { width: 32, height: 32, borderRadius: 8, background: "#FEF2F2", border: "none", color: "#EF4444", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" } as const,
+  actionBtnView: { width: 32, height: 32, borderRadius: 8, background: "#F0FDF4", border: "none", color: "#15803D", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" } as const,
   modalOverlay: { position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)", padding: 20 } as const,
   modalContentBase: { background: "#fff", borderRadius: 20, width: "100%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" } as const,
   modalHeader: { padding: "20px 24px", borderBottom: "1px solid #F1F5F9", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, background: "#fff", zIndex: 10 } as const,

@@ -8,14 +8,33 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return new Intl.DateTimeFormat('id-ID', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(d);
+  } catch {
+    return dateStr;
+  }
+};
 
 export default function KajianDetailView({ kajian }: { kajian: any }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [infaqAmount, setInfaqAmount] = useState<number | "">(0);
+  const NOMINALS = [10000, 25000, 50000, 100000];
 
   const handleRegister = async () => {
-    if (kajian.type === "paid") {
-      router.push(`/checkout?type=kajian&id=${kajian.id}`);
+    // If it's paid kajian OR free with infaq > 0
+    if (kajian.type === "paid" || (infaqAmount && Number(infaqAmount) > 0)) {
+      const amount = kajian.type === "paid" ? kajian.price : infaqAmount;
+      router.push(`/checkout?type=kajian&id=${kajian.id}&amount=${amount}`);
       return;
     }
 
@@ -26,9 +45,9 @@ export default function KajianDetailView({ kajian }: { kajian: any }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: 1, // Simulated user
           kajianId: kajian.id,
-          paidAmount: 0
+          paidAmount: 0,
+          status: 'PAID' // Free registration is immediately paid
         })
       });
       const data = await res.json();
@@ -44,9 +63,11 @@ export default function KajianDetailView({ kajian }: { kajian: any }) {
   return (
     <div style={{ background: "#F8FAFC", minHeight: "100vh" }}>
       {/* Hero Image */}
-      <div style={{ position: "relative", height: 350, overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${kajian.image})`, backgroundSize: "cover", backgroundPosition: "center" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7))" }} />
+      <div style={{ position: "relative", height: 350, overflow: "hidden", background: "#000" }}>
+        {/* Blurred background for contain fit */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${kajian.image})`, backgroundSize: "cover", backgroundPosition: "center", filter: "blur(40px)", opacity: 0.5 }} />
+        <img src={kajian.image} style={{ width: "100%", height: "100%", objectFit: "contain", position: "relative", zIndex: 1 }} alt={kajian.title} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.8))", zIndex: 2 }} />
         
         <div style={{ position: "relative", zIndex: 10, padding: 20, display: "flex", justifyContent: "space-between" }}>
           <button onClick={() => router.back()} style={styles.backBtn}><ChevronLeft size={24} color="#fff"/></button>
@@ -66,7 +87,7 @@ export default function KajianDetailView({ kajian }: { kajian: any }) {
       <div style={{ background: "#fff", padding: "20px", display: "flex", justifyContent: "space-around", borderBottom: "1px solid #F1F5F9" }}>
         <div style={{ textAlign: "center" }}>
           <Calendar size={20} color="#0891B2" style={{ margin: "0 auto 6px" }} />
-          <p style={{ fontSize: 12, fontWeight: 600, color: "#0F172A" }}>{kajian.date_display || kajian.date}</p>
+          <p style={{ fontSize: 12, fontWeight: 600, color: "#0F172A" }}>{formatDate(kajian.date)}</p>
         </div>
         <div style={{ textAlign: "center" }}>
           <Clock size={20} color="#0891B2" style={{ margin: "0 auto 6px" }} />
@@ -127,6 +148,49 @@ export default function KajianDetailView({ kajian }: { kajian: any }) {
            <Info size={20} color="#B45309" style={{ flexShrink: 0 }} />
            <p style={{ fontSize: 13, color: "#B45309", lineHeight: 1.6 }}>Harap datang 15 menit sebelum kajian dimulai. Pastikan berpakaian sopan dan menjaga adab di majelis.</p>
         </div>
+
+        {kajian.type === "free" && (
+          <div style={{ marginTop: 24, background: "#fff", borderRadius: 24, padding: 24, border: "1px solid #F1F5F9" }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", marginBottom: 8 }}>Infaq Sukarela</h2>
+            <p style={{ fontSize: 13, color: "#64748B", marginBottom: 20 }}>Dukung kegiatan dakwah kami dengan infaq terbaik Anda (Opsional)</p>
+            
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+              {NOMINALS.map(n => (
+                <button 
+                  key={n} 
+                  onClick={() => setInfaqAmount(n)}
+                  style={{ 
+                    padding: "12px", borderRadius: 12, border: infaqAmount === n ? "2px solid #0891B2" : "1px solid #E2E8F0",
+                    background: infaqAmount === n ? "#ECFEFF" : "#fff",
+                    color: infaqAmount === n ? "#0891B2" : "#475569",
+                    fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all 0.2s"
+                  }}
+                >
+                  {fmt(n)}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ position: "relative" }}>
+              <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 14, fontWeight: 700, color: "#64748B" }}>Rp</span>
+              <input 
+                type="number" 
+                placeholder="Nominal lainnya..."
+                value={infaqAmount || ""}
+                onChange={(e) => setInfaqAmount(parseInt(e.target.value) || "")}
+                style={{ width: "100%", padding: "14px 14px 14px 40px", borderRadius: 12, border: "1px solid #E2E8F0", fontSize: 14, fontWeight: 700, outline: "none", color: "#0F172A" }}
+              />
+              {infaqAmount !== 0 && (
+                <button 
+                  onClick={() => setInfaqAmount(0)}
+                  style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", color: "#EF4444", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Floating Bottom Action */}

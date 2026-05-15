@@ -4,6 +4,21 @@ import { User, Calendar, Clock, ChevronRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return new Intl.DateTimeFormat('id-ID', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(d);
+  } catch {
+    return dateStr;
+  }
+};
 const CATEGORIES_KAJIAN = ["Semua", "Fiqh", "Tahsin", "Sirah", "Bahasa", "Hadits", "Tarbiyah"];
 
 export default function KajianListView({ initialKajian }: { initialKajian: any[] }) {
@@ -76,8 +91,8 @@ export default function KajianListView({ initialKajian }: { initialKajian: any[]
       <div style={{ padding: "0 20px" }}>
         {kajian.map((k, i) => (
           <Link key={`${k.id}-${i}`} href={`/kajian/${k.slug}`} style={{ background: "#fff", borderRadius: 20, padding: 16, marginBottom: 16, boxShadow: "0 4px 15px rgba(0,0,0,0.03)", border: "1px solid #F1F5F9", cursor: "pointer", display: "flex", gap: 16, alignItems: "center", textDecoration: 'none', color: 'inherit', animation: "fadeUp 0.3s ease" }}>
-            <div style={{ width: 80, height: 80, borderRadius: 16, overflow: "hidden", flexShrink: 0 }}>
-              <img src={k.image} alt={k.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div style={{ width: 80, height: 80, borderRadius: 16, overflow: "hidden", flexShrink: 0, background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <img src={k.image} alt={k.title} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
             </div>
             <div style={{ flex: 1 }}>
               <span style={{ fontSize: 10, fontWeight: 700, color: "#0891B2", textTransform: "uppercase", letterSpacing: 1 }}>{k.category}</span>
@@ -86,7 +101,7 @@ export default function KajianListView({ initialKajian }: { initialKajian: any[]
               <div style={{ display: "flex", gap: 12, marginTop: 10 }}>
                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                    <Calendar size={12} color="#94A3B8" />
-                   <span style={{ fontSize: 11, color: "#64748B" }}>{k.date}</span>
+                   <span style={{ fontSize: 11, color: "#64748B" }}>{formatDate(k.date)}</span>
                  </div>
                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                    <Clock size={12} color="#94A3B8" />

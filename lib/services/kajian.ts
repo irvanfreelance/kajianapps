@@ -15,7 +15,7 @@ export async function getKajianList(limit?: number, offset?: number, category?: 
   } catch { /* Redis optional */ }
 
   let query = `
-    SELECT id, title, ustadz, date_display as date, time_display as time,
+    SELECT id, title, ustadz, date, time_display as time,
            type, price, image, category, spot, filled, slug, url_zoom, url_youtube, description, location
     FROM kajian
   `;
@@ -100,11 +100,36 @@ export async function getUserRegistrations(userId: number) {
   const rows = await sql(`
     SELECT 
       kr.id, kr.registered_at as date, kr.paid_amount as price, kr.status,
-      k.title, k.ustadz, k.date_display, k.time_display, k.image, k.location, k.slug
+      k.title, k.ustadz, k.date, k.time_display, k.image, k.location, k.slug
     FROM kajian_registrations kr
     JOIN kajian k ON kr.kajian_id = k.id
     WHERE kr.user_id = $1
     ORDER BY kr.id DESC
   `, [userId]);
+  return rows;
+}
+export async function getAllRegistrations() {
+  const rows = await sql(`
+    SELECT 
+      kr.id, kr.registered_at as date, kr.paid_amount as amount, kr.status,
+      u.name as user_name, u.phone as user_phone,
+      k.title as kajian_title, k.ustadz, k.date as kajian_date
+    FROM kajian_registrations kr
+    JOIN users u ON kr.user_id = u.id
+    JOIN kajian k ON kr.kajian_id = k.id
+    ORDER BY kr.id DESC
+  `);
+  return rows;
+}
+export async function getKajianParticipants(kajianId: string | number) {
+  const rows = await sql(`
+    SELECT 
+      u.name, u.phone, u.email,
+      kr.registered_at as date, kr.status, kr.paid_amount
+    FROM kajian_registrations kr
+    JOIN users u ON kr.user_id = u.id
+    WHERE kr.kajian_id = $1 AND kr.status = 'PAID'
+    ORDER BY kr.registered_at DESC
+  `, [kajianId]);
   return rows;
 }

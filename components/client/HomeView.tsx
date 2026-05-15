@@ -7,6 +7,21 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return new Intl.DateTimeFormat('id-ID', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(d);
+  } catch {
+    return dateStr;
+  }
+};
 
 export default function HomeView({ kajian, products }: { kajian: any[], products: any[] }) {
   const { data: session, status } = useSession();
@@ -88,21 +103,25 @@ export default function HomeView({ kajian, products }: { kajian: any[], products
         <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 12 }}>
           {upcoming.map((k) => (
             <Link key={k.id} href={`/kajian/${k.slug}`} style={{ minWidth: 260, background: "#fff", borderRadius: 20, boxShadow: "0 4px 15px rgba(0,0,0,0.04)", border: "1px solid #F1F5F9", cursor: "pointer", overflow: "hidden", textDecoration: 'none', color: 'inherit' }}>
-              <div style={{ height: 130, backgroundImage: `url(${k.image})`, backgroundSize: "cover", backgroundPosition: "center", position: "relative" }}>
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.4), transparent)" }} />
-                <span style={{ position: "absolute", top: 12, right: 12, fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: k.type === "free" ? "rgba(240,253,244,0.9)" : "rgba(255,247,237,0.9)", color: k.type === "free" ? "#15803D" : "#C2410C", backdropFilter: "blur(4px)" }}>
+              <div style={{ height: 140, position: "relative", background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                {/* Blurred Background for aesthetic when image is contain */}
+                <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${k.image})`, backgroundSize: "cover", backgroundPosition: "center", filter: "blur(20px)", opacity: 0.3 }} />
+                <img src={k.image} style={{ width: "100%", height: "100%", objectFit: "contain", position: "relative", zIndex: 1 }} alt={k.title} />
+                <span style={{ position: "absolute", top: 12, right: 12, fontSize: 11, fontWeight: 700, padding: "6px 12px", borderRadius: 20, background: k.type === "free" ? "rgba(220,252,231,0.95)" : "rgba(255,247,237,0.95)", color: k.type === "free" ? "#166534" : "#C2410C", backdropFilter: "blur(8px)", zIndex: 2, boxShadow: "0 4px 10px rgba(0,0,0,0.1)" }}>
                   {k.type === "free" ? "Infaq" : fmt(k.price)}
                 </span>
               </div>
               <div style={{ padding: 16 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 600, color: "#0F172A", marginBottom: 6 }}>{k.title}</h3>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-                  <User size={14} color="#64748B" />
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", marginBottom: 8, lineHeight: 1.3 }}>{k.title}</h3>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                  <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <User size={12} color="#64748B" />
+                  </div>
                   <p style={{ fontSize: 13, color: "#64748B", fontWeight: 500 }}>{k.ustadz}</p>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#F8FAFC", padding: "8px 12px", borderRadius: 12 }}>
                   <Calendar size={14} color="#0891B2" />
-                  <span style={{ fontSize: 12, color: "#475569", fontWeight: 500 }}>{k.date} • {k.time}</span>
+                  <span style={{ fontSize: 12, color: "#475569", fontWeight: 600 }}>{formatDate(k.date)} • {k.time_display || k.time}</span>
                 </div>
               </div>
             </Link>

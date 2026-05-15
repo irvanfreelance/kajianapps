@@ -276,17 +276,12 @@ function getBadgeLabel(status: string) {
     return getStatusStyle(status).label;
 }
 
-export function UserView() {
-  const MOCK_USERS = [
-    { id: "USR-001", name: "Abdullah Fulan", email: "abdullah@gmail.com", phone: "081234567890", joined: "1 Mei 2026" },
-    { id: "USR-002", name: "Siti Aisyah", email: "aisyah.s@yahoo.com", phone: "085711223344", joined: "20 April 2026" },
-    { id: "USR-003", name: "Ahmad Zain", email: "zain.ahmad@gmail.com", phone: "081199887766", joined: "15 April 2026" },
-  ];
-  
+export function UserView({ initialData }: { initialData: any[] }) {
+  const [data, setData] = useState(initialData);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
-  const totalPages = Math.ceil(MOCK_USERS.length / pageSize);
-  const currentData = MOCK_USERS.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const totalPages = Math.ceil(data.length / pageSize);
+  const currentData = data.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
@@ -307,7 +302,7 @@ export function UserView() {
               {currentData.map((u, idx) => (
                 <tr key={u.id} style={styles.tr}>
                   <td style={{...styles.td, textAlign: "center"}}><span style={{ fontSize: 13, color: "#64748B", fontWeight: 600 }}>{(currentPage - 1) * pageSize + idx + 1}</span></td>
-                  <td style={styles.td}><span style={{ fontSize: 13, fontWeight: 600, color: "#64748B" }}>{u.id}</span></td>
+                  <td style={styles.td}><span style={{ fontSize: 13, fontWeight: 600, color: "#64748B" }}>{u.id_code || u.id}</span></td>
                   <td style={styles.td}><span style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{u.name}</span></td>
                   <td style={styles.td}>
                     <p style={{ fontSize: 13, color: "#0F172A" }}>{u.email}</p>

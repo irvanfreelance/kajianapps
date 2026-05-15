@@ -118,7 +118,9 @@ function CheckoutView() {
   const type = searchParams.get("type");   // "product" | "kajian"
   const id = searchParams.get("id");
   const qtyParam = searchParams.get("qty");
+  const amountParam = searchParams.get("amount");
   const qty = parseInt(qtyParam || "1");
+  const overrideAmount = amountParam ? parseInt(amountParam) : null;
 
   const [item, setItem] = useState<any>(null);
   const [methods, setMethods] = useState<any[]>([]);
@@ -179,7 +181,9 @@ function CheckoutView() {
     }
   }, [selectedMethod, step]);
 
-  const isFreeKajian = type === "kajian" && item?.price === 0;
+  const priceToUse = overrideAmount !== null ? overrideAmount : (item?.price || 0);
+  const total = priceToUse * qty;
+  const isFreeKajian = type === "kajian" && priceToUse === 0;
 
   const handleComplete = async () => {
     setSubmitting(true);
@@ -198,14 +202,15 @@ function CheckoutView() {
         if (!res.ok) throw new Error(data.error || "Gagal membuat order");
         router.push(`/status/${data.orderCode}`);
       } else {
-        // kajian
+        // kajian (could be paid, or free with infaq)
         const res = await fetch("/api/kajian/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             kajianId: item.id,
-            paidAmount: item.price,
+            paidAmount: priceToUse,
             paymentMethodId: isFreeKajian ? null : selectedMethod?.id,
+            status: isFreeKajian ? 'PAID' : 'PENDING'
           }),
         });
         const data = await res.json();
@@ -253,8 +258,6 @@ function CheckoutView() {
       </div>
     );
   }
-
-  const total = item.price * qty;
 
   // ─── Steps ────────────────────────────────────────────────────────────
   const steps = isFreeKajian
@@ -331,7 +334,7 @@ function CheckoutView() {
                     {type === "product" ? `Harga (x${qty})` : "Biaya pendaftaran"}
                   </span>
                   <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>
-                    {item.price === 0 ? (
+                    {priceToUse === 0 ? (
                       <span style={{ display: "flex", alignItems: "center", gap: 4, color: "#16A34A" }}>
                         <Tag size={13} />Gratis
                       </span>
@@ -343,8 +346,8 @@ function CheckoutView() {
               <div style={{ height: 1, background: "#E2E8F0", margin: "12px 0" }} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>Total</span>
-                <span style={{ fontSize: 20, fontWeight: 800, color: item.price === 0 ? "#16A34A" : "#0891B2" }}>
-                  {item.price === 0 ? "Gratis" : fmt(total)}
+                <span style={{ fontSize: 20, fontWeight: 800, color: priceToUse === 0 ? "#16A34A" : "#0891B2" }}>
+                  {priceToUse === 0 ? "Gratis" : fmt(total)}
                 </span>
               </div>
             </div>

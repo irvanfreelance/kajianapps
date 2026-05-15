@@ -9,7 +9,7 @@ import { enqueueWhatsApp } from "@/lib/fonnte";
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== 'USER') {
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
