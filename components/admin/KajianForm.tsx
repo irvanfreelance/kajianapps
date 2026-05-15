@@ -118,7 +118,7 @@ export default function KajianForm({ initialData }: { initialData?: any }) {
                 {previewUrl ? (
                   <>
                     <img src={previewUrl} style={{ width: "100%", height: "100%", objectFit: "contain" }} alt="Preview" />
-                    <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, hover: { opacity: 1 }, transition: "opacity 0.2s" }}>
+                    <div className="image-overlay" style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.2s" }}>
                       <p style={{ color: "#fff", fontWeight: 600, fontSize: 14 }}>Ganti Gambar</p>
                     </div>
                   </>
@@ -294,6 +294,9 @@ export default function KajianForm({ initialData }: { initialData?: any }) {
           </div>
         </form>
       </div>
+      <style>{`
+        .image-overlay:hover { opacity: 1 !important; }
+      `}</style>
     </div>
   );
 }
