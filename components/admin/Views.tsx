@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Search, Plus, Edit, Trash2, X } from "lucide-react";
-import { styles, fmt, Pagination, Toast, getStatusStyle } from "./shared";
+import { styles, fmt, formatDate, Pagination, Toast, getStatusStyle } from "./shared";
 
 export function ProductView({ initialData }: { initialData: any[] }) {
   const [data, setData] = useState(initialData);
@@ -241,7 +241,7 @@ export function OrderView({ initialData }: { initialData: any[] }) {
                     <p style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{o.customer || 'Customer'}</p>
                     <p style={{ fontSize: 12, color: "#64748B" }}>{o.items || 1} Item</p>
                   </td>
-                  <td style={styles.td}><span style={{ fontSize: 13, color: "#64748B" }}>{o.date || o.order_date}</span></td>
+                  <td style={styles.td}><span style={{ fontSize: 13, color: "#64748B" }}>{formatDate(o.date || o.order_date)}</span></td>
                   <td style={styles.td}><span style={{ fontSize: 14, fontWeight: 600, color: "#0891B2" }}>{fmt(o.total)}</span></td>
                   <td style={styles.td}>
                     {/* Badge uses getStatusStyle internally */}

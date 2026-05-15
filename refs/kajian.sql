@@ -49,6 +49,34 @@ CREATE TABLE admins (
 CREATE INDEX idx_admins_email ON admins(email);
 
 -- ====================================================================================
+-- 3. TABLE: PAYMENT_METHODS (Metode Pembayaran)
+-- ====================================================================================
+CREATE TABLE payment_methods (
+    id BIGSERIAL PRIMARY KEY,
+    code VARCHAR(50) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    logo_url VARCHAR(255),
+    type VARCHAR(50) NOT NULL,
+    provider VARCHAR(50) NOT NULL,
+    admin_fee_flat BIGINT DEFAULT 0,
+    admin_fee_pct NUMERIC(5,2) DEFAULT 0.00,
+    is_active BOOLEAN DEFAULT true,
+    is_redirect BOOLEAN DEFAULT false,
+    sort_order INT DEFAULT 0
+);
+
+-- ====================================================================================
+-- 4. TABLE: PAYMENT_INSTRUCTIONS (Instruksi Pembayaran)
+-- ====================================================================================
+CREATE TABLE payment_instructions (
+    id BIGSERIAL PRIMARY KEY,
+    payment_method_id BIGINT NOT NULL REFERENCES payment_methods(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    sort_order INT DEFAULT 0
+);
+
+-- ====================================================================================
 -- 3. TABLE: KAJIAN (Jadwal Kajian)
 -- ====================================================================================
 CREATE TABLE kajian (
@@ -100,7 +128,7 @@ CREATE TABLE kajian_registrations (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     kajian_id BIGINT NOT NULL REFERENCES kajian(id) ON DELETE CASCADE,
-    payment_method_id BIGINT,
+    payment_method_id BIGINT REFERENCES payment_methods(id),
     vendor_payment_id VARCHAR(100),
     payment_url TEXT,
     paid_amount INT DEFAULT 0,
@@ -120,9 +148,14 @@ CREATE TABLE orders (
     id BIGSERIAL PRIMARY KEY,
     order_code VARCHAR(50) UNIQUE NOT NULL,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    order_date VARCHAR(50) NOT NULL,
+    payment_method_id BIGINT REFERENCES payment_methods(id),
+    vendor_payment_id VARCHAR(100),
+    payment_url TEXT,
+    order_date DATE NOT NULL,
     total INT NOT NULL,
     status VARCHAR(50) NOT NULL, -- ex: 'pending', 'packed', 'shipped', 'completed'
+    is_checkout_sent BOOLEAN DEFAULT FALSE,
+    is_paid_sent BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -143,36 +176,7 @@ CREATE TABLE order_items (
 
 CREATE INDEX idx_order_items_order_id ON order_items(order_id);
 
--- ====================================================================================
--- 8. TABLE: PAYMENT_METHODS (Metode Pembayaran)
--- ====================================================================================
-CREATE TABLE payment_methods (
-    id BIGSERIAL PRIMARY KEY,
-    code VARCHAR(50) NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    logo_url VARCHAR(255),
-    type VARCHAR(50) NOT NULL,
-    provider VARCHAR(50) NOT NULL,
-    admin_fee_flat BIGINT DEFAULT 0,
-    admin_fee_pct NUMERIC(5,2) DEFAULT 0.00,
-    is_active BOOLEAN DEFAULT true,
-    is_redirect BOOLEAN DEFAULT false,
-    sort_order INT DEFAULT 0
-);
 
--- ====================================================================================
--- 9. TABLE: PAYMENT_INSTRUCTIONS (Instruksi Pembayaran)
--- ====================================================================================
-CREATE TABLE payment_instructions (
-    id BIGSERIAL PRIMARY KEY,
-    payment_method_id BIGINT NOT NULL REFERENCES payment_methods(id) ON DELETE CASCADE,
-    title VARCHAR(255) NOT NULL,
-    content TEXT NOT NULL,
-    sort_order INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_payment_instructions_method_id ON payment_instructions(payment_method_id);
 
 -- ====================================================================================
 -- 10. TABLE: PAYMENT_LOGS (Log Transaksi Pembayaran)
@@ -274,10 +278,10 @@ SELECT setval('products_id_seq', (SELECT MAX(id) FROM products));
 
 -- 5. Insert Orders & Items
 INSERT INTO orders (id, order_code, user_id, order_date, total, status) VALUES 
-(1, 'ORD-98273', 1, '1 Mei 2026', 389000, 'shipped'),
-(2, 'ORD-12837', 2, '28 April 2026', 130000, 'completed'),
-(3, 'ORD-55421', 3, '3 Mei 2026', 159000, 'pending'),
-(4, 'ORD-77623', 4, '3 Mei 2026', 450000, 'packed');
+(1, 'ORD-98273', 1, '2026-05-01', 389000, 'shipped'),
+(2, 'ORD-12837', 2, '2026-04-28', 130000, 'completed'),
+(3, 'ORD-55421', 3, '2026-05-03', 159000, 'pending'),
+(4, 'ORD-77623', 4, '2026-05-03', 450000, 'packed');
 SELECT setval('orders_id_seq', (SELECT MAX(id) FROM orders));
 
 INSERT INTO order_items (order_id, product_id, qty, price) VALUES 
@@ -380,7 +384,11 @@ SELECT setval('payment_logs_id_seq', (SELECT MAX(id) FROM payment_logs));
 -- 9. Insert Notification Templates
 INSERT INTO notification_templates (id, event_trigger, channel, message_content, is_active) VALUES
 (1, 'DONATION_SUCCESS', 'WHATSAPP', 'Terima kasih {nama}, donasi Rp {nominal} via {metode} berhasil kami terima. Semoga membawa keberkahan.', true),
-(2, 'INVOICE_PENDING', 'WHATSAPP', 'Halo {nama}, tagihan donasi Rp {nominal} menunggu pembayaran. Silakan transfer ke {metode} berikut: {va_number} sebelum kedaluwarsa.', true);
+(2, 'INVOICE_PENDING', 'WHATSAPP', 'Halo {nama}, tagihan donasi Rp {nominal} menunggu pembayaran. Silakan transfer ke {metode} berikut: {va_number} sebelum kedaluwarsa.', true),
+(3, 'KAJIAN_CHECKOUT_PENDING', 'WHATSAPP', 'Halo {nama}, pendaftaran kajian Anda dengan kode {kode_pesanan} sedang menunggu pembayaran sebesar Rp {nominal} via {metode}. Status: {link_status}', true),
+(4, 'KAJIAN_FREE_SUCCESS', 'WHATSAPP', 'Alhamdulillah {nama}, pendaftaran kajian Anda berhasil! Kode pendaftaran: {kode_pesanan}. Sampai jumpa di majelis.', true),
+(5, 'PRODUCT_CHECKOUT_PENDING', 'WHATSAPP', 'Halo {nama}, pesanan produk Anda dengan kode {kode_pesanan} sedang menunggu pembayaran sebesar Rp {nominal} via {metode}. Status: {link_status}', true),
+(6, 'KAJIAN_PAID_SUCCESS', 'WHATSAPP', 'Alhamdulillah {nama}, pembayaran kajian dengan kode {kode_pesanan} telah kami terima. Anda sudah terdaftar sebagai peserta resmi.', true);
 SELECT setval('notification_templates_id_seq', (SELECT MAX(id) FROM notification_templates));
 
 -- 10. Insert Notification Logs

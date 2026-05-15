@@ -44,7 +44,7 @@ export async function POST(req: Request) {
 
     // Generate a single consistent order code
     const orderCode = 'ORD-' + Math.random().toString(36).substring(2, 10).toUpperCase();
-    const orderDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const orderDate = new Date().toISOString().split('T')[0];
 
     const isManual = paymentMethod.provider === 'manual';
     let vendorPaymentId: string | null = null;
