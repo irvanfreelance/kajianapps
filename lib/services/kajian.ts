@@ -74,13 +74,14 @@ export async function registerKajian(
   paymentMethodId?: number,
   vendorPaymentId?: string,
   paymentUrl?: string,
-  status: string = 'PENDING'
+  status: string = 'PENDING',
+  isApproved: boolean = false
 ) {
   const result = await sql(`
-    INSERT INTO kajian_registrations (user_id, kajian_id, payment_method_id, vendor_payment_id, payment_url, paid_amount, status)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    INSERT INTO kajian_registrations (user_id, kajian_id, payment_method_id, vendor_payment_id, payment_url, paid_amount, status, is_approved)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     RETURNING id
-  `, [userId, kajianId, paymentMethodId ?? null, vendorPaymentId ?? null, paymentUrl ?? null, paidAmount, status]);
+  `, [userId, kajianId, paymentMethodId ?? null, vendorPaymentId ?? null, paymentUrl ?? null, paidAmount, status, isApproved]);
 
   // Update filled spot
   await sql(`
@@ -99,8 +100,8 @@ export async function registerKajian(
 export async function getUserRegistrations(userId: number) {
   const rows = await sql(`
     SELECT 
-      kr.id, kr.registered_at as date, kr.paid_amount as price, kr.status,
-      k.title, k.ustadz, k.date, k.time_display, k.image, k.location, k.slug
+      kr.id, kr.registered_at as date, kr.paid_amount as price, kr.status, kr.is_approved,
+      k.title, k.ustadz, k.date, k.time_display, k.image, k.location, k.slug, k.url_zoom, k.url_youtube
     FROM kajian_registrations kr
     JOIN kajian k ON kr.kajian_id = k.id
     WHERE kr.user_id = $1
@@ -111,7 +112,7 @@ export async function getUserRegistrations(userId: number) {
 export async function getAllRegistrations() {
   const rows = await sql(`
     SELECT 
-      kr.id, kr.registered_at as date, kr.paid_amount as amount, kr.status,
+      kr.id, kr.registered_at as date, kr.paid_amount as amount, kr.status, kr.is_approved,
       u.name as user_name, u.phone as user_phone,
       k.title as kajian_title, k.ustadz, k.date as kajian_date
     FROM kajian_registrations kr
@@ -128,7 +129,7 @@ export async function getKajianParticipants(kajianId: string | number) {
       kr.registered_at as date, kr.status, kr.paid_amount
     FROM kajian_registrations kr
     JOIN users u ON kr.user_id = u.id
-    WHERE kr.kajian_id = $1 AND kr.status = 'PAID'
+    WHERE kr.kajian_id = $1 AND kr.is_approved = TRUE
     ORDER BY kr.registered_at DESC
   `, [kajianId]);
   return rows;

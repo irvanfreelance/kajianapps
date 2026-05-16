@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { 
   ShoppingBag, ChevronRight, User, Package, 
   LogOut, Ticket, LucideIcon, Calendar, 
-  MapPin, Clock, CheckCircle, AlertCircle, Clock3
+  MapPin, Clock, CheckCircle, AlertCircle, Clock3, Video, Play
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -142,12 +142,36 @@ export function TiketView() {
                     Bayar Sekarang
                   </Link>
                 ) : (
-                  <Link 
-                    href={`/kajian/${reg.slug}`}
-                    style={{ display: "block", width: "100%", marginTop: 20, padding: "12px 0", borderRadius: 12, background: "#F1F5F9", color: "#475569", border: "none", fontWeight: 600, fontSize: 14, cursor: "pointer", textAlign: "center", textDecoration: "none" }}
-                  >
-                    Lihat Detail Kajian
-                  </Link>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 20 }}>
+                    {reg.is_approved && (reg.url_zoom || reg.url_youtube) && (
+                      <div style={{ display: "flex", gap: 10 }}>
+                        {reg.url_zoom && (
+                          <a 
+                            href={reg.url_zoom} 
+                            target="_blank" 
+                            style={{ flex: 1, padding: "10px 0", borderRadius: 12, background: "#EEF2FF", color: "#4F46E5", fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                          >
+                            <Video size={16} /> Zoom
+                          </a>
+                        )}
+                        {reg.url_youtube && (
+                          <a 
+                            href={reg.url_youtube} 
+                            target="_blank" 
+                            style={{ flex: 1, padding: "10px 0", borderRadius: 12, background: "#FEF2F2", color: "#EF4444", fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                          >
+                            <Play size={16} /> Youtube
+                          </a>
+                        )}
+                      </div>
+                    )}
+                    <Link 
+                      href={`/kajian/${reg.slug}`}
+                      style={{ display: "block", width: "100%", padding: "12px 0", borderRadius: 12, background: "#F1F5F9", color: "#475569", border: "none", fontWeight: 600, fontSize: 14, cursor: "pointer", textAlign: "center", textDecoration: "none" }}
+                    >
+                      Lihat Detail Kajian
+                    </Link>
+                  </div>
                 )}
               </div>
             ))}

@@ -30,7 +30,8 @@ export async function POST(req: Request) {
 
     // 1. Initial registration (Pending/Paid if free)
     const status = paidAmount === 0 ? 'PAID' : 'PENDING';
-    const result = await registerKajian(userId, kajianId, paidAmount || 0, paymentMethodId ?? undefined, undefined, undefined, status);
+    const isApproved = paidAmount === 0;
+    const result = await registerKajian(userId, kajianId, paidAmount || 0, paymentMethodId ?? undefined, undefined, undefined, status, isApproved);
     
     const finalRegCode = `REG-${result.id}`;
     let grandTotal = paidAmount || 0;

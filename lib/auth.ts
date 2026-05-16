@@ -1,12 +1,44 @@
 import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import { sql } from '@/lib/db';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { OAuth2Client } from 'google-auth-library';
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    }),
+    CredentialsProvider({
+      id: 'google-onetap',
+      name: 'Google One Tap',
+      credentials: {
+        credential: { type: 'text' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.credential) return null;
+        try {
+          const ticket = await googleClient.verifyIdToken({
+            idToken: credentials.credential,
+            audience: process.env.GOOGLE_CLIENT_ID,
+          });
+          const payload = ticket.getPayload();
+          if (!payload || !payload.email) return null;
+
+          return {
+            id: payload.sub,
+            name: payload.name,
+            email: payload.email,
+            image: payload.picture,
+          };
+        } catch (error) {
+          console.error('Google One Tap verification failed:', error);
+          return null;
+        }
+      },
     }),
   ],
   callbacks: {

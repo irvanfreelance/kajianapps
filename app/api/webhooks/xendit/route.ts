@@ -106,7 +106,7 @@ export async function POST(req: Request) {
         await redis.del(`api:status:get:REG-${regId}`).catch(() => {});
 
         if (currentStatus !== 'PAID' && newStatus === 'PAID') {
-          await sql(`UPDATE kajian_registrations SET status = 'PAID', is_paid_sent = true WHERE id = $1`, [regId]);
+          await sql(`UPDATE kajian_registrations SET status = 'PAID', is_approved = true, is_paid_sent = true WHERE id = $1`, [regId]);
 
           // Send paid WA notification
           try {

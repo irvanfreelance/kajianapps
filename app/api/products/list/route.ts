@@ -1,29 +1,16 @@
 import { NextResponse } from 'next/server';
-import { sql } from '@/lib/db';
-import { redis } from '@/lib/redis';
+import { getProductsList } from '@/lib/services/products';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const cacheKey = 'api:products:list';
-    
-    const cachedData = await redis.get(cacheKey);
-    if (cachedData) {
-      return NextResponse.json({ success: true, data: cachedData, source: 'cache' });
-    }
+    const { searchParams } = new URL(req.url);
+    const category = searchParams.get('category') || undefined;
+    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
 
-    const rows = await sql(`
-      SELECT 
-        id, name, price, old_price as "oldPrice", stock, image, 
-        category, rating, sold, description, slug
-      FROM products 
-      ORDER BY id ASC
-    `);
-
-    await redis.set(cacheKey, rows);
-
-    return NextResponse.json({ success: true, data: rows, source: 'db' });
+    const data = await getProductsList(category, limit);
+    return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching products:', error);
-    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

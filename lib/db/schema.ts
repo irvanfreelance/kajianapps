@@ -90,6 +90,7 @@ export const kajianRegistrations = pgTable('kajian_registrations', {
   isCheckoutSent: boolean('is_checkout_sent').default(false),
   isPaidSent: boolean('is_paid_sent').default(false),
   paidAmount: integer('paid_amount').default(0),
+  isApproved: boolean('is_approved').default(false),
   registeredAt: timestamp('registered_at').defaultNow()
 }, (table) => [
   index('idx_kajian_regs_user_id').on(table.userId),

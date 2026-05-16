@@ -1,13 +1,14 @@
 "use client";
 import { useState } from "react";
-import { Search, FileDown, Ticket } from "lucide-react";
+import { Search, FileDown, Ticket, CheckCircle, Clock } from "lucide-react";
 import { styles, fmt, Pagination, formatDate } from "./shared";
 import { exportToExcel } from "@/lib/excel";
 
 export default function KajianRegistrationsView({ initialData }: { initialData: any[] }) {
-  const [data] = useState(initialData);
+  const [data, setData] = useState(initialData);
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [loadingId, setLoadingId] = useState<number | null>(null);
   const pageSize = 10;
 
   const filtered = data.filter(r => 
@@ -29,9 +30,30 @@ export default function KajianRegistrationsView({ initialData }: { initialData: 
       'Tanggal Kajian': r.kajian_date,
       'Nominal': r.amount,
       'Status': r.status,
+      'Approved': r.is_approved ? 'YES' : 'NO',
       'Tanggal Daftar': new Date(r.date).toLocaleString('id-ID')
     }));
     exportToExcel(exportData, 'Data_Pendaftaran_Kajian');
+  };
+
+  const handleApprove = async (id: number) => {
+    if (!confirm("Setujui pendaftaran ini dan tandai sebagai PAID?")) return;
+    setLoadingId(id);
+    try {
+      const res = await fetch(`/api/kajian/registrations/${id}/approve`, {
+        method: 'POST'
+      });
+      if (res.ok) {
+        setData(prev => prev.map(r => r.id === id ? { ...r, status: 'PAID', is_approved: true } : r));
+      } else {
+        const err = await res.json();
+        alert("Gagal: " + err.error);
+      }
+    } catch (err) {
+      alert("Terjadi kesalahan");
+    } finally {
+      setLoadingId(null);
+    }
   };
 
   return (
@@ -63,7 +85,8 @@ export default function KajianRegistrationsView({ initialData }: { initialData: 
                 <th style={styles.th}>Kajian</th>
                 <th style={styles.th}>Nominal</th>
                 <th style={styles.th}>Status</th>
-                <th style={styles.th}>Tanggal Daftar</th>
+                <th style={styles.th}>Approval</th>
+                <th style={{...styles.th, textAlign: "center"}}>Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -98,12 +121,33 @@ export default function KajianRegistrationsView({ initialData }: { initialData: 
                     </span>
                   </td>
                   <td style={styles.td}>
-                    <p style={{ fontSize: 12, color: "#475569" }}>
-                      {new Date(r.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </p>
-                    <p style={{ fontSize: 11, color: "#94A3B8" }}>
-                      {new Date(r.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                    </p>
+                    {r.is_approved ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, color: "#166534", fontSize: 12, fontWeight: 700 }}>
+                        <CheckCircle size={14} /> Approved
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, color: "#92400E", fontSize: 12, fontWeight: 700 }}>
+                        <Clock size={14} /> Waiting
+                      </div>
+                    )}
+                  </td>
+                  <td style={{...styles.td, textAlign: "center"}}>
+                    {!r.is_approved && (
+                      <button 
+                        onClick={() => handleApprove(r.id)}
+                        disabled={loadingId === r.id}
+                        style={{ 
+                          padding: "6px 12px", borderRadius: 8, border: "none", 
+                          background: "#0891B2", color: "#fff", fontSize: 12, 
+                          fontWeight: 700, cursor: "pointer", opacity: loadingId === r.id ? 0.7 : 1
+                        }}
+                      >
+                        {loadingId === r.id ? "..." : "Approve"}
+                      </button>
+                    )}
+                    {r.is_approved && (
+                      <span style={{ fontSize: 12, color: "#94A3B8" }}>-</span>
+                    )}
                   </td>
                 </tr>
               ))}
