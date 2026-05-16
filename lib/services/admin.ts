@@ -3,7 +3,7 @@ import { sql } from '@/lib/db';
 /** USERS SERVICE */
 export async function getAllUsers() {
   const rows = await sql(`
-    SELECT id, user_code as id_code, name, email, phone, joined_date as joined
+    SELECT *
     FROM users
     ORDER BY id DESC
   `);

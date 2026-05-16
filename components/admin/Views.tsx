@@ -294,24 +294,26 @@ export function UserView({ initialData }: { initialData: any[] }) {
                 <th style={styles.th}>ID Pengguna</th>
                 <th style={styles.th}>Nama Lengkap</th>
                 <th style={styles.th}>Kontak</th>
+                <th style={styles.th}>Detail Profil</th>
                 <th style={styles.th}>Tgl Bergabung</th>
-                <th style={styles.th}>Aksi</th>
               </tr>
             </thead>
             <tbody>
               {currentData.map((u, idx) => (
                 <tr key={u.id} style={styles.tr}>
                   <td style={{...styles.td, textAlign: "center"}}><span style={{ fontSize: 13, color: "#64748B", fontWeight: 600 }}>{(currentPage - 1) * pageSize + idx + 1}</span></td>
-                  <td style={styles.td}><span style={{ fontSize: 13, fontWeight: 600, color: "#64748B" }}>{u.id_code || u.id}</span></td>
+                  <td style={styles.td}><span style={{ fontSize: 13, fontWeight: 600, color: "#64748B" }}>{u.userCode || u.id}</span></td>
                   <td style={styles.td}><span style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{u.name}</span></td>
                   <td style={styles.td}>
                     <p style={{ fontSize: 13, color: "#0F172A" }}>{u.email}</p>
                     <p style={{ fontSize: 12, color: "#64748B" }}>{u.phone}</p>
                   </td>
-                  <td style={styles.td}><span style={{ fontSize: 13, color: "#64748B" }}>{u.joined}</span></td>
                   <td style={styles.td}>
-                     <button style={{ ...styles.actionBtnEdit, width: "auto", padding: "0 12px", gap: 4, fontSize: 12 }}>Detail</button>
+                    <p style={{ fontSize: 12, color: "#475569" }}><strong>Gender:</strong> {u.gender || '-'}</p>
+                    <p style={{ fontSize: 12, color: "#475569" }}><strong>Job:</strong> {u.job || '-'}</p>
+                    <p style={{ fontSize: 12, color: "#475569" }}><strong>Born:</strong> {u.yearBorn || '-'}</p>
                   </td>
+                  <td style={styles.td}><span style={{ fontSize: 13, color: "#64748B" }}>{u.joinedDate || u.joined}</span></td>
                 </tr>
               ))}
             </tbody>

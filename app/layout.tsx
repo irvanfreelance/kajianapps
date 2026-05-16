@@ -13,10 +13,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Majelis App - Kajian & Toko Muslim",
-  description: "Platform pendaftaran kajian dan toko perlengkapan muslim terlengkap.",
-};
+import { sql } from "@/lib/db";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await sql(`SELECT * FROM settings`);
+  const siteTitle = settings.find((s: any) => s.config_key === 'site_title')?.config_value || "Majelis App";
+  const siteFavicon = settings.find((s: any) => s.config_key === 'site_favicon')?.config_value || "/favicon.ico";
+
+  return {
+    title: siteTitle,
+    description: "Platform pendaftaran kajian dan toko perlengkapan muslim terlengkap.",
+    icons: {
+      icon: siteFavicon,
+    }
+  };
+}
 
 export default function RootLayout({
   children,
@@ -27,6 +38,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>

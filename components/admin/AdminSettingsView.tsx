@@ -31,27 +31,15 @@ export default function AdminSettingsView({
       });
       if (res.ok) {
         showToast("Pengaturan berhasil disimpan");
-        setSettings(settings.map(s => s.config_key === key ? { ...s, config_value: value } : s));
+        setSettings(prev => {
+          const existing = prev.find(s => s.config_key === key);
+          if (existing) return prev.map(s => s.config_key === key ? { ...s, config_value: value } : s);
+          return [...prev, { config_key: key, config_value: value }];
+        });
+        if (key === 'site_title') document.title = value;
       }
     } catch (err) {
       alert("Gagal menyimpan pengaturan");
-    }
-  };
-
-  const handleDeleteAdmin = async (id: number) => {
-    if (!window.confirm("Hapus admin ini?")) return;
-    try {
-      const res = await fetch('/api/admin/admins/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
-      });
-      if (res.ok) {
-        setAdmins(admins.filter(a => a.id !== id));
-        showToast("Admin berhasil dihapus");
-      }
-    } catch (err) {
-      alert("Gagal menghapus admin");
     }
   };
 
@@ -84,38 +72,97 @@ export default function AdminSettingsView({
     }
   };
 
+  const handleDeleteAdmin = async (id: number) => {
+    if (!window.confirm("Hapus admin ini?")) return;
+    try {
+      const res = await fetch('/api/admin/admins/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      if (res.ok) {
+        setAdmins(admins.filter(a => a.id !== id));
+        showToast("Admin berhasil dihapus");
+      }
+    } catch (err) {
+      alert("Gagal menghapus admin");
+    }
+  };
+
+  const getSetting = (key: string) => settings.find(s => s.config_key === key)?.config_value || "";
+
   return (
     <div style={{ animation: "fadeIn 0.3s ease", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, alignItems: "start" }}>
       {toast && <Toast msg={toast} />}
 
-      {/* LEFT: SETTINGS CRUD */}
       <div style={styles.card}>
         <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24, color: "#0F172A", display: "flex", alignItems: "center", gap: 10 }}>
           <Save size={20} color="#0891B2" /> Pengaturan Platform
         </h3>
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          {settings.map((s) => (
-            <div key={s.config_key}>
-              <label style={styles.label}>{s.config_key.replace(/_/g, ' ').toUpperCase()}</label>
-              <div style={{ display: "flex", gap: 10 }}>
-                <input 
-                  defaultValue={s.config_value} 
-                  onBlur={(e) => {
-                    if (e.target.value !== s.config_value) {
-                      handleUpdateSetting(s.config_key, e.target.value);
-                    }
-                  }}
-                  style={styles.inputForm} 
-                  type="text" 
+        
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <div>
+            <label style={styles.label}>NAMA PLATFORM / TITLE BROWSER</label>
+            <input 
+              defaultValue={getSetting('site_title') || 'Majelis Ilmu'} 
+              onBlur={(e) => handleUpdateSetting('site_title', e.target.value)}
+              style={styles.inputForm} 
+              type="text" 
+            />
+          </div>
+
+          <div>
+            <label style={styles.label}>FAVICON PLATFORM</label>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 8 }}>
+              <div style={{ width: 48, height: 48, borderRadius: 12, border: "1px solid #E2E8F0", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "#F8FAFC" }}>
+                <img 
+                  src={getSetting('site_favicon') || '/favicon.ico'} 
+                  style={{ width: "100%", height: "100%", objectFit: "contain" }} 
+                  alt="Favicon" 
                 />
               </div>
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const res = await fetch(`/api/admin/settings/upload-favicon?filename=${file.name}`, {
+                      method: 'POST',
+                      body: file,
+                    });
+                    const blob = await res.json();
+                    if (blob.url) {
+                      showToast("Favicon diperbarui");
+                      setSettings(prev => {
+                        const existing = prev.find(s => s.config_key === 'site_favicon');
+                        if (existing) return prev.map(s => s.config_key === 'site_favicon' ? { ...s, config_value: blob.url } : s);
+                        return [...prev, { config_key: 'site_favicon', config_value: blob.url }];
+                      });
+                      const link: any = document.querySelector("link[rel~='icon']");
+                      if (link) link.href = blob.url;
+                    }
+                  }
+                }}
+                style={{ fontSize: 12 }}
+              />
+            </div>
+          </div>
+
+          {settings.filter(s => !['site_title', 'site_favicon'].includes(s.config_key)).map((s) => (
+            <div key={s.config_key}>
+              <label style={styles.label}>{s.config_key.replace(/_/g, ' ').toUpperCase()}</label>
+              <input 
+                defaultValue={s.config_value} 
+                onBlur={(e) => handleUpdateSetting(s.config_key, e.target.value)}
+                style={styles.inputForm} 
+                type="text" 
+              />
             </div>
           ))}
-          {settings.length === 0 && <p style={{ fontSize: 13, color: "#64748B" }}>Belum ada pengaturan.</p>}
         </div>
       </div>
 
-      {/* RIGHT: ADMINS LIST */}
       <div style={styles.card}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
           <h3 style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 10 }}>
@@ -162,7 +209,6 @@ export default function AdminSettingsView({
         </div>
       </div>
 
-      {/* MODAL FOR ADMIN CRUD */}
       {isModalOpen && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContentBase}>
