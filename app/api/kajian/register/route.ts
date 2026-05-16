@@ -46,7 +46,41 @@ export async function POST(req: Request) {
         const adminFee = adminFeeFlat + (paidAmount * (adminFeePct / 100));
         grandTotal = Math.round(paidAmount + adminFee);
 
-        const isManual = paymentMethod.provider === 'manual';
+        const isManual = paymentMethod.provider?.toLowerCase() === 'manual';
+        let finalGrandTotal = grandTotal;
+
+        if (isManual) {
+          const orderDate = new Date().toISOString().split('T')[0];
+          let uniqueCode = Math.floor(Math.random() * 900) + 100; // 100-999
+          let isUnique = false;
+          let attempts = 0;
+          
+          while (!isUnique && attempts < 20) {
+            const potentialTotal = grandTotal + uniqueCode;
+            // Check if this total exists for this payment method today in kajian_registrations
+            const existing = await sql(`
+              SELECT id FROM kajian_registrations 
+              WHERE payment_method_id = $1 
+              AND paid_amount = $2 
+              AND DATE(registered_at) = $3
+              LIMIT 1
+            `, [paymentMethodId, potentialTotal, orderDate]);
+            
+            if (existing.length === 0) {
+              finalGrandTotal = potentialTotal;
+              isUnique = true;
+            } else {
+              if (attempts > 10) {
+                uniqueCode = Math.floor(Math.random() * 9000) + 1000;
+              } else {
+                uniqueCode = Math.floor(Math.random() * 900) + 100;
+              }
+              attempts++;
+            }
+          }
+          // Update the record with final total including unique code
+          await sql(`UPDATE kajian_registrations SET paid_amount = $1 WHERE id = $2`, [finalGrandTotal, result.id]);
+        }
 
         if (!isManual && paymentMethod.provider?.toLowerCase() === 'xendit') {
           const type = paymentMethod.type?.toLowerCase() || '';
@@ -63,7 +97,7 @@ export async function POST(req: Request) {
           // Use the actual REG-{id} as externalId for consistency
           const xenditRes = await createXenditPaymentRequest({
             externalId: finalRegCode,
-            amount: grandTotal,
+            amount: finalGrandTotal,
             type: xenditType,
             channelCode: paymentMethod.code,
             customerName: session.user.name || 'User',
@@ -94,6 +128,9 @@ export async function POST(req: Request) {
             WHERE id = $3
           `, [vendorPaymentId, paymentUrl, result.id]);
         }
+        
+        // Update grandTotal for WA notification
+        grandTotal = finalGrandTotal;
       }
     }
     

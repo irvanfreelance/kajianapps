@@ -107,6 +107,18 @@ export const orders = pgTable('orders', {
   isPaidSent: boolean('is_paid_sent').default(false),
   orderDate: varchar('order_date', { length: 50 }).notNull(),
   total: integer('total').notNull(),
+  shippingAddress: text('shipping_address'),
+  provinceId: varchar('province_id', { length: 20 }),
+  provinceName: varchar('province_name', { length: 100 }),
+  cityId: varchar('city_id', { length: 20 }),
+  cityName: varchar('city_name', { length: 100 }),
+  subdistrictId: varchar('subdistrict_id', { length: 20 }),
+  subdistrictName: varchar('subdistrict_name', { length: 100 }),
+  postalCode: varchar('postal_code', { length: 20 }),
+  courier: varchar('courier', { length: 50 }),
+  courierService: varchar('courier_service', { length: 100 }),
+  shippingCost: integer('shipping_cost').default(0),
+  totalWeight: integer('total_weight').default(1000),
   status: varchar('status', { length: 50 }).notNull(),
   createdAt: timestamp('created_at').defaultNow()
 }, (table) => [

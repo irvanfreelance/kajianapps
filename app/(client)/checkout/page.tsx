@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import AddressSelector from "@/components/client/AddressSelector";
 
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 
@@ -128,7 +129,8 @@ function CheckoutView() {
   const [instructions, setInstructions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [step, setStep] = useState(1); // 1: Review, 2: Select Method, 3: Instructions/Confirm
+  const [step, setStep] = useState(1); // 1: Review, 2: Address (prod), 3: Method, 4: Confirm
+  const [shippingData, setShippingData] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [copiedVA, setCopiedVA] = useState(false);
 
@@ -182,7 +184,9 @@ function CheckoutView() {
   }, [selectedMethod, step]);
 
   const priceToUse = overrideAmount !== null ? overrideAmount : (item?.price || 0);
-  const total = priceToUse * qty;
+  const subtotal = priceToUse * qty;
+  const shippingCost = shippingData?.shippingCost || 0;
+  const total = subtotal + shippingCost;
   const isFreeKajian = type === "kajian" && priceToUse === 0;
 
   const handleComplete = async () => {
@@ -196,6 +200,7 @@ function CheckoutView() {
           body: JSON.stringify({
             items: [{ productId: item.id, qty: qty, price: item.price }],
             paymentMethodId: selectedMethod?.id,
+            shipping: shippingData
           }),
         });
         const data = await res.json();
@@ -260,9 +265,11 @@ function CheckoutView() {
   }
 
   // ─── Steps ────────────────────────────────────────────────────────────
-  const steps = isFreeKajian
-    ? ["Detail", "Konfirmasi"]
-    : ["Detail", "Pembayaran", "Konfirmasi"];
+  const steps = type === "product"
+    ? ["Detail", "Alamat", "Bayar", "Konfirmasi"]
+    : isFreeKajian
+      ? ["Detail", "Konfirmasi"]
+      : ["Detail", "Bayar", "Konfirmasi"];
 
   return (
     <div style={{ background: "#fff", minHeight: "100vh", position: "relative" }}>
@@ -331,23 +338,29 @@ function CheckoutView() {
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <span style={{ fontSize: 13, color: "#64748B" }}>
-                    {type === "product" ? `Harga (x${qty})` : "Biaya pendaftaran"}
+                    {type === "product" ? `Subtotal (x${qty})` : "Biaya pendaftaran"}
                   </span>
                   <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>
                     {priceToUse === 0 ? (
                       <span style={{ display: "flex", alignItems: "center", gap: 4, color: "#16A34A" }}>
                         <Tag size={13} />Gratis
                       </span>
-                    ) : fmt(total)}
+                    ) : fmt(subtotal)}
                   </span>
                 </div>
+                {type === "product" && shippingData && (
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 13, color: "#64748B" }}>Ongkos Kirim</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{fmt(shippingCost)}</span>
+                  </div>
+                )}
               </div>
 
               <div style={{ height: 1, background: "#E2E8F0", margin: "12px 0" }} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>Total</span>
-                <span style={{ fontSize: 20, fontWeight: 800, color: priceToUse === 0 ? "#16A34A" : "#0891B2" }}>
-                  {priceToUse === 0 ? "Gratis" : fmt(total)}
+                <span style={{ fontSize: 20, fontWeight: 800, color: (type === "kajian" && priceToUse === 0) ? "#16A34A" : "#0891B2" }}>
+                  {(type === "kajian" && priceToUse === 0) ? "Gratis" : fmt(total)}
                 </span>
               </div>
             </div>
@@ -361,8 +374,16 @@ function CheckoutView() {
           </div>
         )}
 
-        {/* ─── STEP 2: Pilih Metode Pembayaran (only for paid) ─── */}
-        {step === 2 && !isFreeKajian && (
+        {/* ─── STEP: Address (Only for Product) ─── */}
+        {type === "product" && step === 2 && (
+          <div style={{ animation: "fadeUp 0.25s ease" }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", marginBottom: 16 }}>Alamat Pengiriman</h3>
+            <AddressSelector onSelect={setShippingData} />
+          </div>
+        )}
+
+        {/* ─── STEP: Pilih Metode Pembayaran (Step 3 if product, Step 2 if kajian) ─── */}
+        {((type === "product" && step === 3) || (type === "kajian" && step === 2 && !isFreeKajian)) && (
           <PaymentMethodPicker
             groupedMethods={groupedMethods}
             selectedMethod={selectedMethod}
@@ -377,22 +398,34 @@ function CheckoutView() {
         {/* Step 1 → next */}
         {step === 1 && (
           <button
-            onClick={() => setStep(2)}
+            onClick={() => type === "product" ? setStep(2) : setStep(2)}
             style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: "#0891B2", color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
           >
-            {isFreeKajian ? "Lanjut Konfirmasi" : "Pilih Pembayaran"}
+            {type === "product" ? "Lanjut Alamat" : isFreeKajian ? "Lanjut Konfirmasi" : "Pilih Pembayaran"}
             <ChevronDown size={18} style={{ transform: "rotate(-90deg)" }} />
           </button>
         )}
 
-        {/* Step 2 → submit */}
-        {step === 2 && (
+        {/* Step 2 (Product only) → Step 3 */}
+        {type === "product" && step === 2 && (
+          <button
+            onClick={() => setStep(3)}
+            disabled={!shippingData}
+            style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: !shippingData ? "#CBD5E1" : "#0891B2", color: "#fff", fontSize: 16, fontWeight: 700, cursor: !shippingData ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+          >
+            Lanjut Pembayaran
+            <ChevronDown size={18} style={{ transform: "rotate(-90deg)" }} />
+          </button>
+        )}
+
+        {/* Step 3 (Product) or Step 2 (Paid Kajian) → submit */}
+        {((type === "product" && step === 3) || (type === "kajian" && step === 2 && !isFreeKajian)) && (
           <button
             onClick={handleComplete}
-            disabled={submitting || (!isFreeKajian && !selectedMethod)}
-            style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: submitting || (!isFreeKajian && !selectedMethod) ? "#94A3B8" : isFreeKajian ? "#16A34A" : "#0891B2", color: "#fff", fontSize: 16, fontWeight: 700, cursor: submitting || (!isFreeKajian && !selectedMethod) ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, transition: "all 0.2s" }}
+            disabled={submitting || !selectedMethod}
+            style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: submitting || !selectedMethod ? "#94A3B8" : "#0891B2", color: "#fff", fontSize: 16, fontWeight: 700, cursor: submitting || !selectedMethod ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, transition: "all 0.2s" }}
           >
-            {submitting ? "Memproses..." : isFreeKajian ? "Konfirmasi & Daftar" : "Buat Pesanan"}
+            {submitting ? "Memproses..." : "Buat Pesanan"}
             {!submitting && <CheckCircle2 size={20} />}
           </button>
         )}

@@ -126,19 +126,25 @@ function QrisDisplay({ qrString }: { qrString: string }) {
 }
 
 // ─── VA / Manual Transfer component ─────────────────────────────────────────
-function VirtualAccountDisplay({ vaNumber, bankName, copied, onCopy }: {
-  vaNumber: string, bankName: string, copied: boolean, onCopy: () => void
+function VirtualAccountDisplay({ vaNumber, bankName, copied, onCopy, accountName, amount, onCopyAmount, amountCopied }: {
+  vaNumber: string, bankName: string, copied: boolean, onCopy: () => void, accountName?: string, amount?: number, onCopyAmount?: () => void, amountCopied?: boolean
 }) {
   return (
     <div style={{ marginTop: 20 }}>
       <p style={{ fontSize: 12, color: "#64748B", marginBottom: 10, textAlign: "center" }}>
-        Transfer ke nomor Virtual Account berikut:
+        {accountName ? "Transfer ke rekening berikut:" : "Transfer ke nomor Virtual Account berikut:"}
       </p>
       <div style={{ background: "#fff", borderRadius: 16, padding: "20px", border: "2px solid #0891B2" }}>
         <p style={{ fontSize: 11, color: "#0891B2", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10, textAlign: "center" }}>
           {bankName}
         </p>
-        {/* Nomor VA - responsive, tidak terpotong */}
+        
+        {accountName && (
+          <p style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", textAlign: "center", marginBottom: 8 }}>
+            {accountName}
+          </p>
+        )}
+
         <div style={{
           background: "#F0FDFF",
           borderRadius: 12,
@@ -156,19 +162,38 @@ function VirtualAccountDisplay({ vaNumber, bankName, copied, onCopy }: {
             fontFamily: "monospace"
           }}>{vaNumber}</p>
         </div>
-        <button
-          onClick={onCopy}
-          style={{
-            width: "100%",
-            background: copied ? "#DCFCE7" : "#0891B2",
-            border: "none",
-            padding: "12px", borderRadius: 10, fontSize: 13, fontWeight: 700,
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            cursor: "pointer", color: copied ? "#16A34A" : "#fff", transition: "all 0.2s"
-          }}
-        >
-          {copied ? <><Check size={14} /> Nomor Tersalin!</> : <><Copy size={14} /> Salin Nomor VA</>}
-        </button>
+        
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={onCopy}
+            style={{
+              flex: 1,
+              background: copied ? "#DCFCE7" : "#0891B2",
+              border: "none",
+              padding: "12px", borderRadius: 10, fontSize: 13, fontWeight: 700,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              cursor: "pointer", color: copied ? "#16A34A" : "#fff", transition: "all 0.2s"
+            }}
+          >
+            {copied ? <><Check size={14} /> Tersalin!</> : <><Copy size={14} /> Salin Rekening</>}
+          </button>
+
+          {amount !== undefined && onCopyAmount && (
+            <button
+              onClick={onCopyAmount}
+              style={{
+                flex: 1,
+                background: amountCopied ? "#DCFCE7" : "#F8FAFC",
+                border: amountCopied ? "none" : "1.5px solid #E2E8F0",
+                padding: "12px", borderRadius: 10, fontSize: 13, fontWeight: 700,
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                cursor: "pointer", color: amountCopied ? "#16A34A" : "#64748B", transition: "all 0.2s"
+              }}
+            >
+              {amountCopied ? <><Check size={14} /> Nominal Tersalin!</> : <><Copy size={14} /> Salin Nominal</>}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -183,6 +208,7 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
   const [instructions, setInstructions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [amountCopied, setAmountCopied] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const didRedirect = useRef(false);
 
@@ -227,6 +253,13 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }, []);
+
+  const handleCopyAmount = useCallback((amount: number) => {
+    // Copy as clean number (e.g. 100123)
+    navigator.clipboard.writeText(amount.toString());
+    setAmountCopied(true);
+    setTimeout(() => setAmountCopied(false), 2000);
   }, []);
 
   if (loading && !data) {
@@ -315,13 +348,32 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
             <p style={{ fontSize: 36, fontWeight: 800, color: "#0891B2", marginTop: 6 }}>{fmt(data.amount)}</p>
 
             {/* ── Virtual Account ── */}
-            {methodType === "VIRTUAL_ACCOUNT" && vaNumber && (
+            {methodType === "VIRTUAL_ACCOUNT" && vaNumber && data.method_provider !== 'Manual' && (
               <VirtualAccountDisplay
                 vaNumber={vaNumber}
                 bankName={data.method_name}
                 copied={copied}
                 onCopy={() => handleCopy(vaNumber)}
               />
+            )}
+
+            {/* ── Manual Transfer ── */}
+            {data.method_provider === 'Manual' && (
+              (() => {
+                const [accNum, accName] = (data.method_code || "").split('|');
+                return (
+                  <VirtualAccountDisplay
+                    vaNumber={accNum || ""}
+                    accountName={accName || ""}
+                    bankName={data.method_name}
+                    copied={copied}
+                    onCopy={() => handleCopy(accNum || "")}
+                    amount={data.amount}
+                    onCopyAmount={() => handleCopyAmount(data.amount)}
+                    amountCopied={amountCopied}
+                  />
+                );
+              })()
             )}
 
             {/* ── QRIS ── */}
@@ -348,16 +400,6 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
                   </button>
                 </div>
               </div>
-            )}
-
-            {/* ── Manual Transfer ── */}
-            {(methodType === "bank_transfer" || methodType?.includes("manual")) && vaNumber && (
-              <VirtualAccountDisplay
-                vaNumber={vaNumber}
-                bankName={data.method_name}
-                copied={copied}
-                onCopy={() => handleCopy(vaNumber)}
-              />
             )}
 
             {/* Warning */}
@@ -387,6 +429,12 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
               ))}
             </div>
           )}
+
+          <div style={{ marginTop: 32 }}>
+            <Link href="/" style={{ display: "block", width: "100%", padding: "16px", borderRadius: 16, background: "#F1F5F9", color: "#64748B", fontSize: 15, fontWeight: 600, textDecoration: "none", textAlign: "center", border: "1px solid #E2E8F0" }}>
+              Kembali ke Beranda
+            </Link>
+          </div>
         </div>
       )}
 

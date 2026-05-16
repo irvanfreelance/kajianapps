@@ -17,6 +17,9 @@ export async function getOrdersList() {
     SELECT 
       o.id, o.order_code as "orderCode", u.name as "customer", o.order_date as "date", 
       o.total, o.status,
+      o.shipping_address as "shippingAddress", o.province_name as "provinceName",
+      o.city_name as "cityName", o.courier, o.courier_service as "courierService",
+      o.shipping_cost as "shippingCost",
       (SELECT COALESCE(SUM(qty), 0) FROM order_items WHERE order_id = o.id) as items
     FROM orders o
     JOIN users u ON o.user_id = u.id
@@ -35,17 +38,32 @@ export async function createOrder(
   items: { productId: number, qty: number, price: number }[], 
   paymentMethodId?: number,
   vendorPaymentId?: string,
-  paymentUrl?: string
+  paymentUrl?: string,
+  shipping?: any
 ) {
   const orderCode = 'ORD-' + Math.random().toString(36).substring(2, 10).toUpperCase();
-  const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const subtotal = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const shippingCost = Number(shipping?.shippingCost) || 0;
+  const total = subtotal + shippingCost;
   const orderDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
   const orderResult = await sql(`
-    INSERT INTO orders (order_code, user_id, payment_method_id, vendor_payment_id, payment_url, order_date, total, status)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    INSERT INTO orders (
+      order_code, user_id, payment_method_id, vendor_payment_id, payment_url, 
+      order_date, total, status,
+      shipping_address, province_id, province_name, city_id, city_name, 
+      postal_code, courier, courier_service, shipping_cost, total_weight
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
     RETURNING id
-  `, [orderCode, userId, paymentMethodId ?? null, vendorPaymentId ?? null, paymentUrl ?? null, orderDate, total, 'pending']);
+  `, [
+    orderCode, userId, paymentMethodId ?? null, vendorPaymentId ?? null, paymentUrl ?? null, 
+    orderDate, total, 'pending',
+    shipping?.address || null, shipping?.provinceId || null, shipping?.provinceName || null, 
+    shipping?.cityId || null, shipping?.cityName || null, shipping?.postalCode || null, 
+    shipping?.courier || null, shipping?.courierService || null, 
+    shippingCost, Number(shipping?.totalWeight) || 1000
+  ]);
 
   const orderId = orderResult[0].id;
 

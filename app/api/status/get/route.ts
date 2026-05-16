@@ -22,7 +22,7 @@ export async function GET(req: Request) {
     if (code.startsWith('ORD-')) {
       const rows = await sql(`
         SELECT o.order_code as code, o.total as amount, o.status, o.payment_method_id, o.payment_url, o.vendor_payment_id,
-               pm.name as method_name, pm.logo_url,
+               pm.name as method_name, pm.logo_url, pm.code as method_code, pm.provider as method_provider,
                CASE 
                  WHEN lower(pm.type) IN ('va', 'virtual_account', 'virtual account') THEN 'VIRTUAL_ACCOUNT'
                  WHEN lower(pm.type) IN ('e_wallet', 'e-wallet', 'ewallet', 'e wallet') THEN 'EWALLET'
@@ -44,7 +44,7 @@ export async function GET(req: Request) {
       const rows = await sql(`
         SELECT kr.id, kr.paid_amount as amount, kr.payment_method_id, kr.payment_url, kr.vendor_payment_id,
                kr.status,
-               pm.name as method_name, pm.logo_url,
+               pm.name as method_name, pm.logo_url, pm.code as method_code, pm.provider as method_provider,
                CASE 
                  WHEN lower(pm.type) IN ('va', 'virtual_account', 'virtual account') THEN 'VIRTUAL_ACCOUNT'
                  WHEN lower(pm.type) IN ('e_wallet', 'e-wallet', 'ewallet', 'e wallet') THEN 'EWALLET'
@@ -68,6 +68,8 @@ export async function GET(req: Request) {
           method_name: rows[0].method_name,
           method_type: rows[0].method_type,
           logo_url: rows[0].logo_url,
+          method_code: rows[0].method_code,
+          method_provider: rows[0].method_provider,
         };
       }
     }
