@@ -1,7 +1,7 @@
 "use client";
 import { 
   ChevronLeft, Calendar, Clock, MapPin, User, 
-  Share2, Heart, Info, Video, Play, ArrowRight, X
+  Share2, Heart, Info, ArrowRight, X
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -137,30 +137,6 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
                    <p style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{kajian.location || "Masjid Al-Latif, Bandung"}</p>
                 </div>
              </div>
-
-             {kajian.url_zoom && (
-               <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 12, background: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                     <Video size={20} color="#4F46E5" />
-                  </div>
-                  <div>
-                     <p style={{ fontSize: 12, color: "#64748B" }}>Zoom Meeting</p>
-                     <a href={kajian.url_zoom} target="_blank" style={{ fontSize: 14, fontWeight: 600, color: "#4F46E5", textDecoration: "none" }}>Link Zoom</a>
-                  </div>
-               </div>
-             )}
-
-             {kajian.url_youtube && (
-               <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 12, background: "#FEF2F2", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                     <Play size={20} color="#EF4444" />
-                  </div>
-                  <div>
-                     <p style={{ fontSize: 12, color: "#64748B" }}>Live Youtube</p>
-                     <a href={kajian.url_youtube} target="_blank" style={{ fontSize: 14, fontWeight: 600, color: "#EF4444", textDecoration: "none" }}>Tonton Live</a>
-                  </div>
-               </div>
-             )}
           </div>
         </div>
 

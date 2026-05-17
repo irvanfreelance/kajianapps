@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, use, useRef, useCallback } from "react";
-import { CheckCircle2, Copy, Info, ExternalLink, Clock, Download, Check } from "lucide-react";
+import { CheckCircle2, Copy, Info, ExternalLink, Clock, Download, Check, Upload, Image as ImageIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import QRCode from "react-qr-code";
@@ -212,6 +212,50 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
   const [redirecting, setRedirecting] = useState(false);
   const didRedirect = useRef(false);
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
+
+  const handleUploadSubmit = async () => {
+    if (!selectedFile) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('code', code);
+      fd.append('file', selectedFile);
+
+      const res = await fetch('/api/user/confirm-payment', {
+        method: 'POST',
+        body: fd
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        setData((prev: any) => ({ ...prev, payment_proof: 'uploaded_temp' }));
+        const freshRes = await fetch(`/api/status/get?code=${code}`);
+        const freshData = await freshRes.json();
+        if (freshData.data) {
+          setData(freshData.data);
+        }
+      } else {
+        alert(result.error || 'Gagal mengunggah bukti transfer');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Terjadi kesalahan koneksi');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   useEffect(() => {
     if (!code) return;
 
@@ -362,16 +406,64 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
               (() => {
                 const [accNum, accName] = (data.method_code || "").split('|');
                 return (
-                  <VirtualAccountDisplay
-                    vaNumber={accNum || ""}
-                    accountName={accName || ""}
-                    bankName={data.method_name}
-                    copied={copied}
-                    onCopy={() => handleCopy(accNum || "")}
-                    amount={data.amount}
-                    onCopyAmount={() => handleCopyAmount(data.amount)}
-                    amountCopied={amountCopied}
-                  />
+                  <>
+                    <VirtualAccountDisplay
+                      vaNumber={accNum || ""}
+                      accountName={accName || ""}
+                      bankName={data.method_name}
+                      copied={copied}
+                      onCopy={() => handleCopy(accNum || "")}
+                      amount={data.amount}
+                      onCopyAmount={() => handleCopyAmount(data.amount)}
+                      amountCopied={amountCopied}
+                    />
+                    
+                    {data.payment_proof ? (
+                      <div style={{ marginTop: 24, padding: 18, background: "#ECFDF5", borderRadius: 16, border: "1px solid #A7F3D0", textAlign: "center" }}>
+                        <p style={{ fontSize: 13, color: "#065F46", fontWeight: 700, marginBottom: 8 }}>Bukti Transfer Telah Diunggah</p>
+                        <a href={data.payment_proof} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: "#047857", textDecoration: "underline", display: "inline-block", marginBottom: 12 }}>Lihat Bukti Transfer</a>
+                        <div style={{ display: "flex", justifyContent: "center" }}>
+                          <img src={data.payment_proof} style={{ maxWidth: 150, maxHeight: 150, borderRadius: 8, objectFit: "contain", border: "1px solid #D1FAE5" }} alt="Bukti Transfer" />
+                        </div>
+                        <p style={{ fontSize: 12, color: "#065F46", marginTop: 8 }}>Mohon tunggu konfirmasi dari admin untuk proses approval.</p>
+                      </div>
+                    ) : (
+                      <div style={{ marginTop: 24, padding: 20, background: "#F8FAFC", borderRadius: 16, border: "1px solid #E2E8F0", textAlign: "left" }}>
+                        <h4 style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+                          <Upload size={16} color="#0891B2" /> Konfirmasi Pembayaran
+                        </h4>
+                        <p style={{ fontSize: 12, color: "#64748B", marginBottom: 14 }}>Silakan unggah foto bukti transfer ATM, Mobile Banking, atau Internet Banking Anda di bawah ini:</p>
+                        
+                        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                          {previewUrl ? (
+                            <div style={{ position: "relative", borderRadius: 12, border: "1px solid #E2E8F0", background: "#fff", padding: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+                              <img src={previewUrl} style={{ maxWidth: "100%", maxHeight: 200, borderRadius: 8, objectFit: "contain" }} alt="Pratinjau" />
+                              <div style={{ display: "flex", gap: 8, width: "100%" }}>
+                                <label style={{ flex: 1, padding: "8px 12px", background: "#F1F5F9", color: "#475569", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", textAlign: "center" }}>
+                                  Ganti Foto
+                                  <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
+                                </label>
+                                <button 
+                                  onClick={handleUploadSubmit} 
+                                  disabled={uploading} 
+                                  style={{ flex: 1, padding: "8px 12px", background: "#0891B2", color: "#fff", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: uploading ? 0.7 : 1 }}
+                                >
+                                  {uploading ? "Mengirim..." : "Kirim Bukti Transfer"}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <label style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 120, borderRadius: 12, border: "2px dashed #CBD5E1", background: "#fff", cursor: "pointer", transition: "all 0.2s" }}>
+                              <ImageIcon size={24} color="#64748B" style={{ marginBottom: 6 }} />
+                              <span style={{ fontSize: 13, fontWeight: 600, color: "#475569" }}>Pilih Foto Bukti</span>
+                              <span style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>JPG, PNG, atau WEBP</span>
+                              <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
+                            </label>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 );
               })()
             )}

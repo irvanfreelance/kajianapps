@@ -1,9 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { 
   ShoppingBag, ChevronRight, User, Package, 
   LogOut, Ticket, LucideIcon, Calendar, 
-  MapPin, Clock, CheckCircle, AlertCircle, Clock3, Video, Play
+  MapPin, Clock, CheckCircle, AlertCircle, Clock3, Video, Play, Download
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -74,10 +74,73 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+function BarcodeDisplay({ value }: { value: string }) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (!value || !svgRef.current) return;
+    import("jsbarcode").then((mod) => {
+      const JsBarcode = mod.default;
+      try {
+        JsBarcode(svgRef.current, value, {
+          format: "CODE128",
+          width: 2,
+          height: 60,
+          displayValue: true,
+          fontSize: 12,
+          margin: 10,
+          background: "#fff",
+          lineColor: "#0F172A",
+        });
+        setReady(true);
+      } catch (e) {
+        console.error("Barcode error:", e);
+      }
+    });
+  }, [value]);
+
+  const handleDownload = () => {
+    if (!svgRef.current) return;
+    const svgData = new XMLSerializer().serializeToString(svgRef.current);
+    const blob = new Blob([svgData], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `barcode-${value}.svg`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, marginTop: 14 }}>
+      <div style={{ background: "#fff", borderRadius: 12, padding: "8px 12px", border: "1px solid #E2E8F0", overflow: "hidden", display: "inline-block" }}>
+        <svg ref={svgRef} style={{ maxWidth: "100%", display: "block" }} />
+      </div>
+      {ready && (
+        <button
+          onClick={handleDownload}
+          style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "#0891B2", color: "#fff", border: "none", borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: "pointer" }}
+        >
+          <Download size={12} /> Unduh Barcode
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function TiketView() {
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<'approved' | 'checkout'>('approved');
+  
+  // Infinite scroll limits
+  const [limitApproved, setLimitApproved] = useState(5);
+  const [limitPending, setLimitPending] = useState(5);
+
+  // Selected ticket for modal
+  const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
 
   useEffect(() => {
     fetch("/api/user/registrations")
@@ -90,106 +153,281 @@ export function TiketView() {
       .finally(() => setLoading(false));
   }, []);
 
+  const approvedRegs = registrations.filter(r => r.is_approved || r.status === 'PAID');
+  const pendingRegs = registrations.filter(r => !r.is_approved && r.status !== 'PAID');
+  const activeRegs = activeTab === 'approved' ? approvedRegs : pendingRegs;
+  
+  const slicedRegs = activeRegs.slice(0, activeTab === 'approved' ? limitApproved : limitPending);
+
+  // Observer for Infinite Scroll
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastElementRef = useCallback((node: HTMLDivElement | null) => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        if (activeTab === 'approved') {
+          setLimitApproved(prev => Math.min(prev + 5, approvedRegs.length));
+        } else {
+          setLimitPending(prev => Math.min(prev + 5, pendingRegs.length));
+        }
+      }
+    }, { threshold: 0.1 });
+    if (node) observer.current.observe(node);
+  }, [loading, activeTab, approvedRegs.length, pendingRegs.length]);
+
+  const formatDateLabel = (dateStr: string) => {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    } catch {
+      return dateStr;
+    }
+  };
+
   return (
     <div style={{ paddingBottom: 20 }}>
       <div style={{ padding: "24px 20px 20px" }}>
         <h1 style={{ fontSize: 26, color: "#0F172A", fontWeight: 700 }}>Tiket Saya</h1>
         <p style={{ fontSize: 14, color: "#64748B", marginTop: 4 }}>Daftar kajian yang Anda ikuti</p>
       </div>
+
+      {/* Tabs Switcher */}
+      {!loading && !error && registrations.length > 0 && (
+        <div style={{ display: "flex", margin: "0 20px 20px", background: "#F1F5F9", borderRadius: 16, padding: 4 }}>
+          <button
+            onClick={() => { setActiveTab('approved'); }}
+            style={{
+              flex: 1,
+              padding: "12px 0",
+              borderRadius: 12,
+              border: "none",
+              background: activeTab === 'approved' ? "#fff" : "transparent",
+              color: activeTab === 'approved' ? "#0891B2" : "#64748B",
+              fontWeight: activeTab === 'approved' ? 700 : 600,
+              fontSize: 14,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              boxShadow: activeTab === 'approved' ? "0 4px 10px rgba(0,0,0,0.05)" : "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8
+            }}
+          >
+            Tiket Aktif ({approvedRegs.length})
+          </button>
+          <button
+            onClick={() => { setActiveTab('checkout'); }}
+            style={{
+              flex: 1,
+              padding: "12px 0",
+              borderRadius: 12,
+              border: "none",
+              background: activeTab === 'checkout' ? "#fff" : "transparent",
+              color: activeTab === 'checkout' ? "#0891B2" : "#64748B",
+              fontWeight: activeTab === 'checkout' ? 700 : 600,
+              fontSize: 14,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              boxShadow: activeTab === 'checkout' ? "0 4px 10px rgba(0,0,0,0.05)" : "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8
+            }}
+          >
+            Belum Bayar ({pendingRegs.length})
+          </button>
+        </div>
+      )}
+
       <div style={{ padding: "0 20px" }}>
         {loading ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {[1,2].map(i => (
-              <div key={i} style={{ background: "#F8FAFC", borderRadius: 24, padding: 20, height: 160, animation: "pulse 1.5s infinite" }} />
+            {[1,2,3].map(i => (
+              <div key={i} style={{ background: "#F8FAFC", borderRadius: 20, padding: 16, height: 90, animation: "pulse 1.5s infinite" }} />
             ))}
           </div>
         ) : error ? (
           <div style={{ textAlign: "center", padding: 40, color: "#EF4444" }}>{error}</div>
-        ) : registrations.length > 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {registrations.map((reg) => (
-              <div key={reg.id} style={{ background: "#fff", borderRadius: 24, padding: 20, border: "1px solid #F1F5F9", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
-                <div style={{ display: "flex", gap: 16 }}>
-                   <img src={reg.image || '/placeholder.png'} style={{ width: 80, height: 80, borderRadius: 16, objectFit: "cover", background: "#F1F5F9", flexShrink: 0 }} />
-                   <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{reg.title}</p>
-                      <p style={{ fontSize: 13, color: "#64748B", marginTop: 4 }}>{reg.ustadz}</p>
-                      <div style={{ marginTop: 8 }}>
-                        <StatusBadge status={reg.price === 0 ? 'PAID' : reg.status} />
-                      </div>
-                   </div>
+        ) : activeRegs.length > 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {slicedRegs.map((reg) => (
+              <div 
+                key={reg.id} 
+                onClick={() => setSelectedTicket(reg)}
+                style={{ 
+                  background: "#fff", 
+                  borderRadius: 20, 
+                  padding: 16, 
+                  border: "1px solid #F1F5F9", 
+                  boxShadow: "0 4px 15px rgba(0,0,0,0.02)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 16,
+                  cursor: "pointer",
+                  transition: "all 0.2s ease"
+                }}
+              >
+                <img src={reg.image || '/placeholder.png'} style={{ width: 60, height: 60, borderRadius: 12, objectFit: "cover", background: "#F1F5F9", flexShrink: 0 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{reg.title}</p>
+                  <p style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>{reg.ustadz}</p>
+                  <p style={{ fontSize: 12, color: "#475569", marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                    <Calendar size={12} color="#64748B" />
+                    {reg.date_display || formatDateLabel(reg.date)}
+                  </p>
                 </div>
-                <div style={{ height: 1, background: "#F1F5F9", margin: "16px 0" }} />
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <Calendar size={14} color="#64748B" />
-                      <p style={{ fontSize: 13, color: "#475569" }}>{reg.date_display}</p>
-                   </div>
-                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <Clock size={14} color="#64748B" />
-                      <p style={{ fontSize: 13, color: "#475569" }}>{reg.time_display}</p>
-                   </div>
-                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <MapPin size={14} color="#64748B" />
-                      <p style={{ fontSize: 13, color: "#475569", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{reg.location}</p>
-                   </div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                  <StatusBadge status={reg.price === 0 ? 'PAID' : reg.status} />
+                  <ChevronRight size={16} color="#94A3B8" />
                 </div>
-                {reg.status === 'PENDING' && reg.price > 0 ? (
-                  <Link 
-                    href={`/status/REG-${reg.id}`}
-                    style={{ display: "block", width: "100%", marginTop: 20, padding: "12px 0", borderRadius: 12, background: "#0891B2", color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", textAlign: "center", textDecoration: "none" }}
-                  >
-                    Bayar Sekarang
-                  </Link>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 20 }}>
-                    {reg.is_approved && (reg.url_zoom || reg.url_youtube) && (
-                      <div style={{ display: "flex", gap: 10 }}>
-                        {reg.url_zoom && (
-                          <a 
-                            href={reg.url_zoom} 
-                            target="_blank" 
-                            style={{ flex: 1, padding: "10px 0", borderRadius: 12, background: "#EEF2FF", color: "#4F46E5", fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
-                          >
-                            <Video size={16} /> Zoom
-                          </a>
-                        )}
-                        {reg.url_youtube && (
-                          <a 
-                            href={reg.url_youtube} 
-                            target="_blank" 
-                            style={{ flex: 1, padding: "10px 0", borderRadius: 12, background: "#FEF2F2", color: "#EF4444", fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
-                          >
-                            <Play size={16} /> Youtube
-                          </a>
-                        )}
-                      </div>
-                    )}
-                    <Link 
-                      href={`/kajian/${reg.slug}`}
-                      style={{ display: "block", width: "100%", padding: "12px 0", borderRadius: 12, background: "#F1F5F9", color: "#475569", border: "none", fontWeight: 600, fontSize: 14, cursor: "pointer", textAlign: "center", textDecoration: "none" }}
-                    >
-                      Lihat Detail Kajian
-                    </Link>
-                  </div>
-                )}
               </div>
             ))}
+
+            {/* Infinite Scroll Sentinel */}
+            {activeRegs.length > slicedRegs.length && (
+              <div ref={lastElementRef} style={{ padding: "16px 0", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                <div style={{ width: 20, height: 20, border: "2px solid #CBD5E1", borderTopColor: "#0891B2", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+                <span style={{ marginLeft: 8, fontSize: 13, color: "#64748B", fontWeight: 500 }}>Memuat lebih banyak...</span>
+              </div>
+            )}
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: 300 }}>
              <div style={{ width: 80, height: 80, borderRadius: "50%", background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
                 <Ticket size={32} color="#94A3B8" />
              </div>
-             <p style={{ fontSize: 16, fontWeight: 600, color: "#0F172A" }}>Belum Ada Tiket</p>
-             <p style={{ fontSize: 14, color: "#64748B", textAlign: "center", marginTop: 8, maxWidth: 240 }}>Anda belum terdaftar di kajian manapun. Yuk pilih kajian sekarang!</p>
+             <p style={{ fontSize: 16, fontWeight: 600, color: "#0F172A" }}>
+               {activeTab === 'approved' ? "Belum Ada Tiket Aktif" : "Tidak Ada Tagihan"}
+             </p>
+             <p style={{ fontSize: 14, color: "#64748B", textAlign: "center", marginTop: 8, maxWidth: 240 }}>
+               {activeTab === 'approved' 
+                 ? "Anda belum memiliki tiket kajian aktif. Silakan lakukan pembayaran atau mendaftar kajian." 
+                 : "Semua pendaftaran kajian Anda telah terbayar lunas!"}
+             </p>
              <Link href="/" style={{ marginTop: 24, padding: "12px 24px", borderRadius: 14, background: "#0891B2", color: "#fff", border: "none", fontWeight: 600, cursor: "pointer", textDecoration: 'none' }}>Cari Kajian</Link>
           </div>
         )}
       </div>
+
+      {/* Modern Ticket Detail Modal */}
+      {selectedTicket && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(15, 23, 42, 0.7)", display: "flex",
+          alignItems: "center", justifyContent: "center", zIndex: 1000,
+          backdropFilter: "blur(6px)",
+          padding: 20
+        }}>
+          <div style={{
+            background: "#fff", borderRadius: 24, padding: 24,
+            maxWidth: 480, width: "100%", maxHeight: "90vh",
+            display: "flex", flexDirection: "column", gap: 16,
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+            overflowY: "auto",
+            position: "relative",
+            animation: "slideUp 0.3s ease"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: "#0F172A" }}>Detail Tiket</h3>
+              <button 
+                onClick={() => setSelectedTicket(null)}
+                style={{
+                  background: "#F1F5F9", border: "none", borderRadius: "50%",
+                  width: 32, height: 32, display: "flex", alignItems: "center",
+                  justifyContent: "center", cursor: "pointer", fontSize: 14,
+                  fontWeight: 700, color: "#64748B"
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <img src={selectedTicket.image || '/placeholder.png'} style={{ width: "100%", height: 180, borderRadius: 16, objectFit: "cover", background: "#F1F5F9" }} />
+
+            <div>
+              <h4 style={{ fontSize: 16, fontWeight: 800, color: "#0F172A" }}>{selectedTicket.title}</h4>
+              <p style={{ fontSize: 14, color: "#64748B", marginTop: 4 }}>{selectedTicket.ustadz}</p>
+              <div style={{ marginTop: 8, display: "inline-block" }}>
+                <StatusBadge status={selectedTicket.price === 0 ? 'PAID' : selectedTicket.status} />
+              </div>
+            </div>
+
+            <div style={{ height: 1, background: "#F1F5F9" }} />
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                 <Calendar size={16} color="#0891B2" />
+                 <p style={{ fontSize: 14, color: "#475569" }}>{selectedTicket.date_display || formatDateLabel(selectedTicket.date)}</p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                 <Clock size={16} color="#0891B2" />
+                 <p style={{ fontSize: 14, color: "#475569" }}>{selectedTicket.time_display || 'WIB'}</p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                 <MapPin size={16} color="#0891B2" />
+                 <p style={{ fontSize: 14, color: "#475569" }}>{selectedTicket.location}</p>
+              </div>
+            </div>
+
+            {activeTab === 'checkout' ? (
+              <Link 
+                href={`/status/REG-${selectedTicket.id}`}
+                onClick={() => setSelectedTicket(null)}
+                style={{ display: "block", width: "100%", marginTop: 10, padding: "12px 0", borderRadius: 12, background: "#0891B2", color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", textAlign: "center", textDecoration: "none" }}
+              >
+                Bayar Sekarang
+              </Link>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {selectedTicket.is_approved && (selectedTicket.url_zoom || selectedTicket.url_youtube) && (
+                  <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+                    {selectedTicket.url_zoom && (
+                      <a 
+                        href={selectedTicket.url_zoom} 
+                        target="_blank" 
+                        style={{ flex: 1, padding: "10px 0", borderRadius: 12, background: "#EEF2FF", color: "#4F46E5", fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                      >
+                        <Video size={16} /> Zoom
+                      </a>
+                    )}
+                    {selectedTicket.url_youtube && (
+                      <a 
+                        href={selectedTicket.url_youtube} 
+                        target="_blank" 
+                        style={{ flex: 1, padding: "10px 0", borderRadius: 12, background: "#FEF2F2", color: "#EF4444", fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                      >
+                        <Play size={16} /> Youtube
+                      </a>
+                    )}
+                  </div>
+                )}
+                
+                {selectedTicket.ticket_code && (
+                  <div style={{ marginTop: 10, borderTop: "1px dashed #E2E8F0", paddingTop: 14 }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: "#475569", textAlign: "center", marginBottom: 4 }}>E-TICKET BARCODE</p>
+                    <BarcodeDisplay value={selectedTicket.ticket_code} />
+                  </div>
+                )}
+              </div>
+            )}
+
+            <button 
+              onClick={() => setSelectedTicket(null)}
+              style={{ display: "block", width: "100%", padding: "12px 0", borderRadius: 12, background: "#F1F5F9", color: "#475569", border: "none", fontWeight: 600, fontSize: 14, cursor: "pointer", textAlign: "center" }}
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 
 export function ProfilView() {
   const { data: session } = useSession();

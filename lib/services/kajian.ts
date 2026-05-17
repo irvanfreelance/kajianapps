@@ -77,11 +77,18 @@ export async function registerKajian(
   status: string = 'PENDING',
   isApproved: boolean = false
 ) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let rand = '';
+  for (let i = 0; i < 8; i++) {
+    rand += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  const ticketCode = 'TKT-' + rand;
+
   const result = await sql(`
-    INSERT INTO kajian_registrations (user_id, kajian_id, payment_method_id, vendor_payment_id, payment_url, paid_amount, status, is_approved)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    INSERT INTO kajian_registrations (user_id, kajian_id, payment_method_id, vendor_payment_id, payment_url, paid_amount, status, is_approved, ticket_code)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     RETURNING id
-  `, [userId, kajianId, paymentMethodId ?? null, vendorPaymentId ?? null, paymentUrl ?? null, paidAmount, status, isApproved]);
+  `, [userId, kajianId, paymentMethodId ?? null, vendorPaymentId ?? null, paymentUrl ?? null, paidAmount, status, isApproved, ticketCode]);
 
   // Update filled spot
   await sql(`
@@ -100,7 +107,7 @@ export async function registerKajian(
 export async function getUserRegistrations(userId: number) {
   const rows = await sql(`
     SELECT 
-      kr.id, kr.registered_at as date, kr.paid_amount as price, kr.status, kr.is_approved,
+      kr.id, kr.registered_at as date, kr.paid_amount as price, kr.status, kr.is_approved, kr.ticket_code,
       k.title, k.ustadz, k.date, k.time_display, k.image, k.location, k.slug, k.url_zoom, k.url_youtube
     FROM kajian_registrations kr
     JOIN kajian k ON kr.kajian_id = k.id
@@ -112,12 +119,14 @@ export async function getUserRegistrations(userId: number) {
 export async function getAllRegistrations() {
   const rows = await sql(`
     SELECT 
-      kr.id, kr.registered_at as date, kr.paid_amount as amount, kr.status, kr.is_approved,
+      kr.id, kr.registered_at as date, kr.paid_amount as amount, kr.status, kr.is_approved, kr.payment_proof, kr.ticket_code,
       u.name as user_name, u.phone as user_phone,
-      k.title as kajian_title, k.ustadz, k.date as kajian_date
+      k.title as kajian_title, k.ustadz, k.date as kajian_date,
+      pm.name as payment_method
     FROM kajian_registrations kr
     JOIN users u ON kr.user_id = u.id
     JOIN kajian k ON kr.kajian_id = k.id
+    LEFT JOIN payment_methods pm ON kr.payment_method_id = pm.id
     ORDER BY kr.id DESC
   `);
   return rows;

@@ -174,14 +174,13 @@ export function ProductView({ initialData }: { initialData: any[] }) {
 
 export function OrderView({ initialData }: { initialData: any[] }) {
   const [data, setData] = useState(initialData);
-  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [methodFilter, setMethodFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeProofUrl, setActiveProofUrl] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const pageSize = 10;
-
-  const filteredData = filter === "all" ? data : data.filter(d => d.status === filter);
-  const totalPages = Math.ceil(filteredData.length / pageSize);
-  const currentData = filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -205,15 +204,67 @@ export function OrderView({ initialData }: { initialData: any[] }) {
     }
   };
 
+  const filteredData = data.filter(o => {
+    const matchesSearch = 
+      o.customer?.toLowerCase().includes(search.toLowerCase()) ||
+      (o.id || o.orderCode || o.order_code || '').toString().toLowerCase().includes(search.toLowerCase());
+
+    const matchesStatus = 
+      statusFilter === 'all' || 
+      o.status?.toLowerCase() === statusFilter.toLowerCase();
+
+    const methodLabel = o.paymentMethod || 'Manual Transfer';
+    const matchesMethod = 
+      methodFilter === 'all' || 
+      methodLabel === methodFilter;
+
+    return matchesSearch && matchesStatus && matchesMethod;
+  });
+
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+  const currentData = filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const uniqueMethods = Array.from(new Set(data.map(o => o.paymentMethod || 'Manual Transfer')));
+
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
       {toast && <Toast msg={toast} />}
-      <div style={{ display: "flex", gap: 10, marginBottom: 20, overflowX: "auto", paddingBottom: 10 }}>
-        {["all", "pending", "packed", "shipped", "completed"].map(f => (
-          <button key={f} onClick={() => { setFilter(f); setCurrentPage(1); }} style={{ padding: "8px 16px", borderRadius: 20, border: filter === f ? "none" : "1px solid #E2E8F0", background: filter === f ? "#0891B2" : "#fff", color: filter === f ? "#fff" : "#64748B", fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>
-            {f === "all" ? "Semua Pesanan" : f.charAt(0).toUpperCase() + f.slice(1)}
-          </button>
-        ))}
+
+      {/* Advanced Multi Filters */}
+      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ position: "relative", width: "100%", maxWidth: 300 }}>
+          <Search size={18} color="#94A3B8" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
+          <input 
+            type="text" 
+            placeholder="Cari pelanggan, ID Pesanan..." 
+            style={{...styles.searchInput, width: "100%"}} 
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+          />
+        </div>
+
+        <select 
+          value={statusFilter} 
+          onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }} 
+          style={{ ...styles.searchInput, width: "auto", minWidth: 140, padding: "8px 16px 8px 12px" }}
+        >
+          <option value="all">Semua Status</option>
+          <option value="pending">Pending</option>
+          <option value="packed">Packed</option>
+          <option value="shipped">Shipped</option>
+          <option value="completed">Completed</option>
+        </select>
+
+        <select 
+          value={methodFilter} 
+          onChange={(e) => { setMethodFilter(e.target.value); setCurrentPage(1); }} 
+          style={{ ...styles.searchInput, width: "auto", minWidth: 160, padding: "8px 16px 8px 12px" }}
+        >
+          <option value="all">Semua Metode</option>
+          {uniqueMethods.map(m => (
+            <option key={m} value={m}>{m}</option>
+          ))}
+        </select>
       </div>
 
       <div style={styles.card}>
@@ -225,9 +276,11 @@ export function OrderView({ initialData }: { initialData: any[] }) {
                 <th style={styles.th}>ID Pesanan</th>
                 <th style={styles.th}>Pelanggan</th>
                 <th style={styles.th}>Tanggal</th>
+                <th style={styles.th}>Metode Bayar</th>
                 <th style={styles.th}>Total Belanja</th>
                 <th style={styles.th}>Status Saat Ini</th>
                 <th style={styles.th}>Ubah Status</th>
+                <th style={{...styles.th, textAlign: "center"}}>Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -235,16 +288,20 @@ export function OrderView({ initialData }: { initialData: any[] }) {
                 <tr key={o.id} style={styles.tr}>
                   <td style={{...styles.td, textAlign: "center"}}><span style={{ fontSize: 13, color: "#64748B", fontWeight: 600 }}>{(currentPage - 1) * pageSize + idx + 1}</span></td>
                   <td style={styles.td}>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{o.id || o.order_code}</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{o.orderCode || o.order_code || o.id}</span>
                   </td>
                   <td style={styles.td}>
                     <p style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{o.customer || 'Customer'}</p>
                     <p style={{ fontSize: 12, color: "#64748B" }}>{o.items || 1} Item</p>
                   </td>
                   <td style={styles.td}><span style={{ fontSize: 13, color: "#64748B" }}>{formatDate(o.date || o.order_date)}</span></td>
+                  <td style={styles.td}>
+                    <span style={{ fontWeight: 600, color: "#475569", fontSize: 13 }}>
+                      {o.paymentMethod || 'Manual Transfer'}
+                    </span>
+                  </td>
                   <td style={styles.td}><span style={{ fontSize: 14, fontWeight: 600, color: "#0891B2" }}>{fmt(o.total)}</span></td>
                   <td style={styles.td}>
-                    {/* Badge uses getStatusStyle internally */}
                     <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, ...getBadgeColors(o.status), display: "inline-block" }}>
                         {getBadgeLabel(o.status)}
                     </span>
@@ -257,6 +314,22 @@ export function OrderView({ initialData }: { initialData: any[] }) {
                       <option value="completed">Completed</option>
                     </select>
                   </td>
+                  <td style={{...styles.td, textAlign: "center"}}>
+                    {o.paymentProof ? (
+                      <button 
+                        onClick={() => setActiveProofUrl(o.paymentProof)}
+                        style={{ 
+                          padding: "6px 12px", borderRadius: 8, border: "1px solid #0891B2", 
+                          background: "#ECFEFF", color: "#0891B2", fontSize: 12, 
+                          fontWeight: 700, cursor: "pointer"
+                        }}
+                      >
+                        Lihat Bukti
+                      </button>
+                    ) : (
+                      <span style={{ fontSize: 12, color: "#94A3B8" }}>-</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -264,6 +337,69 @@ export function OrderView({ initialData }: { initialData: any[] }) {
         </div>
         {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} setPage={setCurrentPage} />}
       </div>
+
+      {/* Modal Bukti Transfer */}
+      {activeProofUrl && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(15, 23, 42, 0.7)", display: "flex",
+          alignItems: "center", justifyContent: "center", zIndex: 1000,
+          backdropFilter: "blur(4px)"
+        }}>
+          <div style={{
+            background: "#fff", borderRadius: 24, padding: 24,
+            maxWidth: 500, width: "90%", maxHeight: "90vh",
+            display: "flex", flexDirection: "column", gap: 16,
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>Bukti Transfer</h3>
+              <button 
+                onClick={() => setActiveProofUrl(null)}
+                style={{
+                  background: "#F1F5F9", border: "none", borderRadius: "50%",
+                  width: 32, height: 32, display: "flex", alignItems: "center",
+                  justifyContent: "center", cursor: "pointer", fontSize: 14,
+                  fontWeight: 700, color: "#64748B"
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            <div style={{ flex: 1, overflowY: "auto", display: "flex", justifyContent: "center", background: "#F8FAFC", borderRadius: 16, padding: 12 }}>
+              <img 
+                src={activeProofUrl} 
+                alt="Bukti Transfer" 
+                style={{ maxWidth: "100%", maxHeight: 400, objectFit: "contain", borderRadius: 12 }} 
+              />
+            </div>
+            <div style={{ display: "flex", gap: 12 }}>
+              <a 
+                href={activeProofUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{
+                  flex: 1, padding: "12px 0", borderRadius: 12, background: "#F1F5F9",
+                  color: "#475569", fontSize: 14, fontWeight: 700, textAlign: "center",
+                  textDecoration: "none"
+                }}
+              >
+                Buka Tab Baru ↗
+              </a>
+              <button 
+                onClick={() => setActiveProofUrl(null)}
+                style={{
+                  flex: 1, padding: "12px 0", borderRadius: 12, background: "#0891B2",
+                  color: "#fff", border: "none", fontSize: 14, fontWeight: 700,
+                  cursor: "pointer"
+                }}
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

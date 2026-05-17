@@ -91,6 +91,8 @@ export const kajianRegistrations = pgTable('kajian_registrations', {
   isPaidSent: boolean('is_paid_sent').default(false),
   paidAmount: integer('paid_amount').default(0),
   isApproved: boolean('is_approved').default(false),
+  paymentProof: text('payment_proof'),
+  ticketCode: varchar('ticket_code', { length: 50 }).unique(),
   registeredAt: timestamp('registered_at').defaultNow()
 }, (table) => [
   index('idx_kajian_regs_user_id').on(table.userId),
@@ -121,6 +123,7 @@ export const orders = pgTable('orders', {
   shippingCost: integer('shipping_cost').default(0),
   totalWeight: integer('total_weight').default(1000),
   status: varchar('status', { length: 50 }).notNull(),
+  paymentProof: text('payment_proof'),
   createdAt: timestamp('created_at').defaultNow()
 }, (table) => [
   index('idx_orders_user_id').on(table.userId),

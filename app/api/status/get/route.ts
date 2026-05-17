@@ -21,7 +21,7 @@ export async function GET(req: Request) {
 
     if (code.startsWith('ORD-')) {
       const rows = await sql(`
-        SELECT o.order_code as code, o.total as amount, o.status, o.payment_method_id, o.payment_url, o.vendor_payment_id,
+        SELECT o.order_code as code, o.total as amount, o.status, o.payment_method_id, o.payment_url, o.vendor_payment_id, o.payment_proof,
                pm.name as method_name, pm.logo_url, pm.code as method_code, pm.provider as method_provider,
                CASE 
                  WHEN lower(pm.type) IN ('va', 'virtual_account', 'virtual account') THEN 'VIRTUAL_ACCOUNT'
@@ -43,7 +43,7 @@ export async function GET(req: Request) {
       }
       const rows = await sql(`
         SELECT kr.id, kr.paid_amount as amount, kr.payment_method_id, kr.payment_url, kr.vendor_payment_id,
-               kr.status,
+               kr.status, kr.payment_proof,
                pm.name as method_name, pm.logo_url, pm.code as method_code, pm.provider as method_provider,
                CASE 
                  WHEN lower(pm.type) IN ('va', 'virtual_account', 'virtual account') THEN 'VIRTUAL_ACCOUNT'
@@ -70,6 +70,7 @@ export async function GET(req: Request) {
           logo_url: rows[0].logo_url,
           method_code: rows[0].method_code,
           method_provider: rows[0].method_provider,
+          payment_proof: rows[0].payment_proof,
         };
       }
     }

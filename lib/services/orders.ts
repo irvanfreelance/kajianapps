@@ -16,13 +16,15 @@ export async function getOrdersList() {
   const rows = await sql(`
     SELECT 
       o.id, o.order_code as "orderCode", u.name as "customer", o.order_date as "date", 
-      o.total, o.status,
+      o.total, o.status, o.payment_proof as "paymentProof",
       o.shipping_address as "shippingAddress", o.province_name as "provinceName",
       o.city_name as "cityName", o.courier, o.courier_service as "courierService",
       o.shipping_cost as "shippingCost",
+      pm.name as "paymentMethod",
       (SELECT COALESCE(SUM(qty), 0) FROM order_items WHERE order_id = o.id) as items
     FROM orders o
     JOIN users u ON o.user_id = u.id
+    LEFT JOIN payment_methods pm ON o.payment_method_id = pm.id
     ORDER BY o.id DESC
   `);
 
