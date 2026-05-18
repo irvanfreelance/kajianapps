@@ -141,6 +141,16 @@ export const orderItems = pgTable('order_items', {
   index('idx_order_items_order_id').on(table.orderId)
 ]);
 
+export const orderStatusHistory = pgTable('order_status_history', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  orderId: bigint('order_id', { mode: 'number' }).notNull().references(() => orders.id, { onDelete: 'cascade' }),
+  status: varchar('status', { length: 50 }).notNull(),
+  description: text('description'),
+  createdAt: timestamp('created_at').defaultNow()
+}, (table) => [
+  index('idx_order_status_history_order_id').on(table.orderId)
+]);
+
 export const paymentMethods = pgTable('payment_methods', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
   code: varchar('code', { length: 50 }).notNull(),

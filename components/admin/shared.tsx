@@ -20,6 +20,7 @@ export const formatDate = (dateStr: string) => {
 export const getStatusStyle = (status: string) => {
   switch(status) {
     case "pending": return { bg: "#FFFBEB", color: "#B45309", label: "Menunggu Pembayaran" };
+    case "paid": return { bg: "#ECFDF5", color: "#047857", label: "Pembayaran Lunas" };
     case "packed": return { bg: "#F0FDF4", color: "#15803D", label: "Sedang Dikemas" };
     case "shipped": return { bg: "#ECFEFF", color: "#0891B2", label: "Dalam Pengiriman" };
     case "completed": return { bg: "#F8FAFC", color: "#475569", label: "Pesanan Selesai" };

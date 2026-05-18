@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { 
   ShoppingBag, ChevronRight, User, Package, 
   LogOut, Ticket, LucideIcon, Calendar, 
-  MapPin, Clock, CheckCircle, AlertCircle, Clock3, Video, Play, Download
+  MapPin, Clock, CheckCircle, AlertCircle, Clock3, Video, Play, Download, Truck
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -61,8 +61,11 @@ export function TokoView({ initialProducts }: { initialProducts: any[] }) {
 function StatusBadge({ status }: { status: string }) {
   const s = (status || '').toUpperCase();
   const map: Record<string, { bg: string, color: string, label: string, Icon: any }> = {
-    PAID: { bg: "#DCFCE7", color: "#166534", label: "Lunas", Icon: CheckCircle },
     PENDING: { bg: "#FEF3C7", color: "#92400E", label: "Menunggu", Icon: Clock3 },
+    PAID: { bg: "#DCFCE7", color: "#166534", label: "Lunas", Icon: CheckCircle },
+    PACKED: { bg: "#E0F2FE", color: "#0369A1", label: "Dikemas", Icon: Package },
+    SHIPPED: { bg: "#E0F7FA", color: "#006064", label: "Dikirim", Icon: Truck },
+    COMPLETED: { bg: "#F1F5F9", color: "#475569", label: "Selesai", Icon: CheckCircle },
     FAILED: { bg: "#FEE2E2", color: "#991B1B", label: "Gagal", Icon: AlertCircle },
   };
   const cfg = map[s] || map.PENDING;
@@ -516,6 +519,42 @@ export function ProfilView() {
                         <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>Total</span>
                         <span style={{ fontSize: 14, fontWeight: 800, color: "#0891B2" }}>{fmt(order.total)}</span>
                      </div>
+                     
+                     {/* Visual Vertical Timeline Status Tracking */}
+                     {order.history && order.history.length > 0 && (
+                       <div style={{ marginTop: 16, background: "#fff", borderRadius: 16, padding: 14, border: "1px solid #F1F5F9", boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
+                         <p style={{ fontSize: 10, fontWeight: 800, color: "#94A3B8", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 12 }}>Status Pengiriman</p>
+                         <div style={{ display: "flex", flexDirection: "column", gap: 16, position: "relative", paddingLeft: 18 }}>
+                           {/* Vertical Line */}
+                           <div style={{ position: "absolute", left: 5, top: 6, bottom: 6, width: 2, background: "#F1F5F9" }}></div>
+                           
+                           {order.history.map((h: any, i: number) => {
+                             const sUpper = (h.status || '').toUpperCase();
+                             const sColors = sUpper === 'COMPLETED' ? { dot: "#64748B" } : 
+                                             sUpper === 'SHIPPED' ? { dot: "#0891B2" } : 
+                                             sUpper === 'PACKED' ? { dot: "#0284C7" } : 
+                                             sUpper === 'PAID' ? { dot: "#10B981" } : { dot: "#F59E0B" };
+                             return (
+                               <div key={i} style={{ position: "relative", display: "flex", flexDirection: "column", gap: 1 }}>
+                                 {/* Colored Dot Indicator */}
+                                 <div style={{ position: "absolute", left: -17, top: 4, width: 6, height: 6, borderRadius: "50%", background: sColors.dot, boxShadow: `0 0 0 3px ${sColors.dot}20` }}></div>
+                                 
+                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                                   <span style={{ fontSize: 11, fontWeight: 700, color: "#0F172A" }}>{h.description}</span>
+                                   <span style={{ fontSize: 9, color: "#94A3B8", fontWeight: 500 }}>
+                                     {h.createdAt ? new Date(h.createdAt).toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' }) : ''}
+                                   </span>
+                                 </div>
+                                 <span style={{ fontSize: 9, color: "#94A3B8", fontWeight: 500 }}>
+                                   {h.createdAt ? new Date(h.createdAt).toLocaleDateString("id-ID", { weekday: 'long', day: 'numeric', month: 'short' }) : ''}
+                                 </span>
+                               </div>
+                             );
+                           })}
+                         </div>
+                       </div>
+                     )}
+
                      {order.status?.toUpperCase() === 'PENDING' && (
                        <Link 
                          href={`/status/${order.orderCode}`}

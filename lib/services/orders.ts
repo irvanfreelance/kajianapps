@@ -76,6 +76,12 @@ export async function createOrder(
     `, [orderId, item.productId, item.qty, item.price]);
   }
 
+  // Insert initial order status history
+  await sql(`
+    INSERT INTO order_status_history (order_id, status, description)
+    VALUES ($1, 'pending', 'Pesanan berhasil dibuat (Checkout)')
+  `, [orderId]);
+
   // Invalidate cache
   try {
     await redis.del('api:orders:list');
@@ -88,14 +94,18 @@ export async function getUserOrders(userId: number) {
   const rows = await sql(`
     SELECT 
       o.id, o.order_code as "orderCode", o.order_date as "date", 
-      o.total, o.status,
+      o.total, o.status, o.shipping_cost as "shippingCost", o.courier, o.courier_service as "courierService",
       (SELECT json_agg(json_build_object('name', p.name, 'qty', oi.qty, 'price', oi.price))
        FROM order_items oi
        JOIN products p ON oi.product_id = p.id
-       WHERE oi.order_id = o.id) as items
+       WHERE oi.order_id = o.id) as items,
+      (SELECT json_agg(json_build_object('status', osh.status, 'description', osh.description, 'createdAt', osh.created_at) ORDER BY osh.id ASC)
+       FROM order_status_history osh
+       WHERE osh.order_id = o.id) as history
     FROM orders o
     WHERE o.user_id = $1
     ORDER BY o.id DESC
   `, [userId]);
   return rows;
 }
+

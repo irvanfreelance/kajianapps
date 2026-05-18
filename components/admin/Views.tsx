@@ -178,7 +178,7 @@ export function OrderView({ initialData }: { initialData: any[] }) {
   const [statusFilter, setStatusFilter] = useState("all");
   const [methodFilter, setMethodFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [activeProofUrl, setActiveProofUrl] = useState<string | null>(null);
+  const [selectedOrderForProof, setSelectedOrderForProof] = useState<any | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const pageSize = 10;
 
@@ -194,7 +194,7 @@ export function OrderView({ initialData }: { initialData: any[] }) {
         body: JSON.stringify({ id, status: newStatus })
       });
       if (res.ok) {
-        setData(data.map(o => (o.id === id || o.order_code === id) ? { ...o, status: newStatus } : o));
+        setData(data.map(o => (o.id === id || o.order_code === id || o.orderCode === id) ? { ...o, status: newStatus } : o));
         showToast(`Status pesanan diperbarui`);
       } else {
         alert("Gagal memperbarui status pesanan");
@@ -250,6 +250,7 @@ export function OrderView({ initialData }: { initialData: any[] }) {
         >
           <option value="all">Semua Status</option>
           <option value="pending">Pending</option>
+          <option value="paid">Paid</option>
           <option value="packed">Packed</option>
           <option value="shipped">Shipped</option>
           <option value="completed">Completed</option>
@@ -277,6 +278,7 @@ export function OrderView({ initialData }: { initialData: any[] }) {
                 <th style={styles.th}>Pelanggan</th>
                 <th style={styles.th}>Tanggal</th>
                 <th style={styles.th}>Metode Bayar</th>
+                <th style={styles.th}>Ongkir</th>
                 <th style={styles.th}>Total Belanja</th>
                 <th style={styles.th}>Status Saat Ini</th>
                 <th style={styles.th}>Ubah Status</th>
@@ -300,6 +302,7 @@ export function OrderView({ initialData }: { initialData: any[] }) {
                       {o.paymentMethod || 'Manual Transfer'}
                     </span>
                   </td>
+                  <td style={styles.td}><span style={{ fontSize: 14, color: "#64748B", fontWeight: 500 }}>{fmt(o.shippingCost || 0)}</span></td>
                   <td style={styles.td}><span style={{ fontSize: 14, fontWeight: 600, color: "#0891B2" }}>{fmt(o.total)}</span></td>
                   <td style={styles.td}>
                     <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, ...getBadgeColors(o.status), display: "inline-block" }}>
@@ -307,8 +310,9 @@ export function OrderView({ initialData }: { initialData: any[] }) {
                     </span>
                   </td>
                   <td style={styles.td}>
-                    <select value={o.status} onChange={(e) => handleStatusChange(o.order_code || o.id, e.target.value)} style={{ ...styles.inputForm, padding: "6px 10px", fontSize: 12, width: "auto" }}>
+                    <select value={o.status} onChange={(e) => handleStatusChange(o.orderCode || o.order_code || o.id, e.target.value)} style={{ ...styles.inputForm, padding: "6px 10px", fontSize: 12, width: "auto" }}>
                       <option value="pending">Pending</option>
+                      <option value="paid">Paid</option>
                       <option value="packed">Packed</option>
                       <option value="shipped">Shipped</option>
                       <option value="completed">Completed</option>
@@ -317,7 +321,7 @@ export function OrderView({ initialData }: { initialData: any[] }) {
                   <td style={{...styles.td, textAlign: "center"}}>
                     {o.paymentProof ? (
                       <button 
-                        onClick={() => setActiveProofUrl(o.paymentProof)}
+                        onClick={() => setSelectedOrderForProof(o)}
                         style={{ 
                           padding: "6px 12px", borderRadius: 8, border: "1px solid #0891B2", 
                           background: "#ECFEFF", color: "#0891B2", fontSize: 12, 
@@ -339,7 +343,7 @@ export function OrderView({ initialData }: { initialData: any[] }) {
       </div>
 
       {/* Modal Bukti Transfer */}
-      {activeProofUrl && (
+      {selectedOrderForProof && (
         <div style={{
           position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
           background: "rgba(15, 23, 42, 0.7)", display: "flex",
@@ -348,14 +352,14 @@ export function OrderView({ initialData }: { initialData: any[] }) {
         }}>
           <div style={{
             background: "#fff", borderRadius: 24, padding: 24,
-            maxWidth: 500, width: "90%", maxHeight: "90vh",
+            maxWidth: 550, width: "90%", maxHeight: "90vh",
             display: "flex", flexDirection: "column", gap: 16,
             boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>Bukti Transfer</h3>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>Verifikasi Bukti Transfer</h3>
               <button 
-                onClick={() => setActiveProofUrl(null)}
+                onClick={() => setSelectedOrderForProof(null)}
                 style={{
                   background: "#F1F5F9", border: "none", borderRadius: "50%",
                   width: 32, height: 32, display: "flex", alignItems: "center",
@@ -366,30 +370,82 @@ export function OrderView({ initialData }: { initialData: any[] }) {
                 ✕
               </button>
             </div>
-            <div style={{ flex: 1, overflowY: "auto", display: "flex", justifyContent: "center", background: "#F8FAFC", borderRadius: 16, padding: 12 }}>
+
+            {/* Order Details Metadata */}
+            <div style={{
+              background: "#F8FAFC", borderRadius: 16, padding: "14px 18px",
+              border: "1px solid #E2E8F0", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10
+            }}>
+              <div>
+                <p style={{ fontSize: 11, color: "#64748B", textTransform: "uppercase", fontWeight: 600, letterSpacing: 0.5 }}>Kode Pesanan</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>{selectedOrderForProof.orderCode || selectedOrderForProof.order_code}</p>
+              </div>
+              <div>
+                <p style={{ fontSize: 11, color: "#64748B", textTransform: "uppercase", fontWeight: 600, letterSpacing: 0.5 }}>Pelanggan</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>{selectedOrderForProof.customer || 'Customer'}</p>
+              </div>
+              <div>
+                <p style={{ fontSize: 11, color: "#64748B", textTransform: "uppercase", fontWeight: 600, letterSpacing: 0.5 }}>Metode</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>{selectedOrderForProof.paymentMethod || 'Manual Transfer'}</p>
+              </div>
+              <div>
+                <p style={{ fontSize: 11, color: "#64748B", textTransform: "uppercase", fontWeight: 600, letterSpacing: 0.5 }}>Ongkir</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "#64748B" }}>{fmt(selectedOrderForProof.shippingCost || 0)}</p>
+              </div>
+              <div style={{ gridColumn: "span 2", borderTop: "1px solid #E2E8F0", paddingTop: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <p style={{ fontSize: 11, color: "#64748B", textTransform: "uppercase", fontWeight: 600, letterSpacing: 0.5 }}>Total Transfer</p>
+                  <p style={{ fontSize: 16, fontWeight: 800, color: "#0891B2" }}>{fmt(selectedOrderForProof.total)}</p>
+                </div>
+                <div>
+                  <span style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 20, ...getBadgeColors(selectedOrderForProof.status) }}>
+                    {getBadgeLabel(selectedOrderForProof.status)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ flex: 1, overflowY: "auto", display: "flex", justifyContent: "center", background: "#F8FAFC", borderRadius: 16, padding: 12, border: "1px dashed #E2E8F0" }}>
               <img 
-                src={activeProofUrl} 
+                src={selectedOrderForProof.paymentProof} 
                 alt="Bukti Transfer" 
-                style={{ maxWidth: "100%", maxHeight: 400, objectFit: "contain", borderRadius: 12 }} 
+                style={{ maxWidth: "100%", maxHeight: 280, objectFit: "contain", borderRadius: 12 }} 
               />
             </div>
+
             <div style={{ display: "flex", gap: 12 }}>
               <a 
-                href={activeProofUrl} 
+                href={selectedOrderForProof.paymentProof} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 style={{
-                  flex: 1, padding: "12px 0", borderRadius: 12, background: "#F1F5F9",
+                  padding: "12px 18px", borderRadius: 12, background: "#F1F5F9",
                   color: "#475569", fontSize: 14, fontWeight: 700, textAlign: "center",
-                  textDecoration: "none"
+                  textDecoration: "none", display: "flex", alignItems: "center"
                 }}
               >
-                Buka Tab Baru ↗
+                ↗
               </a>
+              {selectedOrderForProof.status === 'pending' ? (
+                <button 
+                  onClick={async () => {
+                    const code = selectedOrderForProof.orderCode || selectedOrderForProof.order_code || selectedOrderForProof.id;
+                    await handleStatusChange(code, 'paid');
+                    setSelectedOrderForProof(null);
+                  }}
+                  style={{
+                    flex: 1, padding: "12px 0", borderRadius: 12, background: "#10B981",
+                    color: "#fff", border: "none", fontSize: 14, fontWeight: 700,
+                    cursor: "pointer", boxShadow: "0 4px 12px rgba(16, 185, 129, 0.2)"
+                  }}
+                >
+                  Konfirmasi Lunas & Kirim WA
+                </button>
+              ) : null}
               <button 
-                onClick={() => setActiveProofUrl(null)}
+                onClick={() => setSelectedOrderForProof(null)}
                 style={{
-                  flex: 1, padding: "12px 0", borderRadius: 12, background: "#0891B2",
+                  padding: "12px 24px", borderRadius: 12, background: "#64748B",
                   color: "#fff", border: "none", fontSize: 14, fontWeight: 700,
                   cursor: "pointer"
                 }}

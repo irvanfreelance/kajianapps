@@ -40,6 +40,13 @@ async function main() {
       channel: 'WHATSAPP',
       message_content: 'Halo {nama}, pendaftaran kajian Anda berhasil (Gratis). ID Registrasi: *{kode_pesanan}*. Sampai jumpa di kajian! Terima kasih.',
       is_active: true
+    },
+    {
+      id: 6,
+      event_trigger: 'PRODUCT_PAID',
+      channel: 'WHATSAPP',
+      message_content: 'Halo {nama}, pembayaran untuk pesanan Anda (*{kode_pesanan}*) sebesar *Rp {nominal}* telah berhasil kami verifikasi dan diterima. Kami akan segera memproses dan mengemas pesanan Anda. Terima kasih!',
+      is_active: true
     }
   ];
 
