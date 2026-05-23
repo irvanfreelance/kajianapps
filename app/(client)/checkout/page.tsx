@@ -384,12 +384,34 @@ function CheckoutView() {
 
         {/* ─── STEP: Pilih Metode Pembayaran (Step 3 if product, Step 2 if kajian) ─── */}
         {((type === "product" && step === 3) || (type === "kajian" && step === 2 && !isFreeKajian)) && (
-          <PaymentMethodPicker
-            groupedMethods={groupedMethods}
-            selectedMethod={selectedMethod}
-            onSelect={setSelectedMethod}
-            fmt={fmt}
-          />
+          <div style={{ animation: "fadeUp 0.25s ease", display: "flex", flexDirection: "column", gap: 16 }}>
+            {type === "product" && shippingData && (
+              <div style={{ background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 16, padding: 16 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: "#94A3B8", letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Konfirmasi Pengiriman & Kurir</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13 }}>
+                  <p style={{ margin: 0, color: "#334155" }}>
+                    <strong>Penerima:</strong> {session?.user?.name}
+                  </p>
+                  <p style={{ margin: 0, color: "#334155" }}>
+                    <strong>Alamat:</strong> {shippingData.address}, {shippingData.subdistrictName}, {shippingData.cityName}, {shippingData.provinceName} ({shippingData.postalCode})
+                  </p>
+                  <p style={{ margin: 0, color: "#334155" }}>
+                    <strong>Kurir:</strong> <span style={{ textTransform: "uppercase" }}>{shippingData.courier}</span> ({shippingData.courierService})
+                  </p>
+                  <p style={{ margin: 0, color: "#334155" }}>
+                    <strong>Ongkir:</strong> {fmt(shippingData.shippingCost)}
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            <PaymentMethodPicker
+              groupedMethods={groupedMethods}
+              selectedMethod={selectedMethod}
+              onSelect={setSelectedMethod}
+              fmt={fmt}
+            />
+          </div>
         )}
 
       </div>

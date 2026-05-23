@@ -15,10 +15,16 @@ export async function GET() {
     const rows = await sql(`
       SELECT 
         o.id, o.order_code as "orderCode", u.name as "customer", o.order_date as "date", 
-        o.total, o.status,
-        (SELECT COALESCE(SUM(qty), 0) FROM order_items WHERE order_id = o.id) as items
+        o.total, o.status, o.payment_proof as "paymentProof",
+        o.shipping_cost as "shippingCost", o.resi,
+        pm.name as "paymentMethod",
+        (SELECT json_agg(json_build_object('name', p.name, 'qty', oi.qty, 'price', oi.price))
+         FROM order_items oi
+         JOIN products p ON oi.product_id = p.id
+         WHERE oi.order_id = o.id) as items
       FROM orders o
       JOIN users u ON o.user_id = u.id
+      LEFT JOIN payment_methods pm ON o.payment_method_id = pm.id
       ORDER BY o.id DESC
     `);
 

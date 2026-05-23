@@ -3,7 +3,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { 
   ShoppingBag, ChevronRight, User, Package, 
   LogOut, Ticket, LucideIcon, Calendar, 
-  MapPin, Clock, CheckCircle, AlertCircle, Clock3, Video, Play, Download, Truck
+  MapPin, Clock, CheckCircle, AlertCircle, Clock3, Video, Play, Download, Truck,
+  Star, Upload, Image as ImageIcon, X
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -26,7 +27,7 @@ export function TokoView({ initialProducts }: { initialProducts: any[] }) {
   return (
     <div style={{ paddingBottom: 20 }}>
       <div style={{ padding: "24px 20px 0" }}>
-        <h1 style={{ fontSize: 26, color: "#0F172A", fontWeight: 700 }}>Toko Majelis</h1>
+        <h1 style={{ fontSize: 26, color: "#0F172A", fontWeight: 700 }}>Toko BADAR</h1>
         <p style={{ fontSize: 14, color: "#64748B", marginTop: 4 }}>Produk eksklusif penunjang dakwah</p>
       </div>
       <div style={{ display: "flex", gap: 10, padding: "20px", overflowX: "auto" }}>
@@ -440,6 +441,17 @@ export function ProfilView() {
   const [showOrders, setShowOrders] = useState(false);
   const [loadingOrders, setLoadingOrders] = useState(false);
 
+  const formatOrderDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).replace("Minggu", "Ahad");
+    } catch {
+      return dateStr;
+    }
+  };
+
   useEffect(() => {
     Promise.all([
       fetch("/api/user/registrations").then(res => res.json()),
@@ -457,9 +469,101 @@ export function ProfilView() {
     signOut({ callbackUrl: '/login' });
   };
 
-  const userName = session?.user?.name || 'Jamaah Majelis';
+  const userName = session?.user?.name || 'Jamaah BADAR';
   const userEmail = session?.user?.email || '';
   const userInitial = userName.charAt(0).toUpperCase();
+
+  // Testimonial States & Handlers
+  const [activeOrderForReview, setActiveOrderForReview] = useState<any>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewImages, setReviewImages] = useState<string[]>([]);
+  const [reviewVideo, setReviewVideo] = useState("");
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [submittingReview, setSubmittingReview] = useState(false);
+
+  const fetchOrders = async () => {
+    const res = await fetch("/api/user/orders");
+    const data = await res.json();
+    if (data.success) {
+      setOrders(data.data);
+      setStats(prev => ({ ...prev, orders: data.data.length }));
+    }
+  };
+
+  const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'video') => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    setUploadingMedia(true);
+    try {
+      if (type === 'image') {
+        const urls: string[] = [...reviewImages];
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const res = await fetch(`/api/user/upload?filename=${encodeURIComponent(file.name)}`, {
+            method: 'POST',
+            body: file,
+          });
+          if (res.ok) {
+            const blob = await res.json();
+            urls.push(blob.url);
+          }
+        }
+        setReviewImages(urls);
+      } else {
+        const file = files[0];
+        const res = await fetch(`/api/user/upload?filename=${encodeURIComponent(file.name)}`, {
+          method: 'POST',
+          body: file,
+        });
+        if (res.ok) {
+          const blob = await res.json();
+          setReviewVideo(blob.url);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Gagal mengunggah file");
+    } finally {
+      setUploadingMedia(false);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    if (!activeOrderForReview) return;
+    setSubmittingReview(true);
+    try {
+      const res = await fetch("/api/orders/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderCode: activeOrderForReview.orderCode || activeOrderForReview.id,
+          rating: reviewRating,
+          testimonial: reviewText,
+          images: reviewImages.join(","),
+          video: reviewVideo || undefined
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert("Terima kasih! Testimoni Anda berhasil dikirim.");
+        setActiveOrderForReview(null);
+        setReviewRating(5);
+        setReviewText("");
+        setReviewImages([]);
+        setReviewVideo("");
+        fetchOrders();
+      } else {
+        alert(data.error || "Gagal mengirim testimoni");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan sistem");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   return (
     <div style={{ paddingBottom: 20 }}>
@@ -502,7 +606,12 @@ export function ProfilView() {
                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                        <div>
                          <p style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>{order.orderCode}</p>
-                         <p style={{ fontSize: 11, color: "#64748B", marginTop: 2 }}>{order.date}</p>
+                         <p style={{ fontSize: 11, color: "#64748B", marginTop: 2 }}>{formatOrderDate(order.date)}</p>
+                         {order.resi && (
+                           <p style={{ fontSize: 11, fontWeight: 600, color: "#0891B2", marginTop: 4 }}>
+                             No. Resi: <span style={{ textTransform: "uppercase" }}>{order.resi}</span>
+                           </p>
+                         )}
                        </div>
                        <StatusBadge status={order.status} />
                      </div>
@@ -546,7 +655,7 @@ export function ProfilView() {
                                    </span>
                                  </div>
                                  <span style={{ fontSize: 9, color: "#94A3B8", fontWeight: 500 }}>
-                                   {h.createdAt ? new Date(h.createdAt).toLocaleDateString("id-ID", { weekday: 'long', day: 'numeric', month: 'short' }) : ''}
+                                   {h.createdAt ? new Date(h.createdAt).toLocaleDateString("id-ID", { weekday: 'long', day: 'numeric', month: 'short' }).replace("Minggu", "Ahad") : ''}
                                  </span>
                                </div>
                              );
@@ -563,6 +672,57 @@ export function ProfilView() {
                          Lihat Instruksi Bayar
                        </Link>
                      )}
+
+                      {order.status?.toUpperCase() !== 'PENDING' && order.status?.toUpperCase() !== 'FAILED' && (
+                        <div style={{ marginTop: 14, borderTop: "1px dashed #E2E8F0", paddingTop: 14 }}>
+                          {order.rating ? (
+                            <div style={{ background: "#F0FDFF", padding: 12, borderRadius: 14, border: "1px solid #CFFAFE" }}>
+                              <p style={{ fontSize: 11, fontWeight: 700, color: "#0891B2", display: "flex", alignItems: "center", gap: 4, marginBottom: 6 }}>
+                                <Star size={13} fill="#0891B2" color="#0891B2" /> Testimoni Anda ({order.rating}/5)
+                              </p>
+                              {order.testimonial && (
+                                <p style={{ fontSize: 12, color: "#334155", margin: "0 0 6px 0", fontStyle: "italic", lineHeight: 1.4 }}>
+                                  "{order.testimonial}"
+                                </p>
+                              )}
+                              {order.testimonialImages && (
+                                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
+                                  {order.testimonialImages.split(",").map((imgUrl: string, idx: number) => (
+                                    <a key={idx} href={imgUrl} target="_blank" rel="noreferrer">
+                                      <img src={imgUrl} alt="Review attachment" style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover", border: "1px solid #E2E8F0" }} />
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
+                              {order.testimonialVideo && (
+                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                  <Video size={12} color="#0891B2" />
+                                  <a href={order.testimonialVideo} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#0891B2", fontWeight: 600, textDecoration: "none" }}>
+                                    Lihat Video Unboxing ↗
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setActiveOrderForReview(order);
+                                setReviewRating(5);
+                                setReviewText("");
+                                setReviewImages([]);
+                                setReviewVideo("");
+                              }}
+                              style={{
+                                width: "100%", padding: "10px 0", borderRadius: 12, background: "linear-gradient(135deg, #0891B2, #06B6D4)",
+                                color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer",
+                                boxShadow: "0 4px 12px rgba(8, 145, 178, 0.15)"
+                              }}
+                            >
+                              Tulis Testimoni Produk
+                            </button>
+                          )}
+                        </div>
+                      )}
                    </div>
                  )) : (
                    <p style={{ textAlign: "center", padding: 20, color: "#94A3B8", fontSize: 13 }}>Belum ada riwayat pesanan.</p>
@@ -570,11 +730,149 @@ export function ProfilView() {
                </div>
              )}
 
-             <MenuButton icon={User} label="Edit Profil" onClick={() => router.push('/profil/edit')} />
-             <MenuButton icon={LogOut} label="Keluar" color="#EF4444" onClick={handleLogout} />
+                           <MenuButton icon={User} label="Edit Profil" onClick={() => router.push('/profil/edit')} />
+              <MenuButton icon={LogOut} label="Keluar" color="#EF4444" onClick={handleLogout} />
+           </div>
+        </div>
+
+        {/* Testimonial Review Modal */}
+        {activeOrderForReview && (
+          <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, backdropFilter: "blur(4px)" }}>
+            <div style={{ background: "#fff", borderRadius: 28, width: "100%", maxWidth: 460, padding: 24, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)", maxHeight: "90vh", overflowY: "auto", position: "relative" }}>
+              <button 
+                onClick={() => setActiveOrderForReview(null)}
+                style={{ position: "absolute", top: 20, right: 20, background: "#F1F5F9", border: "none", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+              >
+                <X size={16} color="#64748B" />
+              </button>
+
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: "#0F172A", marginBottom: 6 }}>Beri Testimoni Produk</h3>
+              <p style={{ fontSize: 12, color: "#64748B", marginBottom: 20 }}>Pesanan #${activeOrderForReview.orderCode}</p>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                {/* Star selector */}
+                <div style={{ textAlign: "center" }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "#475569", marginBottom: 8 }}>Bagaimana kualitas produk & pelayanan kami?</p>
+                  <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button 
+                        key={star} 
+                        onClick={() => setReviewRating(star)}
+                        style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}
+                      >
+                        <Star 
+                          size={28} 
+                          color="#EAB308" 
+                          fill={star <= reviewRating ? "#EAB308" : "none"} 
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Text review */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: "#475569" }}>Tulis Ulasan</label>
+                  <textarea
+                    placeholder="Ceritakan pengalaman Anda belanja di sini. Apakah produknya memuaskan?"
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                    rows={4}
+                    style={{ width: "100%", padding: "12px 14px", borderRadius: 16, border: "1px solid #E2E8F0", fontSize: 13, outline: "none", resize: "none", background: "#F8FAFC" }}
+                  />
+                </div>
+
+                {/* Multi-photo upload */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: "#475569" }}>Unggah Foto Produk (Bisa Pilih Banyak)</label>
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                    {reviewImages.map((img, idx) => (
+                      <div key={idx} style={{ position: "relative", width: 64, height: 64, borderRadius: 12, overflow: "hidden", border: "1px solid #E2E8F0" }}>
+                        <img src={img} alt="review" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        <button 
+                          onClick={() => setReviewImages(reviewImages.filter((_, i) => i !== idx))}
+                          style={{ position: "absolute", top: 2, right: 2, background: "rgba(15,23,42,0.7)", border: "none", borderRadius: "50%", width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                        >
+                          <X size={10} color="#fff" />
+                        </button>
+                      </div>
+                    ))}
+                    
+                    {reviewImages.length < 5 && (
+                      <label style={{ width: 64, height: 64, borderRadius: 12, border: "2px dashed #CBD5E1", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", background: "#F8FAFC" }}>
+                        <Upload size={18} color="#94A3B8" />
+                        <input 
+                          type="file" 
+                          multiple 
+                          accept="image/*" 
+                          onChange={(e) => handleMediaUpload(e, 'image')}
+                          style={{ display: "none" }} 
+                          disabled={uploadingMedia}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+
+                {/* Video upload */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: "#475569" }}>Video Unboxing (Opsional)</label>
+                  {reviewVideo ? (
+                    <div style={{ position: "relative", borderRadius: 16, overflow: "hidden", border: "1px solid #E2E8F0", width: "100%", maxHeight: 150, background: "#F8FAFC" }}>
+                      <video src={reviewVideo} controls style={{ width: "100%", maxHeight: 150, display: "block" }} />
+                      <button 
+                        onClick={() => setReviewVideo("")}
+                        style={{ position: "absolute", top: 8, right: 8, background: "rgba(15,23,42,0.7)", border: "none", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 10 }}
+                      >
+                        <X size={14} color="#fff" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label style={{ width: "100%", height: 50, borderRadius: 14, border: "2px dashed #CBD5E1", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, cursor: "pointer", background: "#F8FAFC" }}>
+                      <Video size={16} color="#94A3B8" />
+                      <span style={{ fontSize: 12, color: "#64748B", fontWeight: 600 }}>Pilih Video Unboxing...</span>
+                      <input 
+                        type="file" 
+                        accept="video/*" 
+                        onChange={(e) => handleMediaUpload(e, 'video')}
+                        style={{ display: "none" }} 
+                        disabled={uploadingMedia}
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {uploadingMedia && (
+                  <p style={{ fontSize: 11, color: "#0891B2", fontWeight: 600, margin: 0 }}>Sedang mengunggah media...</p>
+                )}
+
+                {/* Submit / Action buttons */}
+                <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
+                  <button
+                    onClick={() => setActiveOrderForReview(null)}
+                    style={{ flex: 1, padding: "12px 0", borderRadius: 16, border: "1px solid #E2E8F0", color: "#475569", background: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={handleSubmitReview}
+                    disabled={uploadingMedia || submittingReview || !reviewText.trim()}
+                    style={{ 
+                      flex: 2, padding: "12px 0", borderRadius: 16, border: "none", 
+                      background: "linear-gradient(135deg, #0891B2, #06B6D4)", color: "#fff", 
+                      fontSize: 14, fontWeight: 700, cursor: "pointer",
+                      boxShadow: "0 10px 15px -3px rgba(8, 145, 178, 0.2)",
+                      opacity: (uploadingMedia || submittingReview || !reviewText.trim()) ? 0.7 : 1
+                    }}
+                  >
+                    {submittingReview ? "Mengirim..." : "Kirim Ulasan"}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-       </div>
-    </div>
+        )}
+     </div>
   );
 }
 

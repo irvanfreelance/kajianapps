@@ -6,12 +6,13 @@ export const formatDate = (dateStr: string) => {
   if (!dateStr) return "-";
   try {
     const d = new Date(dateStr);
-    return d.toLocaleDateString("id-ID", {
+    const formatted = d.toLocaleDateString("id-ID", {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
     });
+    return formatted.replace("Minggu", "Ahad");
   } catch {
     return dateStr;
   }
@@ -80,9 +81,10 @@ export const styles = {
   card: { background: "#fff", borderRadius: 16, padding: 24, boxShadow: "0 2px 10px rgba(0,0,0,0.02)", border: "1px solid #E2E8F0" } as const,
   table: { width: "100%", borderCollapse: "collapse", textAlign: "left" } as const,
   th: { padding: "12px 16px", fontSize: 12, color: "#64748B", fontWeight: 600, borderBottom: "1px solid #E2E8F0", whiteSpace: "nowrap" } as const,
-  td: { padding: "16px", borderBottom: "1px solid #F1F5F9", verticalAlign: "middle" } as const,
+  td: { padding: "16px", borderBottom: "1px solid #F1F5F9", verticalAlign: "middle", whiteSpace: "nowrap" } as const,
   tr: { transition: "background 0.2s" } as const,
   primaryBtn: { padding: "10px 20px", borderRadius: 12, background: "#0891B2", color: "#fff", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 } as const,
+  excelBtn: { padding: "10px 20px", borderRadius: 12, background: "#16A34A", color: "#fff", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 } as const,
   secondaryBtn: { padding: "10px 20px", borderRadius: 12, background: "transparent", color: "#64748B", fontSize: 14, fontWeight: 600, border: "1px solid #E2E8F0", cursor: "pointer" } as const,
   actionBtnEdit: { width: 32, height: 32, borderRadius: 8, background: "#EFF6FF", border: "none", color: "#2563EB", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" } as const,
   actionBtnDel: { width: 32, height: 32, borderRadius: 8, background: "#FEF2F2", border: "none", color: "#EF4444", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" } as const,

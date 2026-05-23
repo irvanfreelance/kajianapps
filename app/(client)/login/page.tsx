@@ -67,12 +67,13 @@ function UserLoginForm() {
           <div style={{ 
             width: 80, height: 80, background: "rgba(255,255,255,0.1)", backdropFilter: "blur(12px)", 
             borderRadius: 24, margin: "0 auto 20px", display: "flex", alignItems: "center", justifyContent: "center",
-            border: "1px solid rgba(255,255,255,0.2)", boxShadow: "0 20px 40px rgba(0,0,0,0.1)"
+            border: "1px solid rgba(255,255,255,0.2)", boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+            overflow: "hidden"
           }}>
-            <Heart size={40} color="#fff" fill="#fff" />
+            <img src="/badar.png" alt="Logo" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 8 }} />
           </div>
-          <h1 style={{ fontSize: 32, fontWeight: 800, color: "#fff", letterSpacing: "-0.5px", margin: 0 }}>Majelis Ilmu</h1>
-          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.7)", marginTop: 8 }}>Pintu Gerbang Ilmu & Amal Sholeh</p>
+          <h1 style={{ fontSize: 32, fontWeight: 800, color: "#fff", letterSpacing: "-0.5px", margin: 0 }}>BADAR</h1>
+          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.7)", marginTop: 8 }}>Baik Dari Rumah</p>
         </div>
 
         <div style={{ 
@@ -85,7 +86,7 @@ function UserLoginForm() {
           animation: "slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)"
         }}>
           <h2 style={{ fontSize: 22, fontWeight: 700, color: "#0F172A", textAlign: "center", marginBottom: 8 }}>Selamat Datang</h2>
-          <p style={{ fontSize: 14, color: "#64748B", textAlign: "center", marginBottom: 32 }}>Silakan masuk untuk akses penuh pendaftaran kajian dan layanan majelis.</p>
+          <p style={{ fontSize: 14, color: "#64748B", textAlign: "center", marginBottom: 32 }}>Silakan masuk untuk akses penuh pendaftaran kajian dan layanan BADAR.</p>
 
           {errorMessage && (
             <div style={{ 

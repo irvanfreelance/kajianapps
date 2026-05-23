@@ -124,6 +124,11 @@ export const orders = pgTable('orders', {
   totalWeight: integer('total_weight').default(1000),
   status: varchar('status', { length: 50 }).notNull(),
   paymentProof: text('payment_proof'),
+  resi: varchar('resi', { length: 100 }),
+  rating: integer('rating'),
+  testimonial: text('testimonial'),
+  testimonialImages: text('testimonial_images'),
+  testimonialVideo: text('testimonial_video'),
   createdAt: timestamp('created_at').defaultNow()
 }, (table) => [
   index('idx_orders_user_id').on(table.userId),

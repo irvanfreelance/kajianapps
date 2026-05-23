@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, BookOpen, ShoppingBag, ShoppingCart, 
-  Users, Settings, LogOut, Ticket
+  Users, Settings, LogOut, Ticket, MessageSquare
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -13,6 +13,7 @@ const navItems = [
   { id: "kajian-regs", href: "/panel/kajian-registrations", label: "Pendaftaran Kajian", Icon: Ticket },
   { id: "products", href: "/panel/products", label: "Katalog Produk", Icon: ShoppingBag },
   { id: "orders", href: "/panel/orders", label: "Pesanan Masuk", Icon: ShoppingCart },
+  { id: "testimonials", href: "/panel/testimonials", label: "Rekap Testimoni", Icon: MessageSquare },
   { id: "users", href: "/panel/users", label: "Data Jamaah", Icon: Users },
   { id: "settings", href: "/panel/settings", label: "Pengaturan", Icon: Settings },
 ];
@@ -26,7 +27,9 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen, isTable
       transform: (isTablet && !isMobileMenuOpen) ? "translateX(-100%)" : "translateX(0)" 
     } as React.CSSProperties}>
       <div style={styles.sidebarHeader}>
-        <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #0E7490, #06B6D4)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 18 }}>MI</div>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: "#0891B2", padding: 6, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+          <img src="/badar.png" alt="Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+        </div>
         <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0F172A" }}>Admin Panel</h2>
       </div>
       

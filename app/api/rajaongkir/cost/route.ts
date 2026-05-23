@@ -67,7 +67,7 @@ export async function POST(req: Request) {
       }));
       
       try {
-        await redis.set(cacheKey, normalized, { ex: 30 * 24 * 60 * 60 }); // Cache for 1 month
+        await redis.set(cacheKey, normalized); // Cache forever without TTL
       } catch (err) {
         console.error('Redis set error:', err);
       }

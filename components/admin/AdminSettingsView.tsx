@@ -104,7 +104,7 @@ export default function AdminSettingsView({
           <div>
             <label style={styles.label}>NAMA PLATFORM / TITLE BROWSER</label>
             <input 
-              defaultValue={getSetting('site_title') || 'Majelis Ilmu'} 
+              defaultValue={getSetting('site_title') || 'BADAR - Baik Dari Rumah'} 
               onBlur={(e) => handleUpdateSetting('site_title', e.target.value)}
               style={styles.inputForm} 
               type="text" 

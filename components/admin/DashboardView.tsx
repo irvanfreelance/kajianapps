@@ -47,8 +47,10 @@ export default function DashboardView({ kajian, products, orders }: { kajian: an
             {orders.slice(0,4).map((o, i) => (
               <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: i !== 3 ? "1px solid #F1F5F9" : "none" }}>
                 <div>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{o.id}</p>
-                  <p style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>{o.customer || 'Customer'} • {o.items || 1} Item</p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{o.orderCode || o.order_code || o.id}</p>
+                  <p style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>
+                    {o.customer || 'Customer'} • {Array.isArray(o.items) ? o.items.reduce((sum: number, item: any) => sum + item.qty, 0) : (o.items || 1)} Item
+                  </p>
                 </div>
                 <div style={{ textAlign: "right" }}>
                   <p style={{ fontSize: 14, fontWeight: 600, color: "#0891B2" }}>{fmt(o.total || 0)}</p>

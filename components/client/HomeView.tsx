@@ -17,7 +17,7 @@ const formatDate = (dateStr: string) => {
       day: 'numeric',
       month: 'long',
       year: 'numeric'
-    }).format(d);
+    }).format(d).replace("Minggu", "Ahad");
   } catch {
     return dateStr;
   }
@@ -36,14 +36,19 @@ export default function HomeView({ kajian, products }: { kajian: any[], products
         <div style={{ position: "absolute", top: -30, right: -30, width: 150, height: 150, borderRadius: "50%", background: "rgba(255,255,255,0.1)" }} />
         <div style={{ position: "absolute", bottom: -20, left: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative", zIndex: 1 }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <SunMedium size={16} color="rgba(255,255,255,0.8)" />
-              <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 13, fontWeight: 500 }}>Assalamu'alaikum</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <img src="/badar.png" alt="Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
             </div>
-            <h1 style={{ color: "#fff", fontSize: 24, marginTop: 4, fontWeight: 700 }}>
-              {isLoggedIn ? (session?.user?.name?.split(' ')[0] || 'Jamaah') : 'Jamaah'}
-            </h1>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <SunMedium size={14} color="rgba(255,255,255,0.8)" />
+                <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 500, margin: 0 }}>Assalamu'alaikum</p>
+              </div>
+              <h1 style={{ color: "#fff", fontSize: 18, marginTop: 2, fontWeight: 700, margin: 0 }}>
+                {isLoggedIn ? (session?.user?.name?.split(' ')[0] || 'Jamaah') : 'Jamaah'}
+              </h1>
+            </div>
           </div>
           <div style={{ display: "flex", gap: 12 }}>
             <button style={styles.iconBtn}><Search size={20} color="#fff"/></button>

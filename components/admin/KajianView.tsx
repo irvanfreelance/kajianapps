@@ -1,21 +1,45 @@
 "use client";
 import { useState } from "react";
-import { Search, Plus, Edit, Trash2, Users } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Users, FileDown } from "lucide-react";
 import { styles, fmt, Pagination, Toast, formatDate } from "./shared";
+import { exportToExcel } from "@/lib/excel";
 import Link from "next/link";
 
 export default function KajianView({ initialData }: { initialData: any[] }) {
   const [data, setData] = useState(initialData);
   const [currentPage, setCurrentPage] = useState(1);
+  const [search, setSearch] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const pageSize = 10;
   
-  const totalPages = Math.ceil(data.length / pageSize);
-  const currentData = data.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const filtered = data.filter(k => 
+    k.title?.toLowerCase().includes(search.toLowerCase()) ||
+    k.ustadz?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const currentData = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleExport = () => {
+    const exportData = filtered.map((k, i) => ({
+      'No': i + 1,
+      'Judul Kajian': k.title,
+      'Pemateri/Ustadz': k.ustadz,
+      'Tanggal': formatDate(k.date),
+      'Waktu': k.time_display || k.time,
+      'Tipe': k.type === 'free' ? 'Infaq' : 'Berbayar',
+      'Harga': k.price,
+      'Kuota': k.spot,
+      'Pendaftar': k.filled || 0,
+      'Lokasi': k.location,
+      'Deskripsi': k.desc
+    }));
+    exportToExcel(exportData, 'Data_Kajian');
   };
 
   const handleDelete = async (id: number | string) => {
@@ -41,11 +65,22 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 16 }}>
         <div style={{ position: "relative", width: "100%", maxWidth: 300 }}>
           <Search size={18} color="#94A3B8" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
-          <input type="text" placeholder="Cari judul kajian..." style={{...styles.searchInput, width: "100%"}} />
+          <input 
+            type="text" 
+            placeholder="Cari judul kajian..." 
+            style={{...styles.searchInput, width: "100%"}} 
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+          />
         </div>
-        <Link href="/panel/kajian/create" style={{...styles.primaryBtn, textDecoration: 'none'}}>
-          <Plus size={18} /> Tambah Kajian
-        </Link>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button onClick={handleExport} style={styles.excelBtn}>
+            <FileDown size={18} /> Export Excel
+          </button>
+          <Link href="/panel/kajian/create" style={{...styles.primaryBtn, textDecoration: 'none'}}>
+            <Plus size={18} /> Tambah Kajian
+          </Link>
+        </div>
       </div>
 
       <div style={styles.card}>

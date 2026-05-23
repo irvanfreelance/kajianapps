@@ -156,6 +156,12 @@ export async function POST(req: Request) {
       `, [orderId, item.productId, item.qty, item.price]);
     }
 
+    // Insert initial order status history
+    await sql(`
+      INSERT INTO order_status_history (order_id, status, description)
+      VALUES ($1, $2, $3)
+    `, [orderId, 'pending', 'Pesanan berhasil dibuat, menunggu pembayaran.']);
+
     // Invalidate orders list cache
     try { await redis.del('api:orders:list'); } catch {}
 

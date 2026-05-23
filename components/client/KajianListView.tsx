@@ -14,7 +14,7 @@ const formatDate = (dateStr: string) => {
       day: 'numeric',
       month: 'long',
       year: 'numeric'
-    }).format(d);
+    }).format(d).replace("Minggu", "Ahad");
   } catch {
     return dateStr;
   }

@@ -82,7 +82,7 @@ export default function RegisterPage() {
           Lengkapi Profil Anda
         </h2>
         <p className="mt-2 text-center text-sm text-slate-500">
-          Tinggal selangkah lagi untuk menikmati layanan Majelis App
+          Tinggal selangkah lagi untuk menikmati layanan BADAR - Baik Dari Rumah
         </p>
       </div>
 

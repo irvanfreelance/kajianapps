@@ -1,22 +1,44 @@
 "use client";
-import { useState } from "react";
-import { Search, Plus, Edit, Trash2, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Plus, Edit, Trash2, X, FileDown, Camera, CheckCircle } from "lucide-react";
 import { styles, fmt, formatDate, Pagination, Toast, getStatusStyle } from "./shared";
+import { exportToExcel } from "@/lib/excel";
+import { useRouter } from "next/navigation";
 
 export function ProductView({ initialData }: { initialData: any[] }) {
   const [data, setData] = useState(initialData);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<any>({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [search, setSearch] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const pageSize = 10;
   
-  const totalPages = Math.ceil(data.length / pageSize);
-  const currentData = data.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const filtered = data.filter(p => 
+    p.name?.toLowerCase().includes(search.toLowerCase()) ||
+    p.category?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const currentData = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleExport = () => {
+    const exportData = filtered.map((p, i) => ({
+      'No': i + 1,
+      'ID Produk': p.id,
+      'Nama Produk': p.name,
+      'Kategori': p.category,
+      'Harga': p.price,
+      'Harga Coret': p.old_price || p.oldPrice || "-",
+      'Stok': p.stock || 0,
+      'Deskripsi': p.description || p.desc || ""
+    }));
+    exportToExcel(exportData, 'Data_Produk');
   };
 
   const handleDelete = async (id: number | string) => {
@@ -70,11 +92,22 @@ export function ProductView({ initialData }: { initialData: any[] }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 16 }}>
         <div style={{ position: "relative", width: "100%", maxWidth: 300 }}>
           <Search size={18} color="#94A3B8" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
-          <input type="text" placeholder="Cari nama produk..." style={{...styles.searchInput, width: "100%"}} />
+          <input 
+            type="text" 
+            placeholder="Cari nama produk..." 
+            style={{...styles.searchInput, width: "100%"}} 
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+          />
         </div>
-        <button onClick={() => { setFormData({ stock: 0, price: 0 }); setIsModalOpen(true); }} style={styles.primaryBtn}>
-          <Plus size={18} /> Tambah Produk
-        </button>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button onClick={handleExport} style={styles.excelBtn}>
+            <FileDown size={18} /> Export Excel
+          </button>
+          <button onClick={() => { setFormData({ stock: 0, price: 0 }); setIsModalOpen(true); }} style={styles.primaryBtn}>
+            <Plus size={18} /> Tambah Produk
+          </button>
+        </div>
       </div>
 
       <div style={styles.card}>
@@ -173,6 +206,7 @@ export function ProductView({ initialData }: { initialData: any[] }) {
 }
 
 export function OrderView({ initialData }: { initialData: any[] }) {
+  const router = useRouter();
   const [data, setData] = useState(initialData);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -185,6 +219,30 @@ export function OrderView({ initialData }: { initialData: any[] }) {
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleExport = () => {
+    const exportData = filteredData.map((o, i) => {
+      const subtotal = Array.isArray(o.items)
+        ? o.items.reduce((sum: number, item: any) => sum + (item.price * item.qty), 0)
+        : (Number(o.total || 0) - Number(o.shippingCost || 0));
+      const shippingCost = Number(o.shippingCost || 0);
+      return {
+        'No': i + 1,
+        'ID Pesanan': o.orderCode || o.order_code || o.id,
+        'Tanggal': formatDate(o.date || o.order_date),
+        'Pelanggan': o.customer || 'Customer',
+        'WhatsApp/Phone': o.phone || "-",
+        'Kurir': o.courier || "-",
+        'Nomor Resi': o.resi || "-",
+        'Metode Bayar': o.paymentMethod || 'Manual Transfer',
+        'Harga Produk': subtotal,
+        'Ongkir': shippingCost,
+        'Grand Total': o.total,
+        'Status': o.status
+      };
+    });
+    exportToExcel(exportData, 'Data_Pesanan');
   };
 
   const handleStatusChange = async (id: number | string, newStatus: string) => {
@@ -225,47 +283,95 @@ export function OrderView({ initialData }: { initialData: any[] }) {
   const currentData = filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const uniqueMethods = Array.from(new Set(data.map(o => o.paymentMethod || 'Manual Transfer')));
+  
+  const checkoutOrders = data.filter(o => (o.status || '').toLowerCase() === 'pending');
+  const checkoutCount = checkoutOrders.length;
+  const checkoutNominal = checkoutOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+
+  const paidOrders = data.filter(o => (o.status || '').toLowerCase() === 'paid');
+  const paidCount = paidOrders.length;
+  const paidNominal = paidOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
 
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
       {toast && <Toast msg={toast} />}
 
+      {/* Scorecards */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+        <div style={{
+          background: "#fff", border: "1px solid #E2E8F0", borderRadius: 16, padding: 20,
+          display: "flex", justifyContent: "space-between", alignItems: "center"
+        }}>
+          <div>
+            <p style={{ fontSize: 13, color: "#64748B", fontWeight: 600, marginBottom: 4 }}>Pesanan Masih Checkout</p>
+            <h3 style={{ fontSize: 24, fontWeight: 800, color: "#D97706", display: "flex", alignItems: "baseline", gap: 6 }}>
+              {checkoutCount} <span style={{ fontSize: 13, fontWeight: 500, color: "#94A3B8" }}>Pesanan</span>
+            </h3>
+            <p style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginTop: 4 }}>Nominal: {fmt(checkoutNominal)}</p>
+          </div>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "#FEF3C7", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 18 }}>🛒</span>
+          </div>
+        </div>
+        <div style={{
+          background: "#fff", border: "1px solid #E2E8F0", borderRadius: 16, padding: 20,
+          display: "flex", justifyContent: "space-between", alignItems: "center"
+        }}>
+          <div>
+            <p style={{ fontSize: 13, color: "#64748B", fontWeight: 600, marginBottom: 4 }}>Pesanan Sudah Paid (Lunas)</p>
+            <h3 style={{ fontSize: 24, fontWeight: 800, color: "#10B981", display: "flex", alignItems: "baseline", gap: 6 }}>
+              {paidCount} <span style={{ fontSize: 13, fontWeight: 500, color: "#94A3B8" }}>Pesanan</span>
+            </h3>
+            <p style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginTop: 4 }}>Nominal: {fmt(paidNominal)}</p>
+          </div>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "#D1FAE5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 18 }}>💵</span>
+          </div>
+        </div>
+      </div>
+
       {/* Advanced Multi Filters */}
-      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
-        <div style={{ position: "relative", width: "100%", maxWidth: 300 }}>
-          <Search size={18} color="#94A3B8" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
-          <input 
-            type="text" 
-            placeholder="Cari pelanggan, ID Pesanan..." 
-            style={{...styles.searchInput, width: "100%"}} 
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-          />
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 16 }}>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ position: "relative", width: "100%", maxWidth: 300 }}>
+            <Search size={18} color="#94A3B8" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
+            <input 
+              type="text" 
+              placeholder="Cari pelanggan, ID Pesanan..." 
+              style={{...styles.searchInput, width: "100%"}} 
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+            />
+          </div>
+
+          <select 
+            value={statusFilter} 
+            onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }} 
+            style={{ ...styles.searchInput, width: "auto", minWidth: 140, padding: "8px 16px 8px 12px" }}
+          >
+            <option value="all">Semua Status</option>
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+            <option value="packed">Packed</option>
+            <option value="shipped">Shipped</option>
+            <option value="completed">Completed</option>
+          </select>
+
+          <select 
+            value={methodFilter} 
+            onChange={(e) => { setMethodFilter(e.target.value); setCurrentPage(1); }} 
+            style={{ ...styles.searchInput, width: "auto", minWidth: 160, padding: "8px 16px 8px 12px" }}
+          >
+            <option value="all">Semua Metode</option>
+            {uniqueMethods.map(m => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
         </div>
 
-        <select 
-          value={statusFilter} 
-          onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }} 
-          style={{ ...styles.searchInput, width: "auto", minWidth: 140, padding: "8px 16px 8px 12px" }}
-        >
-          <option value="all">Semua Status</option>
-          <option value="pending">Pending</option>
-          <option value="paid">Paid</option>
-          <option value="packed">Packed</option>
-          <option value="shipped">Shipped</option>
-          <option value="completed">Completed</option>
-        </select>
-
-        <select 
-          value={methodFilter} 
-          onChange={(e) => { setMethodFilter(e.target.value); setCurrentPage(1); }} 
-          style={{ ...styles.searchInput, width: "auto", minWidth: 160, padding: "8px 16px 8px 12px" }}
-        >
-          <option value="all">Semua Metode</option>
-          {uniqueMethods.map(m => (
-            <option key={m} value={m}>{m}</option>
-          ))}
-        </select>
+        <button onClick={handleExport} style={styles.excelBtn}>
+          <FileDown size={18} /> Export Excel
+        </button>
       </div>
 
       <div style={styles.card}>
@@ -278,64 +384,130 @@ export function OrderView({ initialData }: { initialData: any[] }) {
                 <th style={styles.th}>Pelanggan</th>
                 <th style={styles.th}>Tanggal</th>
                 <th style={styles.th}>Metode Bayar</th>
+                <th style={styles.th}>Harga Produk</th>
                 <th style={styles.th}>Ongkir</th>
-                <th style={styles.th}>Total Belanja</th>
+                <th style={styles.th}>Ongkir + Harga Produk</th>
+                <th style={styles.th}>Grand Total</th>
                 <th style={styles.th}>Status Saat Ini</th>
                 <th style={styles.th}>Ubah Status</th>
                 <th style={{...styles.th, textAlign: "center"}}>Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {currentData.map((o, idx) => (
-                <tr key={o.id} style={styles.tr}>
-                  <td style={{...styles.td, textAlign: "center"}}><span style={{ fontSize: 13, color: "#64748B", fontWeight: 600 }}>{(currentPage - 1) * pageSize + idx + 1}</span></td>
-                  <td style={styles.td}>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{o.orderCode || o.order_code || o.id}</span>
-                  </td>
-                  <td style={styles.td}>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{o.customer || 'Customer'}</p>
-                    <p style={{ fontSize: 12, color: "#64748B" }}>{o.items || 1} Item</p>
-                  </td>
-                  <td style={styles.td}><span style={{ fontSize: 13, color: "#64748B" }}>{formatDate(o.date || o.order_date)}</span></td>
-                  <td style={styles.td}>
-                    <span style={{ fontWeight: 600, color: "#475569", fontSize: 13 }}>
-                      {o.paymentMethod || 'Manual Transfer'}
-                    </span>
-                  </td>
-                  <td style={styles.td}><span style={{ fontSize: 14, color: "#64748B", fontWeight: 500 }}>{fmt(o.shippingCost || 0)}</span></td>
-                  <td style={styles.td}><span style={{ fontSize: 14, fontWeight: 600, color: "#0891B2" }}>{fmt(o.total)}</span></td>
-                  <td style={styles.td}>
-                    <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, ...getBadgeColors(o.status), display: "inline-block" }}>
-                        {getBadgeLabel(o.status)}
-                    </span>
-                  </td>
-                  <td style={styles.td}>
-                    <select value={o.status} onChange={(e) => handleStatusChange(o.orderCode || o.order_code || o.id, e.target.value)} style={{ ...styles.inputForm, padding: "6px 10px", fontSize: 12, width: "auto" }}>
-                      <option value="pending">Pending</option>
-                      <option value="paid">Paid</option>
-                      <option value="packed">Packed</option>
-                      <option value="shipped">Shipped</option>
-                      <option value="completed">Completed</option>
-                    </select>
-                  </td>
-                  <td style={{...styles.td, textAlign: "center"}}>
-                    {o.paymentProof ? (
-                      <button 
-                        onClick={() => setSelectedOrderForProof(o)}
-                        style={{ 
-                          padding: "6px 12px", borderRadius: 8, border: "1px solid #0891B2", 
-                          background: "#ECFEFF", color: "#0891B2", fontSize: 12, 
-                          fontWeight: 700, cursor: "pointer"
-                        }}
-                      >
-                        Lihat Bukti
-                      </button>
-                    ) : (
-                      <span style={{ fontSize: 12, color: "#94A3B8" }}>-</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {currentData.map((o, idx) => {
+                const subtotal = Array.isArray(o.items)
+                  ? o.items.reduce((sum: number, item: any) => sum + (item.price * item.qty), 0)
+                  : (Number(o.total || 0) - Number(o.shippingCost || 0));
+                const shippingCost = Number(o.shippingCost || 0);
+                const subtotalWithOngkir = subtotal + shippingCost;
+
+                const hasProof = !!o.paymentProof;
+                return (
+                  <tr key={o.id} style={{
+                    ...styles.tr,
+                    background: hasProof ? "#F0FDFC" : undefined,
+                    borderLeft: hasProof ? "3px solid #0891B2" : "3px solid transparent",
+                    position: "relative"
+                  }}>
+                    <td style={{...styles.td, textAlign: "center"}}><span style={{ fontSize: 13, color: "#64748B", fontWeight: 600 }}>{(currentPage - 1) * pageSize + idx + 1}</span></td>
+                    <td style={styles.td}>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{o.orderCode || o.order_code || o.id}</span>
+                    </td>
+                    <td style={styles.td}>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{o.customer || 'Customer'}</p>
+                      <p style={{ fontSize: 12, color: "#64748B" }}>
+                        {Array.isArray(o.items) ? o.items.reduce((sum: number, item: any) => sum + item.qty, 0) : (o.items || 1)} Item
+                      </p>
+                    </td>
+                    <td style={styles.td}><span style={{ fontSize: 13, color: "#64748B" }}>{formatDate(o.date || o.order_date)}</span></td>
+                    <td style={styles.td}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        <span style={{ fontWeight: 600, color: "#475569", fontSize: 13 }}>
+                          {o.paymentMethod || 'Manual Transfer'}
+                        </span>
+                        {hasProof && (
+                          <span style={{
+                            display: "inline-flex", alignItems: "center", gap: 3,
+                            fontSize: 10, fontWeight: 700, color: "#0891B2",
+                            background: "#CFFAFE", padding: "2px 7px",
+                            borderRadius: 20, border: "1px solid #A5F3FC",
+                            width: "fit-content"
+                          }}>
+                            <CheckCircle size={9} /> Ada Bukti
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td style={styles.td}><span style={{ fontSize: 13, color: "#64748B", fontWeight: 600 }}>{fmt(subtotal)}</span></td>
+                    <td style={styles.td}><span style={{ fontSize: 13, color: "#64748B", fontWeight: 500 }}>{fmt(shippingCost)}</span></td>
+                    <td style={styles.td}><span style={{ fontSize: 13, color: "#475569", fontWeight: 600 }}>{fmt(subtotalWithOngkir)}</span></td>
+                    <td style={styles.td}><span style={{ fontSize: 14, fontWeight: 700, color: "#0891B2" }}>{fmt(o.total)}</span></td>
+                    <td style={styles.td}>
+                      <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, ...getBadgeColors(o.status), display: "inline-block" }}>
+                          {getBadgeLabel(o.status)}
+                      </span>
+                    </td>
+                    <td style={styles.td}>
+                      <select value={o.status} onChange={(e) => handleStatusChange(o.orderCode || o.order_code || o.id, e.target.value)} style={{ ...styles.inputForm, padding: "6px 10px", fontSize: 12, width: "auto" }}>
+                        <option value="pending">Pending</option>
+                        <option value="paid">Paid</option>
+                        <option value="packed">Packed</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </td>
+                    <td style={{...styles.td, textAlign: "center", whiteSpace: "nowrap"}}>
+                      <div style={{ display: "flex", gap: 8, justifyContent: "center", alignItems: "center" }}>
+                        {hasProof && (
+                          <button 
+                            onClick={() => setSelectedOrderForProof(o)}
+                            style={{ 
+                              display: "flex", alignItems: "center", gap: 5,
+                              padding: "6px 12px", borderRadius: 8,
+                              border: "none",
+                              background: o.status === 'pending' 
+                                ? "linear-gradient(135deg, #0891B2, #06B6D4)"
+                                : "#0891B2",
+                              color: "#fff", fontSize: 12, 
+                              fontWeight: 700, cursor: "pointer",
+                              boxShadow: "0 2px 8px rgba(8,145,178,0.25)"
+                            }}
+                          >
+                            <Camera size={13} />
+                            {o.status === 'pending' ? 'Verifikasi' : 'Bukti'}
+                          </button>
+                        )}
+                        {o.status === 'pending' && (
+                          <button 
+                            onClick={async () => {
+                              if (window.confirm("Tandai pesanan ini sebagai Lunas (Paid)?")) {
+                                await handleStatusChange(o.orderCode || o.order_code || o.id, 'paid');
+                              }
+                            }}
+                            style={{ 
+                              padding: "6px 12px", borderRadius: 8, border: "none", 
+                              background: "#10B981", color: "#fff", fontSize: 12, 
+                              fontWeight: 700, cursor: "pointer"
+                            }}
+                          >
+                            Set Paid
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => router.push(`/panel/orders/${o.id}`)}
+                          style={{ 
+                            padding: "6px 12px", borderRadius: 8, border: "1px solid #64748B", 
+                            background: "#F8FAFC", color: "#475569", fontSize: 12, 
+                            fontWeight: 700, cursor: "pointer"
+                          }}
+                        >
+                          Detail
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -357,7 +529,12 @@ export function OrderView({ initialData }: { initialData: any[] }) {
             boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>Verifikasi Bukti Transfer</h3>
+              <div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", margin: 0 }}>Verifikasi Bukti Transfer</h3>
+                <p style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>
+                  {selectedOrderForProof.orderCode || selectedOrderForProof.order_code} · {selectedOrderForProof.customer}
+                </p>
+              </div>
               <button 
                 onClick={() => setSelectedOrderForProof(null)}
                 style={{
@@ -405,27 +582,28 @@ export function OrderView({ initialData }: { initialData: any[] }) {
               </div>
             </div>
 
-            <div style={{ flex: 1, overflowY: "auto", display: "flex", justifyContent: "center", background: "#F8FAFC", borderRadius: 16, padding: 12, border: "1px dashed #E2E8F0" }}>
-              <img 
-                src={selectedOrderForProof.paymentProof} 
-                alt="Bukti Transfer" 
-                style={{ maxWidth: "100%", maxHeight: 280, objectFit: "contain", borderRadius: 12 }} 
-              />
+            <div style={{ 
+              flex: 1, overflowY: "auto", display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center",
+              background: "linear-gradient(135deg, #F0FDFC, #ECFEFF)",
+              borderRadius: 16, padding: 16, border: "2px dashed #A5F3FC", gap: 10
+            }}>
+              <a href={selectedOrderForProof.paymentProof} target="_blank" rel="noopener noreferrer"
+                style={{ display: "block", cursor: "zoom-in" }}
+              >
+                <img 
+                  src={selectedOrderForProof.paymentProof} 
+                  alt="Bukti Transfer" 
+                  style={{ maxWidth: "100%", maxHeight: 300, objectFit: "contain", borderRadius: 12,
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.1)" }} 
+                />
+              </a>
+              <p style={{ fontSize: 11, color: "#0891B2", fontWeight: 600, margin: 0 }}>
+                Klik gambar untuk zoom · Atau buka di tab baru ↗
+              </p>
             </div>
 
             <div style={{ display: "flex", gap: 12 }}>
-              <a 
-                href={selectedOrderForProof.paymentProof} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                style={{
-                  padding: "12px 18px", borderRadius: 12, background: "#F1F5F9",
-                  color: "#475569", fontSize: 14, fontWeight: 700, textAlign: "center",
-                  textDecoration: "none", display: "flex", alignItems: "center"
-                }}
-              >
-                ↗
-              </a>
               {selectedOrderForProof.status === 'pending' ? (
                 <button 
                   onClick={async () => {
@@ -434,14 +612,26 @@ export function OrderView({ initialData }: { initialData: any[] }) {
                     setSelectedOrderForProof(null);
                   }}
                   style={{
-                    flex: 1, padding: "12px 0", borderRadius: 12, background: "#10B981",
+                    flex: 1, padding: "12px 0", borderRadius: 12,
+                    background: "linear-gradient(135deg, #10B981, #059669)",
                     color: "#fff", border: "none", fontSize: 14, fontWeight: 700,
-                    cursor: "pointer", boxShadow: "0 4px 12px rgba(16, 185, 129, 0.2)"
+                    cursor: "pointer", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.3)",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8
                   }}
                 >
-                  Konfirmasi Lunas & Kirim WA
+                  <CheckCircle size={17} /> Konfirmasi Lunas
                 </button>
-              ) : null}
+              ) : (
+                <div style={{
+                  flex: 1, padding: "10px 16px", borderRadius: 12,
+                  background: "#F8FAFC", border: "1px solid #E2E8F0",
+                  fontSize: 12, fontWeight: 600, color: "#64748B",
+                  display: "flex", alignItems: "center", gap: 6
+                }}>
+                  <CheckCircle size={14} color="#10B981" />
+                  Pesanan sudah berstatus: <strong>{selectedOrderForProof.status}</strong>
+                </div>
+              )}
               <button 
                 onClick={() => setSelectedOrderForProof(null)}
                 style={{
@@ -471,12 +661,52 @@ function getBadgeLabel(status: string) {
 export function UserView({ initialData }: { initialData: any[] }) {
   const [data, setData] = useState(initialData);
   const [currentPage, setCurrentPage] = useState(1);
+  const [search, setSearch] = useState("");
   const pageSize = 10;
-  const totalPages = Math.ceil(data.length / pageSize);
-  const currentData = data.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const filtered = data.filter(u => 
+    u.name?.toLowerCase().includes(search.toLowerCase()) ||
+    u.email?.toLowerCase().includes(search.toLowerCase()) ||
+    u.phone?.toLowerCase().includes(search.toLowerCase()) ||
+    (u.userCode || u.id || '').toString().toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const currentData = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const handleExport = () => {
+    const exportData = filtered.map((u, i) => ({
+      'No': i + 1,
+      'ID Pengguna': u.userCode || u.id,
+      'Nama Lengkap': u.name,
+      'Email': u.email,
+      'No. WhatsApp': u.phone || "-",
+      'Jenis Kelamin': u.gender || "-",
+      'Pekerjaan': u.job || "-",
+      'Tahun Lahir': u.yearBorn || "-",
+      'Tanggal Bergabung': u.joinedDate || u.joined
+    }));
+    exportToExcel(exportData, 'Data_Jamaah');
+  };
 
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 16 }}>
+        <div style={{ position: "relative", width: "100%", maxWidth: 300 }}>
+          <Search size={18} color="#94A3B8" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
+          <input 
+            type="text" 
+            placeholder="Cari jamaah..." 
+            style={{...styles.searchInput, width: "100%"}} 
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+          />
+        </div>
+        <button onClick={handleExport} style={styles.excelBtn}>
+          <FileDown size={18} /> Export Excel
+        </button>
+      </div>
+
       <div style={styles.card}>
         <div style={{ overflowX: "auto" }}>
           <table style={styles.table}>
@@ -485,8 +715,11 @@ export function UserView({ initialData }: { initialData: any[] }) {
                 <th style={{...styles.th, width: 40, textAlign: "center"}}>No.</th>
                 <th style={styles.th}>ID Pengguna</th>
                 <th style={styles.th}>Nama Lengkap</th>
-                <th style={styles.th}>Kontak</th>
-                <th style={styles.th}>Detail Profil</th>
+                <th style={styles.th}>Email</th>
+                <th style={styles.th}>No. WhatsApp</th>
+                <th style={styles.th}>Jenis Kelamin</th>
+                <th style={styles.th}>Pekerjaan</th>
+                <th style={styles.th}>Tahun Lahir</th>
                 <th style={styles.th}>Tgl Bergabung</th>
               </tr>
             </thead>
@@ -496,15 +729,11 @@ export function UserView({ initialData }: { initialData: any[] }) {
                   <td style={{...styles.td, textAlign: "center"}}><span style={{ fontSize: 13, color: "#64748B", fontWeight: 600 }}>{(currentPage - 1) * pageSize + idx + 1}</span></td>
                   <td style={styles.td}><span style={{ fontSize: 13, fontWeight: 600, color: "#64748B" }}>{u.userCode || u.id}</span></td>
                   <td style={styles.td}><span style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{u.name}</span></td>
-                  <td style={styles.td}>
-                    <p style={{ fontSize: 13, color: "#0F172A" }}>{u.email}</p>
-                    <p style={{ fontSize: 12, color: "#64748B" }}>{u.phone}</p>
-                  </td>
-                  <td style={styles.td}>
-                    <p style={{ fontSize: 12, color: "#475569" }}><strong>Gender:</strong> {u.gender || '-'}</p>
-                    <p style={{ fontSize: 12, color: "#475569" }}><strong>Job:</strong> {u.job || '-'}</p>
-                    <p style={{ fontSize: 12, color: "#475569" }}><strong>Born:</strong> {u.yearBorn || '-'}</p>
-                  </td>
+                  <td style={styles.td}><span style={{ fontSize: 13, color: "#0F172A" }}>{u.email}</span></td>
+                  <td style={styles.td}><span style={{ fontSize: 13, color: "#64748B" }}>{u.phone || '-'}</span></td>
+                  <td style={styles.td}><span style={{ fontSize: 13, color: "#475569" }}>{u.gender || '-'}</span></td>
+                  <td style={styles.td}><span style={{ fontSize: 13, color: "#475569" }}>{u.job || '-'}</span></td>
+                  <td style={styles.td}><span style={{ fontSize: 13, color: "#475569" }}>{u.yearBorn || '-'}</span></td>
                   <td style={styles.td}><span style={{ fontSize: 13, color: "#64748B" }}>{u.joinedDate || u.joined}</span></td>
                 </tr>
               ))}
@@ -532,7 +761,7 @@ export function SettingsView() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
             <label style={styles.label}>Nama Platform</label>
-            <input defaultValue="Majelis Ilmu" style={styles.inputForm} type="text" />
+            <input defaultValue="BADAR - Baik Dari Rumah" style={styles.inputForm} type="text" />
           </div>
           <div>
             <label style={styles.label}>Email Admin</label>

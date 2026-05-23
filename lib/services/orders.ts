@@ -19,9 +19,15 @@ export async function getOrdersList() {
       o.total, o.status, o.payment_proof as "paymentProof",
       o.shipping_address as "shippingAddress", o.province_name as "provinceName",
       o.city_name as "cityName", o.courier, o.courier_service as "courierService",
-      o.shipping_cost as "shippingCost",
+      o.shipping_cost as "shippingCost", o.resi,
       pm.name as "paymentMethod",
-      (SELECT COALESCE(SUM(qty), 0) FROM order_items WHERE order_id = o.id) as items
+      (SELECT json_agg(json_build_object('name', p.name, 'qty', oi.qty, 'price', oi.price))
+       FROM order_items oi
+       JOIN products p ON oi.product_id = p.id
+       WHERE oi.order_id = o.id) as items,
+      (SELECT json_agg(json_build_object('status', osh.status, 'description', osh.description, 'createdAt', osh.created_at) ORDER BY osh.id ASC)
+       FROM order_status_history osh
+       WHERE osh.order_id = o.id) as history
     FROM orders o
     JOIN users u ON o.user_id = u.id
     LEFT JOIN payment_methods pm ON o.payment_method_id = pm.id
@@ -94,7 +100,8 @@ export async function getUserOrders(userId: number) {
   const rows = await sql(`
     SELECT 
       o.id, o.order_code as "orderCode", o.order_date as "date", 
-      o.total, o.status, o.shipping_cost as "shippingCost", o.courier, o.courier_service as "courierService",
+      o.total, o.status, o.shipping_cost as "shippingCost", o.courier, o.courier_service as "courierService", o.resi,
+      o.rating, o.testimonial, o.testimonial_images as "testimonialImages", o.testimonial_video as "testimonialVideo",
       (SELECT json_agg(json_build_object('name', p.name, 'qty', oi.qty, 'price', oi.price))
        FROM order_items oi
        JOIN products p ON oi.product_id = p.id

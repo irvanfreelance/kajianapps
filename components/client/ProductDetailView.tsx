@@ -14,6 +14,8 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
   const [qty, setQty] = useState(1);
   const [loading, setLoading] = useState(false);
   const [fallbackRelated, setFallbackRelated] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [averageRating, setAverageRating] = useState(5.0);
 
   useEffect(() => {
     if (relatedProducts.length === 0) {
@@ -27,6 +29,21 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
         .catch(err => console.error("Fallback products fetch error:", err));
     }
   }, [relatedProducts.length, product.id]);
+
+  useEffect(() => {
+    fetch(`/api/products/reviews?id=${product.id}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.data)) {
+          setReviews(data.data);
+          if (data.data.length > 0) {
+            const sum = data.data.reduce((acc: number, curr: any) => acc + (curr.rating || 5), 0);
+            setAverageRating(Number((sum / data.data.length).toFixed(1)));
+          }
+        }
+      })
+      .catch(err => console.error("Error fetching product reviews:", err));
+  }, [product.id]);
 
   const displayRelated = relatedProducts.length > 0 ? relatedProducts : fallbackRelated;
 
@@ -60,7 +77,9 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 4, background: "#FEFCE8", padding: "4px 8px", borderRadius: 8 }}>
             <Star size={14} color="#EAB308" fill="#EAB308" />
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#854D0E" }}>{product.rating || "5.0"}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#854D0E" }}>
+              {reviews.length > 0 ? averageRating : "5.0"} ({reviews.length})
+            </span>
           </div>
         </div>
 
@@ -73,7 +92,7 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
 
         <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", marginBottom: 12 }}>Deskripsi Produk</h3>
         <p style={{ fontSize: 14, color: "#64748B", lineHeight: 1.8 }}>
-          {product.description || "Produk berkualitas persembahan dari Majelis Ilmu. Dibuat dengan bahan premium untuk kenyamanan Anda beribadah dan beraktivitas sehari-hari. Stok terbatas!"}
+          {product.description || "Produk berkualitas persembahan dari BADAR - Baik Dari Rumah. Dibuat dengan bahan premium untuk kenyamanan Anda beribadah dan beraktivitas sehari-hari. Stok terbatas!"}
         </p>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 24 }}>
@@ -103,6 +122,77 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
             </div>
             <p style={{ fontSize: 13, color: "#64748B" }}>Stok: <span style={{ fontWeight: 600, color: "#0F172A" }}>{product.stock || 10}</span></p>
           </div>
+        </div>
+
+        {/* Testimoni & Ulasan Section */}
+        <div style={{ marginTop: 40, borderTop: "1px solid #F1F5F9", paddingTop: 32 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0F172A" }}>Testimoni & Ulasan</h2>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#64748B" }}>{reviews.length} Ulasan</span>
+          </div>
+
+          {reviews.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              {reviews.map((rev: any, idx: number) => (
+                <div key={idx} style={{ background: "#F8FAFC", borderRadius: 20, padding: 16, border: "1px solid #F1F5F9" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", margin: 0 }}>
+                      {rev.user_name || "Pelanggan"}
+                    </p>
+                    <div style={{ display: "flex", gap: 2 }}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star 
+                          key={star} 
+                          size={12} 
+                          color="#EAB308" 
+                          fill={star <= (rev.rating || 5) ? "#EAB308" : "none"} 
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.6, margin: "0 0 10px 0" }}>
+                    {rev.testimonial || "Tidak ada komentar tertulis."}
+                  </p>
+
+                  {/* Multi images */}
+                  {rev.testimonial_images && (
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                      {rev.testimonial_images.split(",").map((imgUrl: string, imgIdx: number) => (
+                        <a key={imgIdx} href={imgUrl} target="_blank" rel="noreferrer" style={{ display: "block" }}>
+                          <img 
+                            src={imgUrl} 
+                            alt={`Review ${imgIdx}`} 
+                            style={{ width: 64, height: 64, borderRadius: 10, objectFit: "cover", border: "1px solid #E2E8F0" }} 
+                          />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Unboxing Video */}
+                  {rev.testimonial_video && (
+                    <div style={{ marginTop: 8 }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 6 }}>Video Unboxing:</p>
+                      <video 
+                        src={rev.testimonial_video} 
+                        controls 
+                        style={{ width: "100%", maxHeight: 180, borderRadius: 12, background: "#000" }} 
+                      />
+                    </div>
+                  )}
+
+                  <p style={{ fontSize: 11, color: "#94A3B8", marginTop: 8, margin: 0 }}>
+                    {new Date(rev.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: "center", padding: "30px 20px", background: "#F8FAFC", borderRadius: 20, border: "1px solid #F1F5F9" }}>
+              <p style={{ fontSize: 13, color: "#94A3B8", margin: 0 }}>Belum ada ulasan untuk produk ini.</p>
+            </div>
+          )}
         </div>
 
         {/* Related Products Grid */}

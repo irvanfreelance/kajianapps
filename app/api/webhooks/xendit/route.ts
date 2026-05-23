@@ -55,6 +55,12 @@ export async function POST(req: Request) {
         if (currentStatus !== 'PAID' && newStatus === 'PAID') {
           await sql(`UPDATE orders SET status = 'PAID' WHERE id = $1`, [orderId]);
 
+          // Insert status history
+          await sql(`
+            INSERT INTO order_status_history (order_id, status, description)
+            VALUES ($1, $2, $3)
+          `, [orderId, 'PAID', 'Pembayaran terverifikasi otomatis oleh sistem (Xendit).']);
+
           // Invalidate caches
           await redis.del(`api:status:get:${referenceId}`).catch(() => {});
           await redis.del('api:orders:list').catch(() => {});
@@ -78,6 +84,12 @@ export async function POST(req: Request) {
           }
         } else if (newStatus === 'FAILED') {
           await sql(`UPDATE orders SET status = 'FAILED' WHERE id = $1`, [orderId]);
+
+          // Insert status history
+          await sql(`
+            INSERT INTO order_status_history (order_id, status, description)
+            VALUES ($1, $2, $3)
+          `, [orderId, 'FAILED', 'Pembayaran dibatalkan atau kedaluwarsa.']);
         }
       } else {
         console.warn('[Webhook] Order not found for:', referenceId || vendorId);

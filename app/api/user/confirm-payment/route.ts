@@ -63,7 +63,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       }
       const userId = userRows[0].id;
 
-      const orderRows = await sql(`SELECT user_id FROM orders WHERE order_code = $1`, [code]);
+      const orderRows = await sql(`SELECT id, user_id FROM orders WHERE order_code = $1`, [code]);
       if (orderRows.length === 0) {
         return NextResponse.json({ error: 'Pesanan tidak ditemukan' }, { status: 404 });
       }
@@ -83,6 +83,12 @@ export async function POST(request: Request): Promise<NextResponse> {
         SET payment_proof = $1
         WHERE order_code = $2
       `, [blob.url, code]);
+
+      // Insert status history log
+      await sql(`
+        INSERT INTO order_status_history (order_id, status, description)
+        VALUES ($1, $2, $3)
+      `, [orderRows[0].id, 'pending', 'Bukti transfer pembayaran telah diunggah oleh pembeli. Menunggu verifikasi admin.']);
     } else {
       return NextResponse.json({ error: 'Tipe transaksi tidak didukung' }, { status: 400 });
     }

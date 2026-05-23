@@ -114,7 +114,7 @@ export default function KajianRegistrationsView({ initialData }: { initialData: 
           </select>
         </div>
 
-        <button onClick={handleExport} style={styles.secondaryBtn}>
+        <button onClick={handleExport} style={styles.excelBtn}>
           <FileDown size={18} /> Export Excel
         </button>
       </div>

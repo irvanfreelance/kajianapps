@@ -21,8 +21,8 @@ function AdminLoginForm() {
     <div className="min-h-screen bg-neutral-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center text-white mb-6">
-          <div className="bg-neutral-800 p-4 rounded-full shadow-lg ring-1 ring-white/10">
-            <Shield className="w-12 h-12 text-blue-500" />
+          <div className="bg-neutral-800 p-4 rounded-2xl shadow-lg ring-1 ring-white/10 w-20 h-20 flex items-center justify-center overflow-hidden">
+            <img src="/badar.png" className="w-full h-full object-contain" alt="Logo" />
           </div>
         </div>
         <h2 className="mt-2 text-center text-3xl font-extrabold text-white tracking-tight">
