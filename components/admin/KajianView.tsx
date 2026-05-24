@@ -177,6 +177,8 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
                 <th style={styles.th}>Jadwal</th>
                 <th style={styles.th}>Tipe & Harga</th>
                 <th style={styles.th}>Kuota</th>
+                <th style={styles.th}>Zoom</th>
+                <th style={styles.th}>YouTube</th>
                 <th style={styles.th}>Aksi</th>
               </tr>
             </thead>
@@ -209,6 +211,12 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
                       </div>
                       <span style={{ fontSize: 12, color: "#64748B" }}>{k.filled || 0}/{k.spot || 0}</span>
                     </div>
+                  </td>
+                  <td style={styles.td}>
+                    {k.url_zoom ? <a href={k.url_zoom} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#2563EB", textDecoration: "none", fontWeight: 500 }}>Buka Zoom</a> : <span style={{ fontSize: 12, color: "#94a3b8" }}>-</span>}
+                  </td>
+                  <td style={styles.td}>
+                    {k.url_youtube ? <a href={k.url_youtube} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#DC2626", textDecoration: "none", fontWeight: 500 }}>Buka YouTube</a> : <span style={{ fontSize: 12, color: "#94a3b8" }}>-</span>}
                   </td>
                   <td style={styles.td}>
                     <div style={{ display: "flex", gap: 8 }}>

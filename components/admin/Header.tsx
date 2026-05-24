@@ -1,6 +1,7 @@
 "use client";
 import { Search, Bell, User, Menu } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 const navItems = [
   { id: "dashboard", href: "/panel", label: "Dashboard" },
@@ -13,6 +14,7 @@ const navItems = [
 
 export default function Header({ setIsMobileMenuOpen, isTablet, isMobile }: { setIsMobileMenuOpen: (val: boolean) => void, isTablet: boolean, isMobile: boolean }) {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const currentLabel = navItems.find(n => n.href === pathname)?.label || "Admin Panel";
 
   return (
@@ -40,12 +42,16 @@ export default function Header({ setIsMobileMenuOpen, isTablet, isMobile }: { se
         <div style={{ display: "flex", alignItems: "center", gap: 10, borderLeft: "1px solid #E2E8F0", paddingLeft: 20 }}>
           {!isMobile && (
             <div style={{ textAlign: "right" }}>
-              <p style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>Admin Utama</p>
-              <p style={{ fontSize: 12, color: "#64748B" }}>admin@majelis.id</p>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{session?.user?.name || "Admin Utama"}</p>
+              <p style={{ fontSize: 12, color: "#64748B" }}>{session?.user?.email || "admin@majelis.id"}</p>
             </div>
           )}
-          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#CFFAFE", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <User size={20} color="#0891B2" />
+          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#CFFAFE", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+            {session?.user?.image ? (
+              <img src={session.user.image} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              <User size={20} color="#0891B2" />
+            )}
           </div>
         </div>
       </div>
