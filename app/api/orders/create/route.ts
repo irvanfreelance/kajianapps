@@ -9,14 +9,16 @@ import { enqueueWhatsApp } from '@/lib/fonnte';
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== 'USER') {
+    if (!session || !session.user?.email || session.user.role !== 'USER') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = Number(session.user.id);
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID not found in session' }, { status: 400 });
+    // Fetch real user ID by email
+    const usersRes = await sql(`SELECT id FROM users WHERE email = $1`, [session.user.email]);
+    if (usersRes.length === 0) {
+      return NextResponse.json({ error: 'Akun tidak ditemukan. Silakan login ulang.' }, { status: 401 });
     }
+    const userId = usersRes[0].id;
 
     const { items, paymentMethodId, shipping } = await req.json();
 

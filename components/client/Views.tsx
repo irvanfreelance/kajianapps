@@ -4,7 +4,7 @@ import {
   ShoppingBag, ChevronRight, User, Package, 
   LogOut, Ticket, LucideIcon, Calendar, 
   MapPin, Clock, CheckCircle, AlertCircle, Clock3, Video, Play, Download, Truck,
-  Star, Upload, Image as ImageIcon, X
+  Star, Upload, Image as ImageIcon, X, CreditCard
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -455,6 +455,7 @@ export function ProfilView() {
   const [orders, setOrders] = useState<any[]>([]);
   const [showOrders, setShowOrders] = useState(false);
   const [loadingOrders, setLoadingOrders] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   const formatOrderDate = (dateStr: string) => {
     if (!dateStr) return '';
@@ -470,15 +471,111 @@ export function ProfilView() {
   useEffect(() => {
     Promise.all([
       fetch("/api/user/registrations").then(res => res.json()),
-      fetch("/api/user/orders").then(res => res.json())
-    ]).then(([regData, orderData]) => {
+      fetch("/api/user/orders").then(res => res.json()),
+      fetch("/api/user/profile").then(res => res.json())
+    ]).then(([regData, orderData, profileData]) => {
       setStats({
         kajian: regData.success ? regData.data.length : 0,
         orders: orderData.success ? orderData.data.length : 0
       });
       if (orderData.success) setOrders(orderData.data);
+      if (profileData.success) setUserProfile(profileData.data);
     });
   }, []);
+
+  const handlePrintMemberCard = () => {
+    if (!userProfile) return alert("Data profil belum termuat.");
+    
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${userProfile.userCode || userProfile.id}`;
+    
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(`
+      <!DOCTYPE html><html><head><title>Kartu Member - ${userProfile.name}</title>
+      <style>
+        body { font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #E2E8F0; }
+        .card-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+        .card { 
+          width: 450px; height: 284px; 
+          background: linear-gradient(135deg, #0F172A, #1E293B); 
+          border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+          color: #fff; position: relative; overflow: hidden;
+          display: flex; flex-direction: column; padding: 0;
+        }
+        .header {
+          background: #0891B2; padding: 12px 20px; text-align: center;
+          border-bottom: 4px solid #38BDF8;
+        }
+        .header-title { font-weight: 800; font-size: 18px; letter-spacing: 2px; margin: 0; color: #fff; }
+        .header-sub { font-size: 10px; font-weight: 600; letter-spacing: 1px; color: #CFFAFE; margin-top: 2px; text-transform: uppercase; }
+        
+        .body-content { display: flex; padding: 20px; flex: 1; align-items: center; gap: 20px; }
+        .qr-side { background: #fff; padding: 6px; border-radius: 8px; width: 100px; height: 100px; flex-shrink: 0; }
+        .qr-side img { width: 100%; height: 100%; display: block; }
+        
+        .info-side { flex: 1; display: flex; flex-direction: column; gap: 10px; z-index: 10; }
+        .info-group { display: flex; flex-direction: column; gap: 2px; }
+        .label { font-size: 10px; color: #94A3B8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .value { font-size: 15px; font-weight: 700; color: #fff; }
+        .value.name { font-size: 18px; color: #38BDF8; line-height: 1.2; }
+        
+        .card::after { content: ""; position: absolute; bottom: -50px; right: -50px; width: 150px; height: 150px; background: rgba(8, 145, 178, 0.15); border-radius: 50%; filter: blur(20px); pointer-events: none; }
+        
+        .print-btn { 
+          display: flex; align-items: center; gap: 8px; 
+          background: #0891B2; color: white; border: none; 
+          padding: 12px 24px; border-radius: 8px; 
+          font-weight: 600; font-size: 14px; cursor: pointer;
+          transition: background 0.2s;
+        }
+        .print-btn:hover { background: #0E7490; }
+
+        @media print { 
+          body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; align-items: flex-start; justify-content: flex-start; padding: 0; } 
+          .card { box-shadow: none; border: 1px solid #0F172A; margin: 20px; } 
+          .print-btn { display: none; }
+          .card-container { gap: 0; }
+        }
+      </style></head><body>
+      <div class="card-container">
+        <div class="card">
+          <div class="header">
+            <p class="header-title">BADAR</p>
+            <p class="header-sub">KARTU ANGGOTA JAMAAH</p>
+          </div>
+          <div class="body-content">
+            <div class="qr-side"><img src="${qrUrl}" alt="QR" /></div>
+            <div class="info-side">
+              <div class="info-group">
+                <span class="label">Nama Lengkap</span>
+                <span class="value name">${userProfile.name}</span>
+              </div>
+              <div class="info-group">
+                <span class="label">ID Anggota</span>
+                <span class="value" style="font-family: monospace; letter-spacing: 1px;">${userProfile.userCode || userProfile.id}</span>
+              </div>
+              <div style="display: flex; gap: 20px;">
+                <div class="info-group" style="flex: 1; overflow: hidden;">
+                  <span class="label">Kontak</span>
+                  <span class="value" style="font-size: 12px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">${userProfile.phone || userProfile.email}</span>
+                </div>
+                <div class="info-group">
+                  <span class="label">Bergabung</span>
+                  <span class="value" style="font-size: 12px;">${userProfile.joinedDate ? new Date(userProfile.joinedDate).getFullYear() : new Date().getFullYear()}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="print-btn" onclick="window.print()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          Cetak Kartu
+        </button>
+      </div>
+      </body></html>
+    `);
+    win.document.close();
+  };
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/login' });
@@ -746,6 +843,7 @@ export function ProfilView() {
              )}
 
                            <MenuButton icon={User} label="Edit Profil" onClick={() => router.push('/profil/edit')} />
+              <MenuButton icon={CreditCard} label="Kartu Member" onClick={handlePrintMemberCard} />
               <MenuButton icon={LogOut} label="Keluar" color="#EF4444" onClick={handleLogout} />
            </div>
         </div>

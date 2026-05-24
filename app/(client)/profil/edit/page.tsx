@@ -20,19 +20,25 @@ export default function ProfilEditPage() {
   });
 
   useEffect(() => {
-    fetch("/api/user/registrations") // Just to check if session is active or fetch user data if I had a get profile API
-      .then(() => {
-         // Since I don't have a direct GET /api/user/profile, I'll use session data for name/email 
-         // and the others might be empty or I should have a better way.
-         // Let's assume the user data is in the registrations' JOIN or something.
-         // Actually, better to have a dedicated profile GET.
-         // For now, I'll just use what's in session and let user fill the rest.
-         if (session?.user) {
-           setFormData(prev => ({
-             ...prev,
-             name: session.user.name || "",
-           }));
+    if (!session) return;
+    
+    fetch("/api/user/profile")
+      .then(res => res.json())
+      .then((data) => {
+         if (data.success && data.data) {
+           setFormData({
+             name: data.data.name || session.user.name || "",
+             phone: data.data.phone || "",
+             gender: data.data.gender || "",
+             job: data.data.job || "",
+             yearBorn: data.data.yearBorn || ""
+           });
+         } else {
+           setFormData(prev => ({ ...prev, name: session.user.name || "" }));
          }
+      })
+      .catch(() => {
+         setFormData(prev => ({ ...prev, name: session.user.name || "" }));
       })
       .finally(() => setLoading(false));
   }, [session]);

@@ -6,12 +6,18 @@ import { sql } from '@/lib/db';
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== 'USER') {
+    if (!session || !session.user?.email || session.user.role !== 'USER') {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
     const { name, phone, gender, job, yearBorn } = await req.json();
-    const userId = Number(session.user.id);
+    
+    // Fetch real user ID by email
+    const usersRes = await sql(`SELECT id FROM users WHERE email = $1`, [session.user.email]);
+    if (usersRes.length === 0) {
+      return NextResponse.json({ success: false, error: 'User not found' }, { status: 401 });
+    }
+    const userId = usersRes[0].id;
 
     if (!name) {
       return NextResponse.json({ success: false, error: 'Nama wajib diisi' }, { status: 400 });
