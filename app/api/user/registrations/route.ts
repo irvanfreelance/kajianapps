@@ -2,6 +2,7 @@ import { getUserRegistrations } from "@/lib/services/kajian";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { sql } from "@/lib/db";
 
 export async function GET(req: Request) {
   try {

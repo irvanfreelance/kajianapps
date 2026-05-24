@@ -735,6 +735,12 @@ export function ProfilView() {
                            <span style={{ fontWeight: 600, color: "#0F172A" }}>{fmt(item.price * item.qty)}</span>
                          </div>
                        ))}
+                       {order.shippingCost > 0 && (
+                         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginTop: 4, paddingTop: 4, borderTop: "1px dashed #E2E8F0" }}>
+                           <span style={{ color: "#475569" }}>Ongkos Kirim {order.courier ? `(${order.courier.toUpperCase()})` : ''}</span>
+                           <span style={{ fontWeight: 600, color: "#0F172A" }}>{fmt(order.shippingCost)}</span>
+                         </div>
+                       )}
                      </div>
                      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, paddingTop: 12, borderTop: "1px dashed #E2E8F0" }}>
                         <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>Total</span>

@@ -2,6 +2,7 @@ import { getUserOrders } from "@/lib/services/orders";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { sql } from "@/lib/db";
 
 export async function GET(req: Request) {
   try {

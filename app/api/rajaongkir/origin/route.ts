@@ -9,20 +9,22 @@ export async function GET() {
     const settingRes = await sql(`SELECT config_value FROM settings WHERE config_key = 'rajaongkir_origin_district_id'`);
     const originId = settingRes.length > 0 ? settingRes[0].config_value : '1391';
 
-    // We need to find the name. Since we don't have a direct "get district by ID" endpoint,
-    // we have to rely on a hardcoded mapping for the origin or a search.
-    // However, for 1391 and 1392, I'll try to provide the name if I can find it.
-    
-    // Default mapping for known origins
-    const knownOrigins: Record<string, string> = {
-      '1391': 'Depok, Cirebon',
-      '1392': 'Dukupuntang, Cirebon',
-      '23': 'Bandung'
-    };
+    const nameRes = await sql(`SELECT config_value FROM settings WHERE config_key = 'rajaongkir_origin_name'`);
+    let originName = nameRes.length > 0 ? nameRes[0].config_value : '';
+
+    if (!originName) {
+      // Default mapping for known origins
+      const knownOrigins: Record<string, string> = {
+        '1391': 'Depok, Cirebon, Jawa Barat',
+        '1392': 'Dukupuntang, Cirebon, Jawa Barat',
+        '23': 'Bandung, Jawa Barat'
+      };
+      originName = knownOrigins[originId] || 'Jawa Barat';
+    }
 
     return NextResponse.json({
       id: originId,
-      name: knownOrigins[originId] || 'Jawa Barat'
+      name: originName
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
