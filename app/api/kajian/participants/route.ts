@@ -21,10 +21,11 @@ export async function GET(req: Request) {
     const rows = await sql(`
       SELECT 
         u.name, u.phone, u.email,
-        kr.registered_at as date, kr.status, kr.paid_amount
+        kr.registered_at as date, kr.status, kr.paid_amount,
+        kr.ticket_code, kr.is_hadir, kr.checked_in_at
       FROM kajian_registrations kr
       JOIN users u ON kr.user_id = u.id
-      WHERE kr.kajian_id = $1 AND kr.status = 'PAID'
+      WHERE kr.kajian_id = $1 AND kr.is_approved = TRUE
       ORDER BY kr.registered_at DESC
     `, [kajianId]);
 

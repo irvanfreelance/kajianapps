@@ -3,9 +3,20 @@ import { sql } from '@/lib/db';
 /** USERS SERVICE */
 export async function getAllUsers() {
   const rows = await sql(`
-    SELECT *
-    FROM users
-    ORDER BY id DESC
+    SELECT
+      u.*,
+      COALESCE(stats.total_daftar, 0) AS total_daftar,
+      COALESCE(stats.total_hadir, 0)  AS total_hadir
+    FROM users u
+    LEFT JOIN (
+      SELECT
+        user_id,
+        COUNT(*) FILTER (WHERE is_approved = TRUE)                  AS total_daftar,
+        COUNT(*) FILTER (WHERE is_approved = TRUE AND is_hadir = TRUE) AS total_hadir
+      FROM kajian_registrations
+      GROUP BY user_id
+    ) stats ON stats.user_id = u.id
+    ORDER BY u.id DESC
   `);
   return rows;
 }

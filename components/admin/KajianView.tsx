@@ -39,6 +39,11 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
       'Harga': k.price,
       'Kuota': k.spot,
       'Pendaftar': k.filled || 0,
+      'Terdaftar (Approved)': k.attendance_count || 0,
+      'Hadir (Scan QR)': k.hadir_count || 0,
+      'Rasio Hadir (%)': (k.attendance_count || 0) > 0
+        ? Math.round(((k.hadir_count || 0) / (k.attendance_count || 1)) * 100)
+        : 0,
       'Lokasi': k.location,
       'Deskripsi': k.desc
     }));
@@ -177,6 +182,7 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
                 <th style={styles.th}>Jadwal</th>
                 <th style={styles.th}>Tipe & Harga</th>
                 <th style={styles.th}>Kuota</th>
+                <th style={{...styles.th, minWidth: 160}}>Rasio Hadir</th>
                 <th style={styles.th}>Zoom</th>
                 <th style={styles.th}>YouTube</th>
                 <th style={styles.th}>Aksi</th>
@@ -212,6 +218,35 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
                       <span style={{ fontSize: 12, color: "#64748B" }}>{k.filled || 0}/{k.spot || 0}</span>
                     </div>
                   </td>
+
+                  {/* Rasio Hadir */}
+                  {(() => {
+                    const terdaftar = Number(k.attendance_count || 0);
+                    const hadir = Number(k.hadir_count || 0);
+                    const pct = terdaftar > 0 ? Math.round((hadir / terdaftar) * 100) : 0;
+                    const barColor = pct >= 80 ? '#16A34A' : pct >= 50 ? '#D97706' : pct > 0 ? '#DC2626' : '#94A3B8';
+                    return (
+                      <td style={styles.td}>
+                        {terdaftar > 0 ? (
+                          <div style={{ minWidth: 130 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                              <span style={{ fontSize: 11, color: "#64748B" }}>{hadir}/{terdaftar} hadir</span>
+                              <span style={{ fontSize: 12, fontWeight: 800, color: barColor }}>{pct}%</span>
+                            </div>
+                            <div style={{ height: 7, background: "#F1F5F9", borderRadius: 4 }}>
+                              <div style={{ height: "100%", width: `${pct}%`, background: barColor, borderRadius: 4, transition: "width 0.4s ease" }} />
+                            </div>
+                            <p style={{ fontSize: 10, color: "#94A3B8", marginTop: 3 }}>
+                              {terdaftar} terdaftar
+                            </p>
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: 12, color: "#CBD5E1" }}>Belum ada peserta</span>
+                        )}
+                      </td>
+                    );
+                  })()}
+
                   <td style={styles.td}>
                     {k.url_zoom ? <a href={k.url_zoom} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#2563EB", textDecoration: "none", fontWeight: 500 }}>Buka Zoom</a> : <span style={{ fontSize: 12, color: "#94a3b8" }}>-</span>}
                   </td>

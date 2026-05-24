@@ -725,7 +725,10 @@ export function UserView({ initialData }: { initialData: any[] }) {
       'Jenis Kelamin': u.gender || "-",
       'Pekerjaan': u.job || "-",
       'Tahun Lahir': u.yearBorn || "-",
-      'Tanggal Bergabung': u.joinedDate || u.joined
+      'Tanggal Bergabung': u.joinedDate || u.joined,
+      'Total Ikut Kajian': u.total_daftar || 0,
+      'Total Hadir': u.total_hadir || 0,
+      'Rasio Kehadiran (%)': u.total_daftar > 0 ? Math.round((u.total_hadir / u.total_daftar) * 100) : 0,
     }));
     exportToExcel(exportData, 'Data_Jamaah');
   };
@@ -879,11 +882,18 @@ export function UserView({ initialData }: { initialData: any[] }) {
                 <th style={styles.th}>Pekerjaan</th>
                 <th style={styles.th}>Tahun Lahir</th>
                 <th style={styles.th}>Tgl Bergabung</th>
+                <th style={{...styles.th, textAlign: "center"}}>Ikut Kajian</th>
+                <th style={{...styles.th, minWidth: 140}}>Kerajinan Hadir</th>
                 <th style={styles.th}>Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {currentData.map((u, idx) => (
+              {currentData.map((u, idx) => {
+                const totalDaftar = Number(u.total_daftar || 0);
+                const totalHadir = Number(u.total_hadir || 0);
+                const pct = totalDaftar > 0 ? Math.round((totalHadir / totalDaftar) * 100) : 0;
+                const barColor = pct >= 80 ? '#16A34A' : pct >= 50 ? '#D97706' : pct > 0 ? '#DC2626' : '#CBD5E1';
+                return (
                 <tr key={u.id} style={styles.tr}>
                   <td style={{...styles.td, textAlign: "center"}}><span style={{ fontSize: 13, color: "#64748B", fontWeight: 600 }}>{(currentPage - 1) * pageSize + idx + 1}</span></td>
                   <td style={styles.td}><span style={{ fontSize: 13, fontWeight: 600, color: "#64748B" }}>{u.userCode || u.id}</span></td>
@@ -894,6 +904,40 @@ export function UserView({ initialData }: { initialData: any[] }) {
                   <td style={styles.td}><span style={{ fontSize: 13, color: "#475569" }}>{u.job || '-'}</span></td>
                   <td style={styles.td}><span style={{ fontSize: 13, color: "#475569" }}>{u.yearBorn || '-'}</span></td>
                   <td style={styles.td}><span style={{ fontSize: 13, color: "#64748B" }}>{u.joinedDate || u.joined}</span></td>
+
+                  {/* Total ikut kajian */}
+                  <td style={{...styles.td, textAlign: "center"}}>
+                    {totalDaftar > 0 ? (
+                      <span style={{
+                        display: "inline-flex", alignItems: "center", justifyContent: "center",
+                        width: 32, height: 32, borderRadius: "50%",
+                        background: "#ECFEFF", border: "2px solid #0891B2",
+                        fontSize: 13, fontWeight: 800, color: "#0891B2"
+                      }}>
+                        {totalDaftar}
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: 12, color: "#CBD5E1" }}>-</span>
+                    )}
+                  </td>
+
+                  {/* Kerajinan hadir — progress bar */}
+                  <td style={styles.td}>
+                    {totalDaftar > 0 ? (
+                      <div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                          <span style={{ fontSize: 11, color: "#64748B" }}>{totalHadir}/{totalDaftar} kajian</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: barColor }}>{pct}%</span>
+                        </div>
+                        <div style={{ height: 6, background: "#F1F5F9", borderRadius: 4 }}>
+                          <div style={{ height: "100%", width: `${pct}%`, background: barColor, borderRadius: 4, transition: "width 0.4s ease" }} />
+                        </div>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 12, color: "#CBD5E1" }}>Belum daftar kajian</span>
+                    )}
+                  </td>
+
                   <td style={styles.td}>
                     <div style={{ display: "flex", gap: 8 }}>
                       <button onClick={() => { setFormData(u); setIsModalOpen(true); }} style={styles.actionBtnEdit} title="Edit">
@@ -905,7 +949,8 @@ export function UserView({ initialData }: { initialData: any[] }) {
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

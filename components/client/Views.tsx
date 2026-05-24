@@ -9,6 +9,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import QRCode from "react-qr-code";
 
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 const CATEGORIES_SHOP = ["Semua", "Fashion", "Merchandise", "Parfum", "Ibadah", "Buku"];
@@ -78,60 +79,74 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function BarcodeDisplay({ value }: { value: string }) {
-  const svgRef = useRef<SVGSVGElement>(null);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    if (!value || !svgRef.current) return;
-    import("jsbarcode").then((mod) => {
-      const JsBarcode = mod.default;
-      try {
-        JsBarcode(svgRef.current, value, {
-          format: "CODE128",
-          width: 2,
-          height: 60,
-          displayValue: true,
-          fontSize: 12,
-          margin: 10,
-          background: "#fff",
-          lineColor: "#0F172A",
-        });
-        setReady(true);
-      } catch (e) {
-        console.error("Barcode error:", e);
-      }
-    });
-  }, [value]);
+function QRCodeDisplay({ value }: { value: string }) {
+  const qrRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = () => {
-    if (!svgRef.current) return;
-    const svgData = new XMLSerializer().serializeToString(svgRef.current);
+    if (!qrRef.current) return;
+    const svg = qrRef.current.querySelector("svg");
+    if (!svg) return;
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
     const blob = new Blob([svgData], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `barcode-${value}.svg`;
-    a.click();
-    URL.revokeObjectURL(url);
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx?.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      const pngUrl = canvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = pngUrl;
+      a.download = `tiket-${value}.png`;
+      a.click();
+    };
+    img.src = url;
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, marginTop: 14 }}>
-      <div style={{ background: "#fff", borderRadius: 12, padding: "8px 12px", border: "1px solid #E2E8F0", overflow: "hidden", display: "inline-block" }}>
-        <svg ref={svgRef} style={{ maxWidth: "100%", display: "block" }} />
+      <div
+        ref={qrRef}
+        style={{ background: "#fff", borderRadius: 12, padding: 12, border: "1px solid #E2E8F0", display: "inline-block" }}
+      >
+        <QRCode
+          value={value}
+          size={160}
+          bgColor="#ffffff"
+          fgColor="#0F172A"
+          level="M"
+        />
       </div>
-      {ready && (
+
+      {/* Kode Tiket yang bisa dibaca — untuk self check-in */}
+      <div style={{ width: "100%", background: "#F8FAFC", border: "1.5px dashed #CBD5E1", borderRadius: 12, padding: "10px 14px", textAlign: "center" }}>
+        <p style={{ fontSize: 10, color: "#94A3B8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+          Kode Tiket (untuk Self Check-in)
+        </p>
+        <p style={{ fontSize: 20, fontWeight: 800, color: "#0F172A", fontFamily: "monospace", letterSpacing: 3 }}>
+          {value}
+        </p>
         <button
-          onClick={handleDownload}
-          style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "#0891B2", color: "#fff", border: "none", borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: "pointer" }}
+          onClick={() => { navigator.clipboard?.writeText(value); }}
+          style={{ marginTop: 6, fontSize: 10, color: "#0891B2", background: "none", border: "none", cursor: "pointer", fontWeight: 600, padding: "2px 0" }}
         >
-          <Download size={12} /> Unduh Barcode
+          📋 Salin kode
         </button>
-      )}
+      </div>
+
+      <button
+        onClick={handleDownload}
+        style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "#0891B2", color: "#fff", border: "none", borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: "pointer" }}
+      >
+        <Download size={12} /> Unduh QR Code
+      </button>
     </div>
   );
 }
+
 
 export function TiketView() {
   const [registrations, setRegistrations] = useState<any[]>([]);
@@ -412,8 +427,8 @@ export function TiketView() {
                 
                 {selectedTicket.ticket_code && (
                   <div style={{ marginTop: 10, borderTop: "1px dashed #E2E8F0", paddingTop: 14 }}>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: "#475569", textAlign: "center", marginBottom: 4 }}>E-TICKET BARCODE</p>
-                    <BarcodeDisplay value={selectedTicket.ticket_code} />
+                    <p style={{ fontSize: 12, fontWeight: 700, color: "#475569", textAlign: "center", marginBottom: 4 }}>E-TICKET QR CODE</p>
+                    <QRCodeDisplay value={selectedTicket.ticket_code} />
                   </div>
                 )}
               </div>

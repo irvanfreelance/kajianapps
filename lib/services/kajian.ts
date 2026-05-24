@@ -15,9 +15,18 @@ export async function getKajianList(limit?: number, offset?: number, category?: 
   } catch { /* Redis optional */ }
 
   let query = `
-    SELECT id, title, ustadz, date, time_display as time,
-           type, price, image, category, spot, filled, slug, url_zoom, url_youtube, description, location
-    FROM kajian
+    SELECT k.id, k.title, k.ustadz, k.date, k.time_display as time,
+           k.type, k.price, k.image, k.category, k.spot, k.filled, k.slug, k.url_zoom, k.url_youtube, k.description, k.location,
+           COALESCE(att.attendance_count, 0) AS attendance_count,
+           COALESCE(att.hadir_count, 0)      AS hadir_count
+    FROM kajian k
+    LEFT JOIN (
+      SELECT kajian_id,
+             COUNT(*) FILTER (WHERE is_approved = TRUE)                   AS attendance_count,
+             COUNT(*) FILTER (WHERE is_approved = TRUE AND is_hadir = TRUE) AS hadir_count
+      FROM kajian_registrations
+      GROUP BY kajian_id
+    ) att ON att.kajian_id = k.id
   `;
   const params: any[] = [];
   const conditions: string[] = [];
@@ -135,7 +144,8 @@ export async function getKajianParticipants(kajianId: string | number) {
   const rows = await sql(`
     SELECT 
       u.name, u.phone, u.email,
-      kr.registered_at as date, kr.status, kr.paid_amount
+      kr.registered_at as date, kr.status, kr.paid_amount,
+      kr.ticket_code, kr.is_hadir, kr.checked_in_at
     FROM kajian_registrations kr
     JOIN users u ON kr.user_id = u.id
     WHERE kr.kajian_id = $1 AND kr.is_approved = TRUE

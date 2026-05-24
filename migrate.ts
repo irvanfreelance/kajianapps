@@ -168,6 +168,21 @@ async function main() {
     console.log('Note: testimonial_video in orders might already exist:', e.message);
   }
 
+  // Add attendance tracking fields to kajian_registrations
+  try {
+    await sql(`ALTER TABLE "kajian_registrations" ADD COLUMN "is_hadir" boolean DEFAULT FALSE`);
+    console.log('Column is_hadir added to kajian_registrations.');
+  } catch (e: any) {
+    console.log('Note: is_hadir might already exist:', e.message);
+  }
+
+  try {
+    await sql(`ALTER TABLE "kajian_registrations" ADD COLUMN "checked_in_at" timestamp NULL`);
+    console.log('Column checked_in_at added to kajian_registrations.');
+  } catch (e: any) {
+    console.log('Note: checked_in_at might already exist:', e.message);
+  }
+
   console.log('Migration completed.');
   process.exit(0);
 }
