@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import * as XLSX from "xlsx";
 import { Search, Plus, Edit, Trash2, Users, FileDown } from "lucide-react";
 import { styles, fmt, Pagination, Toast, formatDate } from "./shared";
 import { exportToExcel } from "@/lib/excel";
@@ -10,6 +11,8 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState<string | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const pageSize = 10;
   
   const filtered = data.filter(k => 
@@ -59,6 +62,74 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
     }
   };
 
+  const handleDownloadTemplate = () => {
+    const templateData = [{
+      'Judul Kajian': 'Kajian Fiqih Muamalah',
+      'Pemateri/Ustadz': 'Ustadz Dr. Erwandi Tarmizi',
+      'Kategori': 'Fiqih',
+      'Tanggal': '2026-06-01',
+      'Waktu': '09:00 - 11:30',
+      'Tipe': 'paid',
+      'Harga': 50000,
+      'Kuota': 100,
+      'URL Zoom': '',
+      'URL Youtube': ''
+    }];
+    exportToExcel(templateData, 'Template_Import_Kajian');
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws);
+        
+        const payload = data.map((row: any) => ({
+          title: row['Judul Kajian'],
+          ustadz: row['Pemateri/Ustadz'],
+          category: row['Kategori'],
+          date: row['Tanggal'],
+          time: row['Waktu'],
+          type: row['Tipe'] === 'Infaq' || row['Tipe'] === 'free' ? 'free' : 'paid',
+          price: Number(row['Harga']) || 0,
+          spot: Number(row['Kuota']) || 0,
+          url_zoom: row['URL Zoom'] || null,
+          url_youtube: row['URL Youtube'] || null,
+          image: " " // Kosongkan gambar sesuai request
+        }));
+
+        const res = await fetch('/api/kajian/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const json = await res.json();
+        if (json.success) {
+          showToast(`Berhasil mengimpor ${json.count} kajian. Silakan refresh halaman.`);
+          setTimeout(() => window.location.reload(), 2000);
+        } else {
+          alert("Gagal mengimpor data: " + json.error);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan saat membaca file Excel.");
+      } finally {
+        setIsImporting(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
+
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
       {toast && <Toast msg={toast} />}
@@ -74,6 +145,19 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
           />
         </div>
         <div style={{ display: "flex", gap: 12 }}>
+          <button onClick={handleDownloadTemplate} style={{...styles.secondaryBtn, display: 'flex', alignItems: 'center', gap: 6}}>
+            Unduh Template
+          </button>
+          <input 
+            type="file" 
+            accept=".xlsx, .xls" 
+            ref={fileInputRef} 
+            onChange={handleImport} 
+            style={{ display: 'none' }} 
+          />
+          <button onClick={() => fileInputRef.current?.click()} disabled={isImporting} style={{...styles.secondaryBtn, display: 'flex', alignItems: 'center', gap: 6, opacity: isImporting ? 0.7 : 1}}>
+            {isImporting ? 'Mengimpor...' : 'Import Excel'}
+          </button>
           <button onClick={handleExport} style={styles.excelBtn}>
             <FileDown size={18} /> Export Excel
           </button>

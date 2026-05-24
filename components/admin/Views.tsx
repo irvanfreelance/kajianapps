@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import * as XLSX from "xlsx";
 import { Search, Plus, Edit, Trash2, X, FileDown, Camera, CheckCircle } from "lucide-react";
 import { styles, fmt, formatDate, Pagination, Toast, getStatusStyle } from "./shared";
 import { exportToExcel } from "@/lib/excel";
@@ -662,7 +663,17 @@ export function UserView({ initialData }: { initialData: any[] }) {
   const [data, setData] = useState(initialData);
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [toast, setToast] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState<any>({});
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const pageSize = 10;
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const filtered = data.filter(u => 
     u.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -689,8 +700,91 @@ export function UserView({ initialData }: { initialData: any[] }) {
     exportToExcel(exportData, 'Data_Jamaah');
   };
 
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/admin/users/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      const json = await res.json();
+      if (json.success) {
+        setData(data.map(u => u.id === formData.id ? { ...u, ...formData } : u));
+        showToast("Data jamaah berhasil diperbarui");
+        setIsModalOpen(false);
+      } else {
+        alert("Gagal menyimpan data: " + json.error);
+      }
+    } catch (err) {
+      alert("Terjadi kesalahan sistem");
+    }
+  };
+
+  const handleDownloadTemplate = () => {
+    const templateData = [{
+      'Nama Lengkap': 'Fulan bin Fulan',
+      'Email': 'fulan@example.com',
+      'No. WhatsApp': '081234567890',
+      'Jenis Kelamin': 'Laki-laki',
+      'Pekerjaan': 'Karyawan Swasta',
+      'Tahun Lahir': 1990,
+      'Tanggal Bergabung': '2026-05-20'
+    }];
+    exportToExcel(templateData, 'Template_Import_Jamaah');
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const rowData = XLSX.utils.sheet_to_json(ws);
+        
+        const payload = rowData.map((row: any) => ({
+          name: row['Nama Lengkap'],
+          email: row['Email'],
+          phone: String(row['No. WhatsApp'] || ""),
+          gender: row['Jenis Kelamin'],
+          job: row['Pekerjaan'],
+          yearBorn: row['Tahun Lahir'],
+          joinedDate: row['Tanggal Bergabung']
+        }));
+
+        const res = await fetch('/api/user/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const json = await res.json();
+        if (json.success) {
+          showToast(`Berhasil mengimpor ${json.count} jamaah. Silakan refresh halaman.`);
+          setTimeout(() => window.location.reload(), 2000);
+        } else {
+          alert("Gagal mengimpor data: " + json.error);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan saat membaca file Excel.");
+      } finally {
+        setIsImporting(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
+
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
+      {toast && <Toast msg={toast} />}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 16 }}>
         <div style={{ position: "relative", width: "100%", maxWidth: 300 }}>
           <Search size={18} color="#94A3B8" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
@@ -702,9 +796,24 @@ export function UserView({ initialData }: { initialData: any[] }) {
             onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
           />
         </div>
-        <button onClick={handleExport} style={styles.excelBtn}>
-          <FileDown size={18} /> Export Excel
-        </button>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button onClick={handleDownloadTemplate} style={{...styles.secondaryBtn, display: 'flex', alignItems: 'center', gap: 6}}>
+            Unduh Template
+          </button>
+          <input 
+            type="file" 
+            accept=".xlsx, .xls" 
+            ref={fileInputRef} 
+            onChange={handleImport} 
+            style={{ display: 'none' }} 
+          />
+          <button onClick={() => fileInputRef.current?.click()} disabled={isImporting} style={{...styles.secondaryBtn, display: 'flex', alignItems: 'center', gap: 6, opacity: isImporting ? 0.7 : 1}}>
+            {isImporting ? 'Mengimpor...' : 'Import Excel'}
+          </button>
+          <button onClick={handleExport} style={styles.excelBtn}>
+            <FileDown size={18} /> Export Excel
+          </button>
+        </div>
       </div>
 
       <div style={styles.card}>
@@ -721,6 +830,7 @@ export function UserView({ initialData }: { initialData: any[] }) {
                 <th style={styles.th}>Pekerjaan</th>
                 <th style={styles.th}>Tahun Lahir</th>
                 <th style={styles.th}>Tgl Bergabung</th>
+                <th style={styles.th}>Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -735,6 +845,11 @@ export function UserView({ initialData }: { initialData: any[] }) {
                   <td style={styles.td}><span style={{ fontSize: 13, color: "#475569" }}>{u.job || '-'}</span></td>
                   <td style={styles.td}><span style={{ fontSize: 13, color: "#475569" }}>{u.yearBorn || '-'}</span></td>
                   <td style={styles.td}><span style={{ fontSize: 13, color: "#64748B" }}>{u.joinedDate || u.joined}</span></td>
+                  <td style={styles.td}>
+                    <button onClick={() => { setFormData(u); setIsModalOpen(true); }} style={styles.actionBtnEdit}>
+                      <Edit size={16} />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -742,6 +857,53 @@ export function UserView({ initialData }: { initialData: any[] }) {
         </div>
         {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} setPage={setCurrentPage} />}
       </div>
+
+      {isModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContentBase}>
+            <div style={styles.modalHeader}>
+              <h3 style={{ fontSize: 18, fontWeight: 600 }}>Edit Data Jamaah</h3>
+              <button onClick={() => setIsModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={20}/></button>
+            </div>
+            <form onSubmit={handleSave} style={{ padding: 24 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div>
+                  <label style={styles.label}>Nama Lengkap</label>
+                  <input required value={formData.name || ""} onChange={e => setFormData({...formData, name: e.target.value})} style={styles.inputForm} type="text" />
+                </div>
+                <div>
+                  <label style={styles.label}>Email</label>
+                  <input required value={formData.email || ""} onChange={e => setFormData({...formData, email: e.target.value})} style={styles.inputForm} type="email" />
+                </div>
+                <div>
+                  <label style={styles.label}>No. WhatsApp</label>
+                  <input value={formData.phone || ""} onChange={e => setFormData({...formData, phone: e.target.value})} style={styles.inputForm} type="text" />
+                </div>
+                <div>
+                  <label style={styles.label}>Jenis Kelamin</label>
+                  <select value={formData.gender || ""} onChange={e => setFormData({...formData, gender: e.target.value})} style={styles.inputForm}>
+                    <option value="">Pilih</option>
+                    <option value="Laki-laki">Laki-laki</option>
+                    <option value="Perempuan">Perempuan</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={styles.label}>Pekerjaan</label>
+                  <input value={formData.job || ""} onChange={e => setFormData({...formData, job: e.target.value})} style={styles.inputForm} type="text" />
+                </div>
+                <div>
+                  <label style={styles.label}>Tahun Lahir</label>
+                  <input value={formData.yearBorn || ""} onChange={e => setFormData({...formData, yearBorn: e.target.value})} style={styles.inputForm} type="number" />
+                </div>
+              </div>
+              <div style={{ marginTop: 24, display: "flex", justifyContent: "flex-end", gap: 12 }}>
+                <button type="button" onClick={() => setIsModalOpen(false)} style={styles.secondaryBtn}>Batal</button>
+                <button type="submit" style={{...styles.primaryBtn, width: "auto"}}>Simpan Perubahan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
