@@ -157,7 +157,7 @@ export function ProductView({ initialData }: { initialData: any[] }) {
             </tbody>
           </table>
         </div>
-        {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} setPage={setCurrentPage} />}
+        {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={filtered.length} setPage={setCurrentPage} />}
       </div>
 
       {isModalOpen && (
@@ -260,6 +260,25 @@ export function OrderView({ initialData }: { initialData: any[] }) {
       }
     } catch (err) {
       alert("Terjadi kesalahan sistem");
+    }
+  };
+
+  const handleDelete = async (id: number | string) => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus pesanan ini? Tindakan ini tidak dapat dibatalkan.")) return;
+    try {
+      const res = await fetch('/api/admin/orders/delete', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setData(data.filter(o => o.id !== id && o.order_code !== id && o.orderCode !== id));
+        showToast("Pesanan berhasil dihapus");
+      } else {
+        alert("Gagal menghapus pesanan: " + json.error);
+      }
+    } catch (err) {
+      alert("Terjadi kesalahan sistem saat menghapus");
     }
   };
 
@@ -504,6 +523,17 @@ export function OrderView({ initialData }: { initialData: any[] }) {
                         >
                           Detail
                         </button>
+                        <button 
+                          onClick={() => handleDelete(o.id || o.orderCode || o.order_code)}
+                          style={{ 
+                            padding: "6px 12px", borderRadius: 8, border: "none", 
+                            background: "#FEF2F2", color: "#EF4444", fontSize: 12, 
+                            fontWeight: 700, cursor: "pointer"
+                          }}
+                          title="Hapus"
+                        >
+                          Hapus
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -512,7 +542,7 @@ export function OrderView({ initialData }: { initialData: any[] }) {
             </tbody>
           </table>
         </div>
-        {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} setPage={setCurrentPage} />}
+        {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={filteredData.length} setPage={setCurrentPage} />}
       </div>
 
       {/* Modal Bukti Transfer */}
@@ -721,6 +751,25 @@ export function UserView({ initialData }: { initialData: any[] }) {
     }
   };
 
+  const handleDelete = async (id: number | string) => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus jamaah ini? Tindakan ini tidak dapat dibatalkan.")) return;
+    try {
+      const res = await fetch('/api/admin/users/delete', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setData(data.filter(u => u.id !== id));
+        showToast("Jamaah berhasil dihapus");
+      } else {
+        alert("Gagal menghapus jamaah: " + json.error);
+      }
+    } catch (err) {
+      alert("Terjadi kesalahan sistem saat menghapus");
+    }
+  };
+
   const handleDownloadTemplate = () => {
     const templateData = [{
       'Nama Lengkap': 'Fulan bin Fulan',
@@ -846,16 +895,21 @@ export function UserView({ initialData }: { initialData: any[] }) {
                   <td style={styles.td}><span style={{ fontSize: 13, color: "#475569" }}>{u.yearBorn || '-'}</span></td>
                   <td style={styles.td}><span style={{ fontSize: 13, color: "#64748B" }}>{u.joinedDate || u.joined}</span></td>
                   <td style={styles.td}>
-                    <button onClick={() => { setFormData(u); setIsModalOpen(true); }} style={styles.actionBtnEdit}>
-                      <Edit size={16} />
-                    </button>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button onClick={() => { setFormData(u); setIsModalOpen(true); }} style={styles.actionBtnEdit} title="Edit">
+                        <Edit size={16} />
+                      </button>
+                      <button onClick={() => handleDelete(u.id)} style={styles.actionBtnDel} title="Hapus">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} setPage={setCurrentPage} />}
+        {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={filtered.length} setPage={setCurrentPage} />}
       </div>
 
       {isModalOpen && (

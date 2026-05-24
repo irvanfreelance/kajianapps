@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Save, Trash2, Edit, X, Plus, ShieldCheck } from "lucide-react";
 import { styles, Toast } from "./shared";
 
@@ -16,6 +16,39 @@ export default function AdminSettingsView({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [provinces, setProvinces] = useState<any[]>([]);
+  const [cities, setCities] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [selectedProvince, setSelectedProvince] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
+
+  useEffect(() => {
+    fetch("/api/rajaongkir/provinces").then(res => res.json()).then(data => {
+      if(Array.isArray(data)) setProvinces(data);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (selectedProvince) {
+      fetch(`/api/rajaongkir/cities?provinceId=${selectedProvince}`).then(res => res.json()).then(data => {
+        if(Array.isArray(data)) setCities(data);
+      });
+    } else {
+      setCities([]);
+      setSelectedCity("");
+    }
+  }, [selectedProvince]);
+
+  useEffect(() => {
+    if (selectedCity) {
+      fetch(`/api/rajaongkir/districts?cityId=${selectedCity}`).then(res => res.json()).then(data => {
+        if(Array.isArray(data)) setDistricts(data);
+      });
+    } else {
+      setDistricts([]);
+    }
+  }, [selectedCity]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -149,17 +182,75 @@ export default function AdminSettingsView({
             </div>
           </div>
 
-          {settings.filter(s => !['site_title', 'site_favicon'].includes(s.config_key)).map((s) => (
-            <div key={s.config_key}>
-              <label style={styles.label}>{s.config_key.replace(/_/g, ' ').toUpperCase()}</label>
-              <input 
-                defaultValue={s.config_value} 
-                onBlur={(e) => handleUpdateSetting(s.config_key, e.target.value)}
-                style={styles.inputForm} 
-                type="text" 
-              />
-            </div>
-          ))}
+          {settings.filter(s => !['site_title', 'site_favicon', 'rajaongkir_origin_name'].includes(s.config_key)).map((s) => {
+            if (s.config_key === 'rajaongkir_origin_district_id') {
+              return (
+                <div key={s.config_key} style={{ padding: 16, background: "#F8FAFC", borderRadius: 12, border: "1px solid #E2E8F0" }}>
+                  <label style={{...styles.label, marginBottom: 12}}>LOKASI PENGIRIMAN / RAJAONGKIR ORIGIN (Saat Ini: {s.config_value})</label>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginBottom: 6 }}>
+                    {getSetting('rajaongkir_origin_name') || 'Data lokasi belum lengkap'}
+                  </p>
+                  <p style={{ fontSize: 12, color: "#64748B", marginBottom: 12 }}>Pilih Provinsi, Kota, dan Kecamatan untuk mengubah lokasi asal pengiriman.</p>
+                  
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+                    <select 
+                      value={selectedProvince} 
+                      onChange={e => setSelectedProvince(e.target.value)}
+                      style={styles.inputForm}
+                    >
+                      <option value="">-- Pilih Provinsi --</option>
+                      {provinces.map(p => <option key={p.province_id} value={p.province_id}>{p.province}</option>)}
+                    </select>
+                    
+                    <select 
+                      value={selectedCity} 
+                      onChange={e => setSelectedCity(e.target.value)}
+                      style={styles.inputForm}
+                      disabled={!selectedProvince}
+                    >
+                      <option value="">-- Pilih Kota/Kab --</option>
+                      {cities.map(c => <option key={c.city_id} value={c.city_id}>{c.city_name}</option>)}
+                    </select>
+
+                    <select 
+                      value="" 
+                      onChange={e => {
+                        const val = e.target.value;
+                        if(val) {
+                           const provName = provinces.find(p => p.province_id === selectedProvince)?.province;
+                           const cityName = cities.find(c => c.city_id === selectedCity)?.city_name;
+                           const distName = districts.find(d => d.subdistrict_id === val)?.subdistrict_name;
+                           
+                           handleUpdateSetting('rajaongkir_origin_district_id', val);
+                           if (provName && cityName && distName) {
+                             handleUpdateSetting('rajaongkir_origin_name', `${distName}, ${cityName}, ${provName}`);
+                           }
+                           setSelectedProvince(""); 
+                        }
+                      }}
+                      style={styles.inputForm}
+                      disabled={!selectedCity}
+                    >
+                      <option value="">-- Pilih Kecamatan (Simpan) --</option>
+                      {districts.map(d => <option key={d.subdistrict_id} value={d.subdistrict_id}>{d.subdistrict_name}</option>)}
+                    </select>
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div key={s.config_key}>
+                <label style={styles.label}>{s.config_key.replace(/_/g, ' ').toUpperCase()}</label>
+                <input 
+                  defaultValue={s.config_value} 
+                  onBlur={(e) => handleUpdateSetting(s.config_key, e.target.value)}
+                  style={styles.inputForm} 
+                  type="text" 
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
 

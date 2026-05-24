@@ -41,14 +41,17 @@ export const OrderStatusBadge = ({ status }: { status: string }) => {
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
+  totalItems: number;
   setPage: (page: number) => void;
 }
 
-export const Pagination = ({ currentPage, totalPages, setPage }: PaginationProps) => {
+export const Pagination = ({ currentPage, totalPages, totalItems, setPage }: PaginationProps) => {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderTop: "1px solid #F1F5F9", marginTop: 8 }}>
       <p style={{ fontSize: 13, color: "#64748B", fontWeight: 500 }}>
-        Halaman <span style={{ fontWeight: 700, color: "#0F172A" }}>{currentPage}</span> dari <span style={{ fontWeight: 700, color: "#0F172A" }}>{totalPages}</span>
+        Halaman <span style={{ fontWeight: 700, color: "#0F172A" }}>{currentPage}</span> dari <span style={{ fontWeight: 700, color: "#0F172A" }}>{totalPages}</span> 
+        <span style={{ margin: "0 8px", color: "#CBD5E1" }}>|</span> 
+        Total <span style={{ fontWeight: 700, color: "#0F172A" }}>{totalItems}</span> Data
       </p>
       <div style={{ display: "flex", gap: 8 }}>
         <button 

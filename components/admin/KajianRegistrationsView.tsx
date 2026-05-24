@@ -1,10 +1,10 @@
 "use client";
 import { useState } from "react";
-import { Search, FileDown, Ticket, CheckCircle, Clock } from "lucide-react";
+import { Search, FileDown, Ticket, CheckCircle, Clock, Plus, X, Trash2 } from "lucide-react";
 import { styles, fmt, Pagination, formatDate } from "./shared";
 import { exportToExcel } from "@/lib/excel";
 
-export default function KajianRegistrationsView({ initialData }: { initialData: any[] }) {
+export default function KajianRegistrationsView({ initialData, users = [], kajianList = [] }: { initialData: any[], users?: any[], kajianList?: any[] }) {
   const [data, setData] = useState(initialData);
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -12,6 +12,8 @@ export default function KajianRegistrationsView({ initialData }: { initialData: 
   const [methodFilter, setMethodFilter] = useState("all");
   const [activeProofUrl, setActiveProofUrl] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState<any>({ status: 'PAID', isApproved: true, paidAmount: 0 });
   const pageSize = 10;
 
   const filtered = data.filter(r => {
@@ -73,6 +75,50 @@ export default function KajianRegistrationsView({ initialData }: { initialData: 
     }
   };
 
+  const handleDelete = async (id: number) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus pendaftaran ini? Tindakan ini tidak dapat dibatalkan.")) return;
+    try {
+      const res = await fetch('/api/admin/kajian-registrations/delete', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const json = await res.json();
+      if (json.success) {
+        setData(prev => prev.filter(r => r.id !== id));
+      } else {
+        alert("Gagal: " + json.error);
+      }
+    } catch (err) {
+      alert("Terjadi kesalahan sistem saat menghapus");
+    }
+  };
+
+  const handleSaveManual = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.userId || !formData.kajianId) {
+      alert("Jamaah dan Kajian wajib dipilih");
+      return;
+    }
+    
+    try {
+      const res = await fetch('/api/admin/kajian-registrations/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      const json = await res.json();
+      if (json.success) {
+        setData([json.data, ...data]);
+        setIsModalOpen(false);
+        setFormData({ status: 'PAID', isApproved: true, paidAmount: 0 });
+      } else {
+        alert("Gagal: " + json.error);
+      }
+    } catch (err) {
+      alert("Terjadi kesalahan sistem");
+    }
+  };
+
   // Extract unique payment methods dynamically
   const uniqueMethods = Array.from(new Set(data.map(r => r.payment_method || 'Gratis')));
 
@@ -114,9 +160,14 @@ export default function KajianRegistrationsView({ initialData }: { initialData: 
           </select>
         </div>
 
-        <button onClick={handleExport} style={styles.excelBtn}>
-          <FileDown size={18} /> Export Excel
-        </button>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button onClick={() => setIsModalOpen(true)} style={styles.primaryBtn}>
+            <Plus size={18} /> Entry Manual
+          </button>
+          <button onClick={handleExport} style={styles.excelBtn}>
+            <FileDown size={18} /> Export Excel
+          </button>
+        </div>
       </div>
 
       <div style={styles.card}>
@@ -212,6 +263,13 @@ export default function KajianRegistrationsView({ initialData }: { initialData: 
                       {r.is_approved && !r.payment_proof && (
                         <span style={{ fontSize: 12, color: "#94A3B8" }}>-</span>
                       )}
+                      <button 
+                        onClick={() => handleDelete(r.id)}
+                        style={styles.actionBtnDel}
+                        title="Hapus"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -229,7 +287,7 @@ export default function KajianRegistrationsView({ initialData }: { initialData: 
           </div>
         )}
 
-        {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} setPage={setCurrentPage} />}
+        {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={filtered.length} setPage={setCurrentPage} />}
       </div>
 
       {/* Reusable Bukti Transfer Modal */}
@@ -291,6 +349,86 @@ export default function KajianRegistrationsView({ initialData }: { initialData: 
                 Tutup
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Entry Modal */}
+      {isModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContentBase}>
+            <div style={styles.modalHeader}>
+              <h3 style={{ fontSize: 18, fontWeight: 600 }}>Tambah Pendaftaran Manual</h3>
+              <button onClick={() => setIsModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={20}/></button>
+            </div>
+            <form onSubmit={handleSaveManual} style={{ padding: 24 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
+                <div>
+                  <label style={styles.label}>Jamaah</label>
+                  <select 
+                    required 
+                    value={formData.userId || ""} 
+                    onChange={e => setFormData({...formData, userId: e.target.value})} 
+                    style={styles.inputForm}
+                  >
+                    <option value="">-- Pilih Jamaah --</option>
+                    {users.map(u => (
+                      <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={styles.label}>Kajian</label>
+                  <select 
+                    required 
+                    value={formData.kajianId || ""} 
+                    onChange={e => setFormData({...formData, kajianId: e.target.value})} 
+                    style={styles.inputForm}
+                  >
+                    <option value="">-- Pilih Kajian --</option>
+                    {kajianList.map(k => (
+                      <option key={k.id} value={k.id}>{k.title} - {k.ustadz}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={styles.label}>Nominal Bayar (Rp)</label>
+                  <input 
+                    required 
+                    type="number" 
+                    value={formData.paidAmount} 
+                    onChange={e => setFormData({...formData, paidAmount: Number(e.target.value)})} 
+                    style={styles.inputForm} 
+                  />
+                  <small style={{ color: "#64748B" }}>Isi 0 jika kajian gratis.</small>
+                </div>
+                <div>
+                  <label style={styles.label}>Status Pembayaran</label>
+                  <select 
+                    value={formData.status} 
+                    onChange={e => setFormData({...formData, status: e.target.value})} 
+                    style={styles.inputForm}
+                  >
+                    <option value="PAID">Lunas (PAID)</option>
+                    <option value="PENDING">Menunggu (PENDING)</option>
+                  </select>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input 
+                    type="checkbox" 
+                    checked={formData.isApproved} 
+                    onChange={e => setFormData({...formData, isApproved: e.target.checked})} 
+                    id="isApproved" 
+                    style={{ width: 16, height: 16 }}
+                  />
+                  <label htmlFor="isApproved" style={{ fontSize: 14, color: "#0F172A", cursor: 'pointer' }}>Langsung Approve (Setujui pendaftaran)</label>
+                </div>
+              </div>
+              <div style={{ marginTop: 24, display: "flex", justifyContent: "flex-end", gap: 12 }}>
+                <button type="button" onClick={() => setIsModalOpen(false)} style={styles.secondaryBtn}>Batal</button>
+                <button type="submit" style={{...styles.primaryBtn, width: "auto"}}>Simpan Pendaftaran</button>
+              </div>
+            </form>
           </div>
         </div>
       )}

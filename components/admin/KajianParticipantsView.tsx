@@ -143,7 +143,7 @@ export default function KajianParticipantsView({ kajian, initialData }: { kajian
           </div>
         )}
 
-        {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} setPage={setCurrentPage} />}
+        {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={filtered.length} setPage={setCurrentPage} />}
       </div>
     </div>
   );
