@@ -988,7 +988,16 @@ export function UserView({ initialData }: { initialData: any[] }) {
                 </div>
                 <div>
                   <label style={styles.label}>Pekerjaan</label>
-                  <input value={formData.job || ""} onChange={e => setFormData({...formData, job: e.target.value})} style={styles.inputForm} type="text" />
+                  <select value={formData.job || ""} onChange={e => setFormData({...formData, job: e.target.value})} style={styles.inputForm}>
+                    <option value="">Pilih Pekerjaan</option>
+                    <option value="Pelajar/Mahasiswa">Pelajar/Mahasiswa</option>
+                    <option value="Pegawai Negeri Sipil (PNS)">Pegawai Negeri Sipil (PNS)</option>
+                    <option value="Pegawai Swasta">Pegawai Swasta</option>
+                    <option value="Wirausaha/Mandiri">Wirausaha/Mandiri</option>
+                    <option value="Ibu Rumah Tangga">Ibu Rumah Tangga</option>
+                    <option value="Pensiunan">Pensiunan</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
                 </div>
                 <div>
                   <label style={styles.label}>Tahun Lahir</label>

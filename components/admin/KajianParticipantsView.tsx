@@ -101,6 +101,7 @@ export default function KajianParticipantsView({ kajian, initialData }: { kajian
   const handleExport = () => {
     const exportData = filtered.map((p, i) => ({
       'No': i + 1,
+      'Kode Tiket': p.ticket_code || "-",
       'Nama': p.name,
       'WhatsApp': p.phone,
       'Email': p.email,
@@ -254,6 +255,7 @@ export default function KajianParticipantsView({ kajian, initialData }: { kajian
               <tr>
                 <th style={{ ...styles.th, width: 40, textAlign: "center" }}>No.</th>
                 <th style={styles.th}>Nama Peserta</th>
+                <th style={styles.th}>Kode Tiket</th>
                 <th style={styles.th}>WhatsApp</th>
                 <th style={styles.th}>Email</th>
                 <th style={{ ...styles.th, textAlign: "center" }}>Status Hadir</th>
@@ -286,6 +288,12 @@ export default function KajianParticipantsView({ kajian, initialData }: { kajian
                         </div>
                         <span style={{ fontWeight: 600, color: "#0F172A", fontSize: 14 }}>{p.name}</span>
                       </div>
+                    </td>
+
+                    <td style={styles.td}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#0891B2", fontFamily: "monospace", background: "#ECFEFF", padding: "4px 8px", borderRadius: 6, border: "1px solid #A5F3FC" }}>
+                        {p.ticket_code || "-"}
+                      </span>
                     </td>
 
                     <td style={styles.td}>

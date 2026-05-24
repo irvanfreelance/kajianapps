@@ -89,7 +89,7 @@ export default function KajianScanView({ kajian }: Props) {
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: { facingMode: "environment" },
       });
       streamRef.current = stream;
 
@@ -183,79 +183,78 @@ export default function KajianScanView({ kajian }: Props) {
 
       {/* Camera Area */}
       <div style={{ position: "relative", width: "100%", maxWidth: 600, margin: "0 auto", padding: "24px 20px" }}>
-        {!scanning ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20, padding: "60px 0" }}>
-            <div style={{ width: 100, height: 100, borderRadius: "50%", background: "rgba(8, 145, 178, 0.12)", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(8, 145, 178, 0.3)" }}>
-              <QrCode size={48} color="#0891B2" />
+        <div style={{ display: !scanning ? "flex" : "none", flexDirection: "column", alignItems: "center", gap: 20, padding: "60px 0" }}>
+          <div style={{ width: 100, height: 100, borderRadius: "50%", background: "rgba(8, 145, 178, 0.12)", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(8, 145, 178, 0.3)" }}>
+            <QrCode size={48} color="#0891B2" />
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#F8FAFC", marginBottom: 8 }}>Siap Scan QR</h2>
+            <p style={{ fontSize: 14, color: "#64748B", lineHeight: 1.6 }}>
+              Klik tombol di bawah untuk membuka kamera dan mulai scan QR Code tiket jamaah.
+            </p>
+          </div>
+          {cameraError && (
+            <div style={{ padding: "14px 18px", background: "rgba(239, 68, 68, 0.12)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: 14, textAlign: "center" }}>
+              <p style={{ fontSize: 13, color: "#FCA5A5", lineHeight: 1.6 }}>{cameraError}</p>
             </div>
-            <div style={{ textAlign: "center" }}>
-              <h2 style={{ fontSize: 20, fontWeight: 700, color: "#F8FAFC", marginBottom: 8 }}>Siap Scan QR</h2>
-              <p style={{ fontSize: 14, color: "#64748B", lineHeight: 1.6 }}>
-                Klik tombol di bawah untuk membuka kamera dan mulai scan QR Code tiket jamaah.
-              </p>
+          )}
+          <button
+            onClick={startScanning}
+            style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 36px", borderRadius: 16, background: "linear-gradient(135deg, #0891B2, #06B6D4)", border: "none", color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", boxShadow: "0 8px 20px rgba(8, 145, 178, 0.35)" }}
+          >
+            <Camera size={20} /> Mulai Scan
+          </button>
+        </div>
+        
+        <div style={{ display: scanning ? "flex" : "none", flexDirection: "column", gap: 16 }}>
+          {/* Viewfinder */}
+          <div style={{ position: "relative", borderRadius: 24, overflow: "hidden", border: "2px solid rgba(8, 145, 178, 0.5)", boxShadow: "0 0 0 4px rgba(8, 145, 178, 0.1)" }}>
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              playsInline
+              style={{ width: "100%", display: "block", background: "#000" }}
+            />
+            {/* Scan Crosshair */}
+            <div style={{ position: "absolute", inset: 0, pointerEvents: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ width: 220, height: 220, position: "relative" }}>
+                {/* Corner borders */}
+                {[
+                  { top: 0, left: 0, borderTop: "3px solid #0891B2", borderLeft: "3px solid #0891B2", borderRadius: "8px 0 0 0" },
+                  { top: 0, right: 0, borderTop: "3px solid #0891B2", borderRight: "3px solid #0891B2", borderRadius: "0 8px 0 0" },
+                  { bottom: 0, left: 0, borderBottom: "3px solid #0891B2", borderLeft: "3px solid #0891B2", borderRadius: "0 0 0 8px" },
+                  { bottom: 0, right: 0, borderBottom: "3px solid #0891B2", borderRight: "3px solid #0891B2", borderRadius: "0 0 8px 0" },
+                ].map((s, i) => (
+                  <div key={i} style={{ position: "absolute", width: 32, height: 32, ...s }} />
+                ))}
+                {/* Scan line animation */}
+                <div style={{ position: "absolute", left: 0, right: 0, height: 2, background: "linear-gradient(90deg, transparent, #0891B2, transparent)", animation: "scanLine 2s ease-in-out infinite" }} />
+              </div>
             </div>
-            {cameraError && (
-              <div style={{ padding: "14px 18px", background: "rgba(239, 68, 68, 0.12)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: 14, textAlign: "center" }}>
-                <p style={{ fontSize: 13, color: "#FCA5A5", lineHeight: 1.6 }}>{cameraError}</p>
+            {/* Processing overlay */}
+            {processing && (
+              <div style={{ position: "absolute", inset: 0, background: "rgba(15, 23, 42, 0.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ width: 40, height: 40, border: "3px solid rgba(255,255,255,0.2)", borderTop: "3px solid #0891B2", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
               </div>
             )}
-            <button
-              onClick={startScanning}
-              style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 36px", borderRadius: 16, background: "linear-gradient(135deg, #0891B2, #06B6D4)", border: "none", color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", boxShadow: "0 8px 20px rgba(8, 145, 178, 0.35)" }}
-            >
-              <Camera size={20} /> Mulai Scan
-            </button>
           </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {/* Viewfinder */}
-            <div style={{ position: "relative", borderRadius: 24, overflow: "hidden", border: "2px solid rgba(8, 145, 178, 0.5)", boxShadow: "0 0 0 4px rgba(8, 145, 178, 0.1)" }}>
-              <video
-                ref={videoRef}
-                muted
-                playsInline
-                style={{ width: "100%", display: "block", background: "#000" }}
-              />
-              {/* Scan Crosshair */}
-              <div style={{ position: "absolute", inset: 0, pointerEvents: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <div style={{ width: 220, height: 220, position: "relative" }}>
-                  {/* Corner borders */}
-                  {[
-                    { top: 0, left: 0, borderTop: "3px solid #0891B2", borderLeft: "3px solid #0891B2", borderRadius: "8px 0 0 0" },
-                    { top: 0, right: 0, borderTop: "3px solid #0891B2", borderRight: "3px solid #0891B2", borderRadius: "0 8px 0 0" },
-                    { bottom: 0, left: 0, borderBottom: "3px solid #0891B2", borderLeft: "3px solid #0891B2", borderRadius: "0 0 0 8px" },
-                    { bottom: 0, right: 0, borderBottom: "3px solid #0891B2", borderRight: "3px solid #0891B2", borderRadius: "0 0 8px 0" },
-                  ].map((s, i) => (
-                    <div key={i} style={{ position: "absolute", width: 32, height: 32, ...s }} />
-                  ))}
-                  {/* Scan line animation */}
-                  <div style={{ position: "absolute", left: 0, right: 0, height: 2, background: "linear-gradient(90deg, transparent, #0891B2, transparent)", animation: "scanLine 2s ease-in-out infinite" }} />
-                </div>
-              </div>
-              {/* Processing overlay */}
-              {processing && (
-                <div style={{ position: "absolute", inset: 0, background: "rgba(15, 23, 42, 0.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <div style={{ width: 40, height: 40, border: "3px solid rgba(255,255,255,0.2)", borderTop: "3px solid #0891B2", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-                </div>
-              )}
-            </div>
 
-            <canvas ref={canvasRef} style={{ display: "none" }} />
+          <canvas ref={canvasRef} style={{ display: "none" }} />
 
-            {/* Scan status text */}
-            <p style={{ textAlign: "center", fontSize: 13, color: "#475569", animation: "pulse 2s infinite" }}>
-              {processing ? "Memproses..." : "Arahkan kamera ke QR Code tiket jamaah..."}
-            </p>
+          {/* Scan status text */}
+          <p style={{ textAlign: "center", fontSize: 13, color: "#475569", animation: "pulse 2s infinite" }}>
+            {processing ? "Memproses..." : "Arahkan kamera ke QR Code tiket jamaah..."}
+          </p>
 
-            {/* Stop button */}
-            <button
-              onClick={stopCamera}
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "14px 0", borderRadius: 14, background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)", color: "#FCA5A5", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
-            >
-              <CameraOff size={16} /> Hentikan Kamera
-            </button>
-          </div>
-        )}
+          {/* Stop button */}
+          <button
+            onClick={stopCamera}
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "14px 0", borderRadius: 14, background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)", color: "#FCA5A5", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+          >
+            <CameraOff size={16} /> Hentikan Kamera
+          </button>
+        </div>
 
         {/* Result Overlay */}
         {scanResult && resultConfig && (

@@ -11,9 +11,9 @@ export async function POST(req: Request) {
 
     await sql(`
       UPDATE users 
-      SET name = $1, email = $2, phone = $3, gender = $4, job = $5, year_born = $6, joined_date = $7
-      WHERE id = $8
-    `, [name, email, phone || null, gender || null, job || null, yearBorn || null, joinedDate || null, id]);
+      SET name = $1, email = $2, phone = $3, gender = $4, job = $5, year_born = $6
+      WHERE id = $7
+    `, [name, email, phone || null, gender || null, job || null, yearBorn || null, id]);
 
     return NextResponse.json({ success: true, message: 'Data jamaah berhasil diperbarui' });
   } catch (error: any) {
