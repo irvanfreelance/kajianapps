@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import QRCode from "react-qr-code";
+import Image from "next/image";
 
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 const CATEGORIES_SHOP = ["Semua", "Fashion", "Merchandise", "Parfum", "Ibadah", "Buku"];
@@ -39,8 +40,8 @@ export function TokoView({ initialProducts }: { initialProducts: any[] }) {
       <div style={{ padding: "0 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         {filtered.map((p) => (
           <Link key={p.id} href={`/toko/${p.slug}`} style={{ background: "#fff", borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 15px rgba(0,0,0,0.04)", border: "1px solid #F1F5F9", cursor: "pointer", textDecoration: 'none', color: 'inherit' }}>
-            <div style={{ height: 160, background: "#F8FAFC", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-               <img src={p.image} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div style={{ height: 160, background: "#F8FAFC", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative" }}>
+               <Image src={p.image} alt={p.name} width={180} height={160} style={{ objectFit: "cover" }} />
             </div>
             <div style={{ padding: 14 }}>
               <p style={{ fontSize: 12, color: "#64748B", marginBottom: 4 }}>{p.category}</p>
@@ -89,7 +90,7 @@ function QRCodeDisplay({ value }: { value: string }) {
     const svgData = new XMLSerializer().serializeToString(svg);
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    const img = new Image();
+    const img = new window.Image();
     const blob = new Blob([svgData], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
     img.onload = () => {
@@ -290,7 +291,9 @@ export function TiketView() {
                   transition: "all 0.2s ease"
                 }}
               >
-                <img src={reg.image || '/placeholder.png'} style={{ width: 60, height: 60, borderRadius: 12, objectFit: "cover", background: "#F1F5F9", flexShrink: 0 }} />
+                <div style={{ width: 60, height: 60, position: "relative", flexShrink: 0 }}>
+                  <Image src={reg.image || '/placeholder.png'} fill style={{ borderRadius: 12, objectFit: "cover", background: "#F1F5F9" }} alt="" />
+                </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{reg.title}</p>
                   <p style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>{reg.ustadz}</p>
@@ -365,7 +368,9 @@ export function TiketView() {
               </button>
             </div>
 
-            <img src={selectedTicket.image || '/placeholder.png'} style={{ width: "100%", height: 180, borderRadius: 16, objectFit: "cover", background: "#F1F5F9" }} />
+            <div style={{ width: "100%", height: 180, position: "relative", borderRadius: 16, overflow: "hidden" }}>
+              <Image src={selectedTicket.image || '/placeholder.png'} fill style={{ objectFit: "cover", background: "#F1F5F9" }} alt="" />
+            </div>
 
             <div>
               <h4 style={{ fontSize: 16, fontWeight: 800, color: "#0F172A" }}>{selectedTicket.title}</h4>
@@ -681,9 +686,9 @@ export function ProfilView() {
     <div style={{ paddingBottom: 20 }}>
        <div style={{ background: "linear-gradient(160deg, #155E75, #06B6D4)", padding: "40px 20px 60px", borderRadius: "0 0 40px 40px", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={{ width: 90, height: 90, borderRadius: "50%", background: "#fff", padding: 4, boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}>
-             <div style={{ width: "100%", height: "100%", borderRadius: "50%", background: "linear-gradient(135deg, #CFFAFE, #0891B2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+             <div style={{ width: "100%", height: "100%", borderRadius: "50%", background: "linear-gradient(135deg, #CFFAFE, #0891B2)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
                {session?.user?.image ? (
-                 <img src={session.user.image} alt={userName} style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+                 <Image src={session.user.image} alt={userName} fill style={{ borderRadius: "50%", objectFit: "cover" }} />
                ) : (
                  <span style={{ fontSize: 36, fontWeight: 700, color: "#fff" }}>{userInitial}</span>
                )}
@@ -806,8 +811,8 @@ export function ProfilView() {
                               {order.testimonialImages && (
                                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
                                   {order.testimonialImages.split(",").map((imgUrl: string, idx: number) => (
-                                    <a key={idx} href={imgUrl} target="_blank" rel="noreferrer">
-                                      <img src={imgUrl} alt="Review attachment" style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover", border: "1px solid #E2E8F0" }} />
+                                    <a key={idx} href={imgUrl} target="_blank" rel="noreferrer" style={{ display: "block", width: 44, height: 44, position: "relative" }}>
+                                      <Image src={imgUrl} alt="Review attachment" fill style={{ borderRadius: 8, objectFit: "cover", border: "1px solid #E2E8F0" }} />
                                     </a>
                                   ))}
                                 </div>
@@ -907,10 +912,10 @@ export function ProfilView() {
                   <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                     {reviewImages.map((img, idx) => (
                       <div key={idx} style={{ position: "relative", width: 64, height: 64, borderRadius: 12, overflow: "hidden", border: "1px solid #E2E8F0" }}>
-                        <img src={img} alt="review" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        <Image src={img} alt="review" fill style={{ objectFit: "cover" }} />
                         <button 
                           onClick={() => setReviewImages(reviewImages.filter((_, i) => i !== idx))}
-                          style={{ position: "absolute", top: 2, right: 2, background: "rgba(15,23,42,0.7)", border: "none", borderRadius: "50%", width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                          style={{ position: "absolute", top: 2, right: 2, background: "rgba(15,23,42,0.7)", border: "none", borderRadius: "50%", width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 1 }}
                         >
                           <X size={10} color="#fff" />
                         </button>

@@ -5,6 +5,7 @@ import {
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 const formatDate = (dateStr: string) => {
@@ -37,8 +38,8 @@ export default function HomeView({ kajian, products }: { kajian: any[], products
         <div style={{ position: "absolute", bottom: -20, left: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative", zIndex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <img src="/badar.png" alt="Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            <div style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+              <Image src="/badar.png" alt="Logo" width={44} height={44} style={{ objectFit: "contain" }} />
             </div>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -110,8 +111,8 @@ export default function HomeView({ kajian, products }: { kajian: any[], products
             <Link key={k.id} href={`/kajian/${k.slug}`} style={{ minWidth: 260, background: "#fff", borderRadius: 20, boxShadow: "0 4px 15px rgba(0,0,0,0.04)", border: "1px solid #F1F5F9", cursor: "pointer", overflow: "hidden", textDecoration: 'none', color: 'inherit' }}>
               <div style={{ height: 140, position: "relative", background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                 {/* Blurred Background for aesthetic when image is contain */}
-                <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${k.image})`, backgroundSize: "cover", backgroundPosition: "center", filter: "blur(20px)", opacity: 0.3 }} />
-                <img src={k.image} style={{ width: "100%", height: "100%", objectFit: "contain", position: "relative", zIndex: 1 }} alt={k.title} />
+                <Image src={k.image} fill style={{ objectFit: "cover", filter: "blur(20px)", opacity: 0.3 }} alt="" />
+                <Image src={k.image} width={260} height={140} style={{ objectFit: "contain", position: "relative", zIndex: 1 }} alt={k.title} />
                 <span style={{ position: "absolute", top: 12, right: 12, fontSize: 11, fontWeight: 700, padding: "6px 12px", borderRadius: 20, background: k.type === "free" ? "rgba(220,252,231,0.95)" : "rgba(255,247,237,0.95)", color: k.type === "free" ? "#166534" : "#C2410C", backdropFilter: "blur(8px)", zIndex: 2, boxShadow: "0 4px 10px rgba(0,0,0,0.1)" }}>
                   {k.type === "free" ? "Infaq" : fmt(k.price)}
                 </span>
@@ -140,8 +141,8 @@ export default function HomeView({ kajian, products }: { kajian: any[], products
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           {products.slice(0, 4).map((p: any) => (
             <Link key={p.id} href={`/toko/${p.slug}`} style={{ background: "#fff", borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 15px rgba(0,0,0,0.04)", border: "1px solid #F1F5F9", cursor: "pointer", textDecoration: 'none', color: 'inherit' }}>
-              <div style={{ height: 140, background: "#F8FAFC", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                <img src={p.image} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div style={{ height: 140, background: "#F8FAFC", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative" }}>
+                <Image src={p.image} alt={p.name} width={180} height={140} style={{ objectFit: "cover" }} />
               </div>
               <div style={{ padding: 14 }}>
                 <p style={{ fontSize: 12, fontWeight: 600, color: "#0F172A", lineHeight: 1.4, height: 34, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{p.name}</p>

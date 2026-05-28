@@ -1,5 +1,6 @@
 import { sql } from '@/lib/db';
 import { NextResponse } from 'next/server';
+import { redis } from '@/lib/redis';
 
 export async function GET(request: Request): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
@@ -8,6 +9,15 @@ export async function GET(request: Request): Promise<NextResponse> {
   if (!productId) {
     return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
   }
+
+  const cacheKey = `api:products:reviews:${productId}`;
+
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return NextResponse.json({ success: true, data: cached });
+    }
+  } catch {}
 
   try {
     const reviews = await sql(
@@ -19,6 +29,10 @@ export async function GET(request: Request): Promise<NextResponse> {
        ORDER BY o.created_at DESC`,
       [productId]
     );
+
+    try {
+      await redis.set(cacheKey, reviews);
+    } catch {}
 
     return NextResponse.json({ success: true, data: reviews });
   } catch (error: any) {

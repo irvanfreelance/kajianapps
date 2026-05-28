@@ -3,8 +3,9 @@
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
-import { ShieldCheck, Heart } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import Script from 'next/script';
+import Image from 'next/image';
 
 function UserLoginForm() {
   const searchParams = useSearchParams();
@@ -70,7 +71,7 @@ function UserLoginForm() {
             border: "1px solid rgba(255,255,255,0.2)", boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
             overflow: "hidden"
           }}>
-            <img src="/badar.png" alt="Logo" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 8 }} />
+            <Image src="/badar.png" alt="Logo" width={80} height={80} style={{ objectFit: "contain", padding: 8 }} />
           </div>
           <h1 style={{ fontSize: 32, fontWeight: 800, color: "#fff", letterSpacing: "-0.5px", margin: 0 }}>BADAR</h1>
           <p style={{ fontSize: 16, color: "rgba(255,255,255,0.7)", marginTop: 8 }}>Baik Dari Rumah</p>
@@ -126,6 +127,7 @@ function UserLoginForm() {
             </svg>
             Lanjutkan dengan Google
           </button>
+
 
           <div style={{ marginTop: 32, textAlign: "center" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "#94A3B8", fontSize: 12 }}>

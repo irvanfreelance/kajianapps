@@ -7,6 +7,8 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+import Image from "next/image";
+
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 const formatDate = (dateStr: string) => {
   if (!dateStr) return "-";
@@ -82,8 +84,8 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
       {/* Hero Image */}
       <div style={{ position: "relative", height: 350, overflow: "hidden", background: "#000" }}>
         {/* Blurred background for contain fit */}
-        <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${kajian.image})`, backgroundSize: "cover", backgroundPosition: "center", filter: "blur(40px)", opacity: 0.5 }} />
-        <img src={kajian.image} style={{ width: "100%", height: "100%", objectFit: "contain", position: "relative", zIndex: 1 }} alt={kajian.title} />
+        <Image src={kajian.image} fill style={{ objectFit: "cover", filter: "blur(40px)", opacity: 0.5 }} alt="" />
+        <Image src={kajian.image} width={430} height={350} style={{ objectFit: "contain", position: "relative", zIndex: 1, width: "100%", height: "100%" }} alt={kajian.title} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.8))", zIndex: 2 }} />
         
         {/* Top Buttons - ENSURE VISIBILITY with higher z-index and explicit positioning */}
@@ -155,7 +157,9 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
               {displayRelated.map((k) => (
                 <Link key={k.id} href={`/kajian/${k.slug}`} style={{ textDecoration: "none", background: "#fff", borderRadius: 20, padding: 12, display: "flex", gap: 16, border: "1px solid #F1F5F9" }}>
-                  <img src={k.image} style={{ width: 80, height: 80, borderRadius: 12, objectFit: "cover" }} alt={k.title} />
+                  <div style={{ width: 80, height: 80, position: "relative", flexShrink: 0 }}>
+                    <Image src={k.image} fill style={{ borderRadius: 12, objectFit: "cover" }} alt={k.title} />
+                  </div>
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: 11, fontWeight: 700, color: "#0891B2", textTransform: "uppercase" }}>{k.category}</p>
                     <h3 style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", margin: "4px 0", lineHeight: 1.4 }}>{k.title}</h3>

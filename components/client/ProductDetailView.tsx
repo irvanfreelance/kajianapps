@@ -7,6 +7,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+import Image from "next/image";
+
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 
 export default function ProductDetailView({ product, relatedProducts = [] }: { product: any, relatedProducts?: any[] }) {
@@ -55,7 +57,7 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
     <div style={{ background: "#F8FAFC", minHeight: "100vh", paddingBottom: 100 }}>
       {/* Hero Image Area */}
       <div style={{ position: "relative", height: 400, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <img src={product.image} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+        <Image src={product.image} alt={product.name} width={430} height={400} style={{ objectFit: "contain" }} />
         
         {/* Top Buttons */}
         <div style={{ position: "absolute", top: 20, left: 20, right: 20, display: "flex", justifyContent: "space-between", zIndex: 10 }}>
@@ -160,10 +162,12 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
                       {rev.testimonial_images.split(",").map((imgUrl: string, imgIdx: number) => (
                         <a key={imgIdx} href={imgUrl} target="_blank" rel="noreferrer" style={{ display: "block" }}>
-                          <img 
+                          <Image 
                             src={imgUrl} 
                             alt={`Review ${imgIdx}`} 
-                            style={{ width: 64, height: 64, borderRadius: 10, objectFit: "cover", border: "1px solid #E2E8F0" }} 
+                            width={64}
+                            height={64}
+                            style={{ borderRadius: 10, objectFit: "cover", border: "1px solid #E2E8F0" }} 
                           />
                         </a>
                       ))}
@@ -205,7 +209,9 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               {displayRelated.map((p) => (
                 <Link key={p.id} href={`/toko/${p.slug}`} style={{ textDecoration: "none", background: "#fff", borderRadius: 20, padding: 12, border: "1px solid #F1F5F9" }}>
-                  <img src={p.image} style={{ width: "100%", height: 120, borderRadius: 12, objectFit: "contain", marginBottom: 12 }} alt={p.name} />
+                  <div style={{ width: "100%", height: 120, position: "relative", marginBottom: 12 }}>
+                    <Image src={p.image} fill style={{ objectFit: "contain", borderRadius: 12 }} alt={p.name} />
+                  </div>
                   <p style={{ fontSize: 11, fontWeight: 700, color: "#0891B2", textTransform: "uppercase" }}>{p.category}</p>
                   <h3 style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", margin: "4px 0", height: 40, overflow: "hidden", lineHeight: 1.4 }}>{p.name}</h3>
                   <p style={{ fontSize: 15, fontWeight: 700, color: "#0891B2", marginTop: 8 }}>{fmt(p.price)}</p>

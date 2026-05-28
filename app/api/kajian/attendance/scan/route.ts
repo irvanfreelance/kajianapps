@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
+import { redis } from '@/lib/redis';
 
 export async function POST(req: Request) {
   try {
@@ -65,6 +66,10 @@ export async function POST(req: Request) {
       SET is_hadir = TRUE, checked_in_at = NOW()
       WHERE id = $1
     `, [reg.id]);
+
+    try {
+      await redis.flushall();
+    } catch {}
 
     return NextResponse.json({
       success: true,

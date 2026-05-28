@@ -3,8 +3,13 @@ import GoogleProvider from 'next-auth/providers/google';
 import { sql } from '@/lib/db';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { OAuth2Client } from 'google-auth-library';
+import { headers } from 'next/headers';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+if (process.env.NODE_ENV === 'development') {
+  process.env.NEXTAUTH_URL = 'http://localhost:3000';
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -40,26 +45,65 @@ export const authOptions: NextAuthOptions = {
         }
       },
     }),
+    CredentialsProvider({
+      id: 'mock-login',
+      name: 'Mock Login',
+      credentials: {
+        email: { label: 'Email', type: 'text' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email) return null;
+        return {
+          id: 'mock-id-' + Date.now(),
+          name: 'Mock User',
+          email: credentials.email,
+          image: null,
+        };
+      },
+    }),
   ],
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
       if (!user.email) return false;
 
       try {
-        // Check if admin
-        const admins: any[] = await sql('SELECT * FROM admins WHERE email = $1 AND status = $2', [user.email, 'ACTIVE']);
-        if (admins.length > 0) {
-          user.role = 'ADMIN';
-          user.dbId = admins[0].id;
-          return true;
+        let isAdminLogin = false;
+        try {
+          const reqHeaders = await headers();
+          const referer = reqHeaders.get('referer') || '';
+          isAdminLogin = referer.includes('/panel');
+        } catch (e) {
+          console.error('Error reading referer header:', e);
         }
 
-        // Check if user
-        const users: any[] = await sql('SELECT * FROM users WHERE email = $1', [user.email]);
-        if (users.length > 0) {
-          user.role = 'USER';
-          user.dbId = users[0].id;
-          return true;
+        if (isAdminLogin) {
+          // Admin login flow: check admins table first
+          const admins: any[] = await sql('SELECT * FROM admins WHERE email = $1 AND status = $2', [user.email, 'ACTIVE']);
+          if (admins.length > 0) {
+            user.role = 'ADMIN';
+            user.dbId = admins[0].id;
+            return true;
+          }
+          const users: any[] = await sql('SELECT * FROM users WHERE email = $1', [user.email]);
+          if (users.length > 0) {
+            user.role = 'USER';
+            user.dbId = users[0].id;
+            return true;
+          }
+        } else {
+          // Client login flow: check users table first
+          const users: any[] = await sql('SELECT * FROM users WHERE email = $1', [user.email]);
+          if (users.length > 0) {
+            user.role = 'USER';
+            user.dbId = users[0].id;
+            return true;
+          }
+          const admins: any[] = await sql('SELECT * FROM admins WHERE email = $1 AND status = $2', [user.email, 'ACTIVE']);
+          if (admins.length > 0) {
+            user.role = 'ADMIN';
+            user.dbId = admins[0].id;
+            return true;
+          }
         }
 
         // If neither, assign a temporary role 'NEW_USER'

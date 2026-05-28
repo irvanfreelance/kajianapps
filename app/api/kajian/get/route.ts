@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { sql } from '@/lib/db';
+import { getKajianById, getKajianBySlug } from '@/lib/services/kajian';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -11,17 +11,17 @@ export async function GET(request: Request) {
   }
 
   try {
-    let data;
+    let kajian;
     if (slug) {
-      data = await sql('SELECT * FROM kajian WHERE slug = $1', [slug]);
+      kajian = await getKajianBySlug(slug);
     } else {
-      data = await sql('SELECT * FROM kajian WHERE id = $1', [id]);
+      kajian = await getKajianById(id!);
     }
 
-    if (!data || data.length === 0) {
+    if (!kajian) {
       return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
     }
-    return NextResponse.json({ success: true, data: data[0] });
+    return NextResponse.json({ success: true, data: kajian });
   } catch (error) {
     console.error('API Error:', error);
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });

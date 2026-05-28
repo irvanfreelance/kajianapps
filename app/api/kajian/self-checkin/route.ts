@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
+import { redis } from '@/lib/redis';
 
 // Public endpoint - no auth required
 export async function POST(req: Request) {
@@ -58,6 +59,10 @@ export async function POST(req: Request) {
       SET is_hadir = TRUE, checked_in_at = NOW()
       WHERE id = $1
     `, [reg.id]);
+
+    try {
+      await redis.flushall();
+    } catch {}
 
     return NextResponse.json({
       success: true,

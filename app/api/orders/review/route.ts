@@ -2,6 +2,7 @@ import { sql } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
+import { redis } from '@/lib/redis';
 
 export async function POST(request: Request): Promise<NextResponse> {
   const session = await getServerSession(authOptions);
@@ -50,6 +51,10 @@ export async function POST(request: Request): Promise<NextResponse> {
         order.id
       ]
     );
+
+    try {
+      await redis.flushall();
+    } catch {}
 
     return NextResponse.json({ success: true, message: 'Testimonial successfully submitted' });
   } catch (error: any) {

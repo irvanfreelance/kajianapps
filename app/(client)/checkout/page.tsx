@@ -8,6 +8,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import AddressSelector from "@/components/client/AddressSelector";
+import Image from "next/image";
 
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 
@@ -83,8 +84,8 @@ function PaymentMethodPicker({ groupedMethods, selectedMethod, onSelect, fmt }: 
                         textAlign: "left", cursor: "pointer", transition: "all 0.15s", width: "100%"
                       }}
                     >
-                      <div style={{ width: 40, height: 40, borderRadius: 10, background: "#F8FAFC", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #F1F5F9", overflow: "hidden", flexShrink: 0 }}>
-                        <img src={m.logoUrl} alt={m.name} style={{ width: "75%", height: "75%", objectFit: "contain" }} />
+                      <div style={{ width: 40, height: 40, borderRadius: 10, background: "#F8FAFC", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #F1F5F9", overflow: "hidden", flexShrink: 0, position: "relative" }}>
+                        <Image src={m.logoUrl} alt={m.name} width={30} height={30} style={{ objectFit: "contain" }} />
                       </div>
                       <div style={{ flex: 1 }}>
                         <p style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{m.name}</p>
@@ -313,11 +314,14 @@ function CheckoutView() {
             <div style={{ background: "#F8FAFC", borderRadius: 20, padding: 20, border: "1px solid #F1F5F9", marginBottom: 24 }}>
               <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
                 {item.image && (
-                  <img
-                    src={item.image}
-                    alt={item.name || item.title}
-                    style={{ width: 64, height: 64, borderRadius: 14, objectFit: "cover", flexShrink: 0 }}
-                  />
+                  <div style={{ width: 64, height: 64, position: "relative", flexShrink: 0 }}>
+                    <Image
+                      src={item.image}
+                      alt={item.name || item.title}
+                      fill
+                      style={{ borderRadius: 14, objectFit: "cover" }}
+                    />
+                  </div>
                 )}
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", lineHeight: 1.3 }}>{item.name || item.title}</p>

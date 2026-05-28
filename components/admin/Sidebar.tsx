@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, BookOpen, ShoppingBag, ShoppingCart, 
-  Users, Settings, LogOut, Ticket, MessageSquare
+  Users, Settings, LogOut, Ticket, MessageSquare, CreditCard
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -12,6 +12,7 @@ const navItems = [
   { id: "kajian", href: "/panel/kajian", label: "Kelola Kajian", Icon: BookOpen },
   { id: "kajian-regs", href: "/panel/kajian-registrations", label: "Pendaftaran Kajian", Icon: Ticket },
   { id: "products", href: "/panel/products", label: "Katalog Produk", Icon: ShoppingBag },
+  { id: "payment-methods", href: "/panel/payment-methods", label: "Metode Pembayaran", Icon: CreditCard },
   { id: "orders", href: "/panel/orders", label: "Pesanan Masuk", Icon: ShoppingCart },
   { id: "testimonials", href: "/panel/testimonials", label: "Rekap Testimoni", Icon: MessageSquare },
   { id: "users", href: "/panel/users", label: "Data Jamaah", Icon: Users },

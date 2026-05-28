@@ -4,6 +4,7 @@ import { CheckCircle2, Copy, Info, ExternalLink, Clock, Download, Check, Upload,
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import QRCode from "react-qr-code";
+import Image from "next/image";
 
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 
@@ -75,7 +76,7 @@ function QrisDisplay({ qrString }: { qrString: string }) {
     const svgData = new XMLSerializer().serializeToString(svg);
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    const img = new Image();
+    const img = new window.Image();
     const blob = new Blob([svgData], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
     img.onload = () => {
@@ -381,8 +382,8 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
             {/* Method name + logo */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 16 }}>
               {data.logo_url && (
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: "#fff", border: "1px solid #E2E8F0", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                  <img src={data.logo_url} alt={data.method_name} style={{ width: "80%", height: "80%", objectFit: "contain" }} />
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: "#fff", border: "1px solid #E2E8F0", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative" }}>
+                  <Image src={data.logo_url} alt={data.method_name} width={32} height={32} style={{ objectFit: "contain" }} />
                 </div>
               )}
               <span style={{ fontSize: 15, fontWeight: 700, color: "#0F172A" }}>{data.method_name}</span>
@@ -422,8 +423,12 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
                       <div style={{ marginTop: 24, padding: 18, background: "#ECFDF5", borderRadius: 16, border: "1px solid #A7F3D0", textAlign: "center" }}>
                         <p style={{ fontSize: 13, color: "#065F46", fontWeight: 700, marginBottom: 8 }}>Bukti Transfer Telah Diunggah</p>
                         <a href={data.payment_proof} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: "#047857", textDecoration: "underline", display: "inline-block", marginBottom: 12 }}>Lihat Bukti Transfer</a>
-                        <div style={{ display: "flex", justifyContent: "center" }}>
-                          <img src={data.payment_proof} style={{ maxWidth: 150, maxHeight: 150, borderRadius: 8, objectFit: "contain", border: "1px solid #D1FAE5" }} alt="Bukti Transfer" />
+                        <div style={{ display: "flex", justifyContent: "center", position: "relative", width: 150, height: 150, margin: "0 auto" }}>
+                          {data.payment_proof && data.payment_proof !== 'uploaded_temp' ? (
+                            <Image src={data.payment_proof} fill style={{ borderRadius: 8, objectFit: "contain", border: "1px solid #D1FAE5" }} alt="Bukti Transfer" />
+                          ) : (
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", background: "#F1F5F9", borderRadius: 8, fontSize: 11, color: "#64748B" }}>Memuat Bukti...</div>
+                          )}
                         </div>
                         <p style={{ fontSize: 12, color: "#065F46", marginTop: 8 }}>Mohon tunggu konfirmasi dari admin untuk proses approval.</p>
                       </div>
@@ -437,7 +442,9 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
                         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                           {previewUrl ? (
                             <div style={{ position: "relative", borderRadius: 12, border: "1px solid #E2E8F0", background: "#fff", padding: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-                              <img src={previewUrl} style={{ maxWidth: "100%", maxHeight: 200, borderRadius: 8, objectFit: "contain" }} alt="Pratinjau" />
+                              <div style={{ position: "relative", width: "100%", height: 200 }}>
+                                <Image src={previewUrl} fill unoptimized style={{ borderRadius: 8, objectFit: "contain" }} alt="Pratinjau" />
+                              </div>
                               <div style={{ display: "flex", gap: 8, width: "100%" }}>
                                 <label style={{ flex: 1, padding: "8px 12px", background: "#F1F5F9", color: "#475569", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", textAlign: "center" }}>
                                   Ganti Foto

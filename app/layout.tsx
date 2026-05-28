@@ -13,10 +13,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-import { sql } from "@/lib/db";
+import { getAllSettings } from "@/lib/services/admin";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await sql(`SELECT * FROM settings`);
+  const settings = await getAllSettings();
   const siteTitle = settings.find((s: any) => s.config_key === 'site_title')?.config_value || "BADAR - Baik Dari Rumah";
   const siteFavicon = settings.find((s: any) => s.config_key === 'site_favicon')?.config_value || "/badar_favicon.png";
 

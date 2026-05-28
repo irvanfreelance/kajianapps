@@ -1,4 +1,5 @@
 import { sql } from '@/lib/db';
+import { redis } from '@/lib/redis';
 
 /** USERS SERVICE */
 export async function getAllUsers() {
@@ -23,7 +24,18 @@ export async function getAllUsers() {
 
 /** SETTINGS SERVICE */
 export async function getAllSettings() {
+  const cacheKey = 'api:settings:all';
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) return cached as any[];
+  } catch {}
+
   const rows = await sql(`SELECT * FROM settings ORDER BY config_key ASC`);
+
+  try {
+    await redis.set(cacheKey, rows);
+  } catch {}
+
   return rows;
 }
 
@@ -33,6 +45,10 @@ export async function updateSetting(key: string, value: string) {
     VALUES ($1, $2)
     ON CONFLICT (config_key) DO UPDATE SET config_value = $2
   `, [key, value]);
+
+  try {
+    await redis.flushall();
+  } catch {}
 }
 
 /** ADMINS SERVICE */

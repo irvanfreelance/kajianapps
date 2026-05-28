@@ -32,24 +32,50 @@ export async function getProductsList(category?: string, limit?: number) {
   const rows = await sql(query, params.length > 0 ? params : undefined);
 
   try {
-    await redis.set(cacheKey, rows, { ex: 300 });
+    await redis.set(cacheKey, rows);
   } catch { /* Redis optional */ }
 
   return rows;
 }
 
 export async function getProductBySlug(slug: string) {
+  const cacheKey = `api:products:slug:${slug}`;
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) return cached;
+  } catch {}
+
   const rows = await sql(
     `SELECT * FROM products WHERE slug = $1`,
     [slug]
   );
-  return rows[0] ?? null;
+  const data = rows[0] ?? null;
+
+  if (data) {
+    try {
+      await redis.set(cacheKey, data);
+    } catch {}
+  }
+  return data;
 }
 
 export async function getProductById(id: string | number) {
+  const cacheKey = `api:products:id:${id}`;
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) return cached;
+  } catch {}
+
   const rows = await sql(
     `SELECT * FROM products WHERE id = $1`,
     [id]
   );
-  return rows[0] ?? null;
+  const data = rows[0] ?? null;
+
+  if (data) {
+    try {
+      await redis.set(cacheKey, data);
+    } catch {}
+  }
+  return data;
 }

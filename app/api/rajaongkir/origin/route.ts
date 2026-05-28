@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
-
-const RAJAONGKIR_API_KEY = process.env.RAJAONGKIR_API_KEY;
-const BASE_URL = 'https://rajaongkir.komerce.id/api/v1';
+import { redis } from '@/lib/redis';
 
 export async function GET() {
+  const cacheKey = 'api:rajaongkir:origin';
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+  } catch {}
+
   try {
     const settingRes = await sql(`SELECT config_value FROM settings WHERE config_key = 'rajaongkir_origin_district_id'`);
     const originId = settingRes.length > 0 ? settingRes[0].config_value : '1391';
@@ -22,10 +28,16 @@ export async function GET() {
       originName = knownOrigins[originId] || 'Jawa Barat';
     }
 
-    return NextResponse.json({
+    const data = {
       id: originId,
       name: originName
-    });
+    };
+
+    try {
+      await redis.set(cacheKey, data);
+    } catch {}
+
+    return NextResponse.json(data);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

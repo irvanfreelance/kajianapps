@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { sql } from "@/lib/db";
+import { redis } from "@/lib/redis";
 
 export async function GET(req: Request) {
   try {
@@ -17,7 +18,22 @@ export async function GET(req: Request) {
       return NextResponse.json({ success: false, error: 'User not found' }, { status: 401 });
     }
     const userId = usersRes[0].id;
+
+    const cacheKey = `api:user:${userId}:orders`;
+
+    try {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        return NextResponse.json({ success: true, data: cached });
+      }
+    } catch {}
+
     const data = await getUserOrders(userId);
+
+    try {
+      await redis.set(cacheKey, data);
+    } catch {}
+
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

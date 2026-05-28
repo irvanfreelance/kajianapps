@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { enqueueWhatsApp } from "@/lib/fonnte";
+import { redis } from "@/lib/redis";
 
 export async function POST(
   req: Request,
@@ -57,6 +58,10 @@ export async function POST(
         console.error('WA notification error:', waErr);
       }
     }
+
+    try {
+      await redis.flushall();
+    } catch {}
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

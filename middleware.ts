@@ -86,9 +86,13 @@ export default withAuth(
 
 export const config = {
   matcher: [
+    '/panel',
     '/panel/:path*',
+    '/profil',
     '/profil/:path*',
+    '/tiket',
     '/tiket/:path*',
+    '/checkout',
     '/checkout/:path*',
     '/login',
     '/register'

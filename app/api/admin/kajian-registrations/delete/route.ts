@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
+import { redis } from '@/lib/redis';
 
 export async function POST(req: Request) {
   try {
@@ -20,6 +21,10 @@ export async function POST(req: Request) {
     }
 
     await sql(`DELETE FROM kajian_registrations WHERE id = $1`, [id]);
+
+    try {
+      await redis.flushall();
+    } catch {}
 
     return NextResponse.json({ success: true, message: 'Pendaftaran berhasil dihapus' });
   } catch (error: any) {

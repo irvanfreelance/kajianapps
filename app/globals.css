@@ -25,3 +25,26 @@ html, body {
 * {
   box-sizing: border-box;
 }
+
+/* ── Instruction content preview (rendered HTML from Tiptap) ── */
+.instruction-content-preview ol {
+  margin: 4px 0 0 18px;
+  padding: 0;
+  list-style: decimal;
+  font-size: 12px;
+  color: #64748B;
+  line-height: 1.65;
+}
+.instruction-content-preview ul {
+  margin: 4px 0 0 18px;
+  padding: 0;
+  list-style: disc;
+  font-size: 12px;
+  color: #64748B;
+  line-height: 1.65;
+}
+.instruction-content-preview li { margin-bottom: 2px; }
+.instruction-content-preview p  { margin: 0 0 2px; }
+.instruction-content-preview strong { font-weight: 700; }
+.instruction-content-preview em { font-style: italic; }
+

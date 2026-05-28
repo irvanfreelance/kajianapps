@@ -161,6 +161,10 @@ export async function POST(req: Request) {
       console.error('payment_logs insert error:', logErr);
     }
 
+    try {
+      await redis.flushall();
+    } catch {}
+
     return NextResponse.json({ status: 'success', processed: newStatus });
   } catch (error) {
     console.error('[Xendit Webhook] Error:', error);

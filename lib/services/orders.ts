@@ -35,7 +35,7 @@ export async function getOrdersList() {
   `);
 
   try {
-    await redis.set(cacheKey, rows, { ex: 60 });
+    await redis.set(cacheKey, rows);
   } catch { /* Redis optional */ }
 
   return rows;
@@ -90,7 +90,7 @@ export async function createOrder(
 
   // Invalidate cache
   try {
-    await redis.del('api:orders:list');
+    await redis.flushall();
   } catch { /* Redis optional */ }
 
   return { orderId, orderCode };

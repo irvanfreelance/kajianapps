@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
+import { redis } from '@/lib/redis';
 
 export async function POST(req: Request) {
   try {
@@ -14,6 +15,10 @@ export async function POST(req: Request) {
       SET name = $1, email = $2, phone = $3, gender = $4, job = $5, year_born = $6
       WHERE id = $7
     `, [name, email, phone || null, gender || null, job || null, yearBorn || null, id]);
+
+    try {
+      await redis.flushall();
+    } catch {}
 
     return NextResponse.json({ success: true, message: 'Data jamaah berhasil diperbarui' });
   } catch (error: any) {

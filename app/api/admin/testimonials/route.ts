@@ -2,6 +2,7 @@ import { sql } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
+import { redis } from '@/lib/redis';
 
 export async function GET(request: Request): Promise<NextResponse> {
   const session = await getServerSession(authOptions);
@@ -49,6 +50,10 @@ export async function DELETE(request: Request): Promise<NextResponse> {
       `UPDATE orders SET rating = NULL, testimonial = NULL, testimonial_images = NULL, testimonial_video = NULL WHERE id = CAST($1 AS bigint)`,
       [orderId]
     );
+
+    try {
+      await redis.flushall();
+    } catch {}
 
     return NextResponse.json({ success: true, message: 'Testimonial deleted successfully' });
   } catch (error: any) {

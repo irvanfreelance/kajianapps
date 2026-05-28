@@ -54,26 +54,52 @@ export async function getKajianList(limit?: number, offset?: number, category?: 
   const rows = await sql(query, params.length > 0 ? params : undefined);
 
   try {
-    await redis.set(cacheKey, rows, { ex: 300 });
+    await redis.set(cacheKey, rows);
   } catch { /* Redis optional */ }
 
   return rows;
 }
 
 export async function getKajianBySlug(slug: string) {
+  const cacheKey = `api:kajian:slug:${slug}`;
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) return cached;
+  } catch {}
+
   const rows = await sql(
     `SELECT * FROM kajian WHERE slug = $1`,
     [slug]
   );
-  return rows[0] ?? null;
+  const data = rows[0] ?? null;
+
+  if (data) {
+    try {
+      await redis.set(cacheKey, data);
+    } catch {}
+  }
+  return data;
 }
 
 export async function getKajianById(id: string | number) {
+  const cacheKey = `api:kajian:id:${id}`;
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) return cached;
+  } catch {}
+
   const rows = await sql(
     `SELECT * FROM kajian WHERE id = $1`,
     [id]
   );
-  return rows[0] ?? null;
+  const data = rows[0] ?? null;
+
+  if (data) {
+    try {
+      await redis.set(cacheKey, data);
+    } catch {}
+  }
+  return data;
 }
 
 export async function registerKajian(
@@ -106,8 +132,7 @@ export async function registerKajian(
 
   // Invalidate cache
   try {
-    const keys = await redis.keys('api:kajian:list:*');
-    if (keys.length > 0) await redis.del(...keys);
+    await redis.flushall();
   } catch { /* Redis optional */ }
 
   return result[0];

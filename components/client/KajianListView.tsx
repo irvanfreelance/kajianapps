@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from "react";
 import { User, Calendar, Clock, ChevronRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 
+import Image from "next/image";
+
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 const formatDate = (dateStr: string) => {
   if (!dateStr) return "-";
@@ -34,11 +36,12 @@ export default function KajianListView({ initialKajian }: { initialKajian: any[]
     setIsLoading(true);
     try {
       const res = await fetch(`/api/kajian/list?limit=3&offset=${currentOffset}&category=${currentCat}`);
-      const json = await res.json();
-      if (json.success && json.data.length > 0) {
-        setKajian(prev => [...prev, ...json.data]);
-        setOffset(prev => prev + json.data.length);
-        if (json.data.length < 3) setHasMore(false);
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : (data.success ? data.data : []);
+      if (list && list.length > 0) {
+        setKajian(prev => [...prev, ...list]);
+        setOffset(prev => prev + list.length);
+        if (list.length < 3) setHasMore(false);
       } else {
         setHasMore(false);
       }
@@ -91,8 +94,8 @@ export default function KajianListView({ initialKajian }: { initialKajian: any[]
       <div style={{ padding: "0 20px" }}>
         {kajian.map((k, i) => (
           <Link key={`${k.id}-${i}`} href={`/kajian/${k.slug}`} style={{ background: "#fff", borderRadius: 20, padding: 16, marginBottom: 16, boxShadow: "0 4px 15px rgba(0,0,0,0.03)", border: "1px solid #F1F5F9", cursor: "pointer", display: "flex", gap: 16, alignItems: "center", textDecoration: 'none', color: 'inherit', animation: "fadeUp 0.3s ease" }}>
-            <div style={{ width: 80, height: 80, borderRadius: 16, overflow: "hidden", flexShrink: 0, background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <img src={k.image} alt={k.title} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            <div style={{ width: 80, height: 80, borderRadius: 16, overflow: "hidden", flexShrink: 0, background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+              <Image src={k.image} alt={k.title} width={80} height={80} style={{ objectFit: "contain" }} />
             </div>
             <div style={{ flex: 1 }}>
               <span style={{ fontSize: 10, fontWeight: 700, color: "#0891B2", textTransform: "uppercase", letterSpacing: 1 }}>{k.category}</span>

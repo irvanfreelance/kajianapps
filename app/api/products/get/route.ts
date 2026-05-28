@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { sql } from '@/lib/db';
+import { getProductById, getProductBySlug } from '@/lib/services/products';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -11,17 +11,17 @@ export async function GET(request: Request) {
   }
 
   try {
-    let data;
+    let product;
     if (slug) {
-      data = await sql('SELECT * FROM products WHERE slug = $1', [slug]);
+      product = await getProductBySlug(slug);
     } else {
-      data = await sql('SELECT * FROM products WHERE id = $1', [id]);
+      product = await getProductById(id!);
     }
 
-    if (!data || data.length === 0) {
+    if (!product) {
       return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
     }
-    return NextResponse.json({ success: true, data: data[0] });
+    return NextResponse.json({ success: true, data: product });
   } catch (error) {
     console.error('API Error:', error);
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
