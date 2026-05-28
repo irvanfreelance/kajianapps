@@ -1,7 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
 import { CheckCircle2, AlertCircle, Loader2, Hash, ArrowRight } from "lucide-react";
-import QRCode from "react-qr-code";
 
 type State = "idle" | "loading" | "success" | "error" | "already";
 
@@ -15,6 +14,9 @@ interface Props {
     location?: string;
   };
 }
+
+const GOLD = "#D4AF37";
+const DARK = "#0D0D14";
 
 export default function SelfCheckinView({ kajian }: Props) {
   const [code, setCode] = useState("");
@@ -74,16 +76,16 @@ export default function SelfCheckinView({ kajian }: Props) {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "linear-gradient(160deg, #0F172A 0%, #1E293B 50%, #0F172A 100%)",
+      background: DARK,
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      padding: "24px 20px", fontFamily: "system-ui, -apple-system, sans-serif"
+      padding: "24px 20px", fontFamily: "system-ui, -apple-system, sans-serif", color: "#fff"
     }}>
       {/* Logo area */}
       <div style={{ marginBottom: 32, textAlign: "center" }}>
-        <div style={{ width: 56, height: 56, borderRadius: 16, background: "linear-gradient(135deg, #0891B2, #06B6D4)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", boxShadow: "0 8px 24px rgba(8, 145, 178, 0.4)" }}>
-          <Hash size={28} color="#fff" />
+        <div style={{ width: 56, height: 56, borderRadius: 16, background: "rgba(212,175,55,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", border: `1.5px solid ${GOLD}`, boxShadow: `0 8px 24px rgba(212,175,55,0.2)` }}>
+          <Hash size={28} color={GOLD} />
         </div>
-        <p style={{ fontSize: 11, color: "#475569", fontWeight: 700, textTransform: "uppercase", letterSpacing: 2 }}>
+        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 2 }}>
           Self Check-in
         </p>
       </div>
@@ -91,28 +93,27 @@ export default function SelfCheckinView({ kajian }: Props) {
       {/* Card */}
       <div style={{
         width: "100%", maxWidth: 420,
-        background: "rgba(255,255,255,0.05)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "#18181F",
+        border: `1.5px solid rgba(212,175,55,0.15)`,
         borderRadius: 28, padding: 28,
-        backdropFilter: "blur(12px)",
-        boxShadow: "0 24px 48px rgba(0,0,0,0.4)"
+        boxShadow: "0 24px 48px rgba(0,0,0,0.5)"
       }}>
 
         {/* Kajian Info */}
         <div style={{ marginBottom: 28, paddingBottom: 24, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <p style={{ fontSize: 11, color: "#0891B2", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>
+          <p style={{ fontSize: 11, color: GOLD, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>
             Kajian
           </p>
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: "#F1F5F9", lineHeight: 1.3, marginBottom: 8 }}>
+          <h1 style={{ fontSize: 20, fontWeight: 800, color: "#fff", lineHeight: 1.3, marginBottom: 8 }}>
             {kajian.title}
           </h1>
-          <p style={{ fontSize: 13, color: "#64748B" }}>{kajian.ustadz}</p>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)" }}>{kajian.ustadz}</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 12 }}>
-            <p style={{ fontSize: 12, color: "#475569" }}>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
               📅 {formatDate(kajian.date)}{kajian.time_display ? ` • ${kajian.time_display}` : ""}
             </p>
             {kajian.location && (
-              <p style={{ fontSize: 12, color: "#475569" }}>📍 {kajian.location}</p>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>📍 {kajian.location}</p>
             )}
           </div>
         </div>
@@ -120,52 +121,52 @@ export default function SelfCheckinView({ kajian }: Props) {
         {/* Form / Result */}
         {state === "success" ? (
           <div style={{ textAlign: "center", padding: "8px 0" }}>
-            <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(22, 163, 74, 0.15)", border: "2px solid #16A34A", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+            <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(34, 197, 94, 0.15)", border: "2px solid #22C55E", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
               <CheckCircle2 size={36} color="#22C55E" />
             </div>
             <h2 style={{ fontSize: 22, fontWeight: 800, color: "#22C55E", marginBottom: 8 }}>
               Selamat Datang! 🎉
             </h2>
-            <p style={{ fontSize: 16, fontWeight: 700, color: "#F1F5F9", marginBottom: 6 }}>
+            <p style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 6 }}>
               {resultName}
             </p>
-            <p style={{ fontSize: 13, color: "#64748B", lineHeight: 1.6, marginBottom: 28 }}>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", lineHeight: 1.6, marginBottom: 28 }}>
               Kehadiran Anda telah berhasil tercatat. Semoga kajian hari ini bermanfaat dan penuh berkah.
             </p>
             <button
               onClick={handleReset}
-              style={{ width: "100%", padding: "14px 0", borderRadius: 14, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "#94A3B8", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
+              style={{ width: "100%", padding: "14px 0", borderRadius: 14, background: "rgba(255,255,255,0.06)", border: "none", color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
             >
               Check-in peserta lain
             </button>
           </div>
         ) : state === "already" ? (
           <div style={{ textAlign: "center", padding: "8px 0" }}>
-            <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(217, 119, 6, 0.15)", border: "2px solid #D97706", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+            <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(245, 158, 11, 0.15)", border: "2px solid #F59E0B", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
               <AlertCircle size={36} color="#F59E0B" />
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 800, color: "#F59E0B", marginBottom: 8 }}>Sudah Check-in ⚠️</h2>
-            {resultName && <p style={{ fontSize: 15, fontWeight: 700, color: "#F1F5F9", marginBottom: 6 }}>{resultName}</p>}
-            <p style={{ fontSize: 13, color: "#64748B", lineHeight: 1.6, marginBottom: 28 }}>{errorMsg}</p>
-            <button onClick={handleReset} style={{ width: "100%", padding: "14px 0", borderRadius: 14, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "#94A3B8", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+            {resultName && <p style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 6 }}>{resultName}</p>}
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", lineHeight: 1.6, marginBottom: 28 }}>{errorMsg}</p>
+            <button onClick={handleReset} style={{ width: "100%", padding: "14px 0", borderRadius: 14, background: "rgba(255,255,255,0.06)", border: "none", color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
               Coba kode lain
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-            <p style={{ fontSize: 14, color: "#94A3B8", marginBottom: 20, lineHeight: 1.6 }}>
-              Masukkan <strong style={{ color: "#CBD5E1" }}>Kode Tiket</strong> Anda yang tertera di halaman{" "}
-              <strong style={{ color: "#0891B2" }}>Tiket Saya</strong>.
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", marginBottom: 20, lineHeight: 1.6 }}>
+              Masukkan <strong style={{ color: "#fff" }}>Kode Tiket</strong> Anda yang tertera di halaman{" "}
+              <strong style={{ color: GOLD }}>Tiket Saya</strong>.
             </p>
 
             {state === "error" && (
-              <div style={{ padding: "12px 16px", background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: 12, marginBottom: 16 }}>
-                <p style={{ fontSize: 13, color: "#FCA5A5", fontWeight: 600 }}>❌ {errorMsg}</p>
+              <div style={{ padding: "12px 16px", background: "rgba(239, 68, 68, 0.12)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: 12, marginBottom: 16 }}>
+                <p style={{ fontSize: 13, color: "#FCA5A5", fontWeight: 600, margin: 0 }}>❌ {errorMsg}</p>
               </div>
             )}
 
             <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: 1, display: "block", marginBottom: 8 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1, display: "block", marginBottom: 8 }}>
                 Kode Tiket
               </label>
               <input
@@ -173,7 +174,7 @@ export default function SelfCheckinView({ kajian }: Props) {
                 type="text"
                 value={code}
                 onChange={e => { setCode(e.target.value.toUpperCase()); if (state === "error") setState("idle"); }}
-                placeholder="Contoh: TKT-ABCD1234"
+                placeholder="TKT-ABCD1234"
                 autoComplete="off"
                 autoCapitalize="characters"
                 spellCheck={false}
@@ -181,17 +182,15 @@ export default function SelfCheckinView({ kajian }: Props) {
                 style={{
                   width: "100%", boxSizing: "border-box",
                   padding: "16px 18px",
-                  background: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(255,255,255,0.12)",
-                  borderRadius: 14, color: "#F1F5F9", fontSize: 18,
+                  background: "rgba(255,255,255,0.03)", border: `1.5px solid rgba(212,175,55,0.25)`,
+                  borderRadius: 14, color: "#fff", fontSize: 18,
                   fontFamily: "monospace", fontWeight: 700, letterSpacing: 3,
                   outline: "none",
                   textAlign: "center",
-                  transition: "border-color 0.2s",
+                  transition: "all 0.2s",
                 }}
-                onFocus={e => e.target.style.borderColor = "rgba(8, 145, 178, 0.6)"}
-                onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"}
               />
-              <p style={{ fontSize: 11, color: "#475569", marginTop: 8, textAlign: "center" }}>
+              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 8, textAlign: "center" }}>
                 Boleh dengan atau tanpa awalan "TKT-"
               </p>
             </div>
@@ -202,11 +201,11 @@ export default function SelfCheckinView({ kajian }: Props) {
               style={{
                 width: "100%", padding: "16px 0", borderRadius: 14, border: "none",
                 background: (state === "loading" || !code.trim())
-                  ? "rgba(8, 145, 178, 0.3)"
-                  : "linear-gradient(135deg, #0891B2, #06B6D4)",
-                color: "#fff", fontSize: 15, fontWeight: 700, cursor: !code.trim() ? "not-allowed" : "pointer",
+                  ? "rgba(212,175,55,0.2)"
+                  : GOLD,
+                color: (state === "loading" || !code.trim()) ? "rgba(255,255,255,0.4)" : "#0A0A0F", fontSize: 15, fontWeight: 700, cursor: !code.trim() ? "not-allowed" : "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-                boxShadow: "0 4px 16px rgba(8, 145, 178, 0.3)",
+                boxShadow: (state === "loading" || !code.trim()) ? "none" : `0 4px 16px rgba(212,175,55,0.25)`,
                 transition: "all 0.2s",
               }}
             >
@@ -221,7 +220,7 @@ export default function SelfCheckinView({ kajian }: Props) {
       </div>
 
       {/* Footer */}
-      <p style={{ marginTop: 24, fontSize: 11, color: "#334155", textAlign: "center" }}>
+      <p style={{ marginTop: 24, fontSize: 11, color: "rgba(255,255,255,0.3)", textAlign: "center" }}>
         Jika ada kendala, hubungi panitia kajian.
       </p>
 

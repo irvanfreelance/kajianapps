@@ -6,8 +6,8 @@
 import { sql } from '@/lib/db';
 import { redis } from '@/lib/redis';
 
-export async function getKajianList(limit?: number, offset?: number, category?: string) {
-  const cacheKey = `api:kajian:list:${limit ?? 'all'}:${offset ?? 0}:${category ?? 'Semua'}`;
+export async function getKajianList(limit?: number, offset?: number, category?: string, onlyParent: boolean = false) {
+  const cacheKey = `api:kajian:list:${limit ?? 'all'}:${offset ?? 0}:${category ?? 'Semua'}:${onlyParent ? 'parent' : 'all'}`;
   
   try {
     const cached = await redis.get(cacheKey);
@@ -15,11 +15,21 @@ export async function getKajianList(limit?: number, offset?: number, category?: 
   } catch { /* Redis optional */ }
 
   let query = `
-    SELECT k.id, k.title, k.ustadz, k.date, k.time_display as time,
-           k.type, k.price, k.image, k.category, k.spot, k.filled, k.slug, k.url_zoom, k.url_youtube, k.description, k.location,
+    SELECT k.id, 
+           CASE WHEN k.series_type = 'series' THEN ks.title ELSE k.title END AS title, 
+           k.ustadz, k.date, k.time_display as time,
+           k.type, k.price, 
+           CASE WHEN k.series_type = 'series' THEN ks.image ELSE k.image END AS image, 
+           k.category, k.spot, k.filled, k.slug,
+           k.url_zoom, k.url_youtube, 
+           CASE WHEN k.series_type = 'series' THEN ks.description ELSE k.description END AS description, 
+           k.location,
+           k.series_type, k.series_id, k.episode_number,
+           ks.title AS series_title, ks.slug AS series_slug,
            COALESCE(att.attendance_count, 0) AS attendance_count,
            COALESCE(att.hadir_count, 0)      AS hadir_count
     FROM kajian k
+    LEFT JOIN kajian_series ks ON ks.id = k.series_id
     LEFT JOIN (
       SELECT kajian_id,
              COUNT(*) FILTER (WHERE is_approved = TRUE)                   AS attendance_count,
@@ -32,15 +42,19 @@ export async function getKajianList(limit?: number, offset?: number, category?: 
   const conditions: string[] = [];
 
   if (category && category !== 'Semua') {
-    conditions.push(`category = $${params.length + 1}`);
+    conditions.push(`k.category = $${params.length + 1}`);
     params.push(category);
+  }
+
+  if (onlyParent) {
+    conditions.push(`(k.series_type = 'single' OR k.series_type IS NULL OR (k.series_type = 'series' AND k.episode_number = 1))`);
   }
 
   if (conditions.length > 0) {
     query += ` WHERE ${conditions.join(' AND ')}`;
   }
 
-  query += ` ORDER BY id DESC`;
+  query += ` ORDER BY k.id DESC`;
 
   if (limit) {
     query += ` LIMIT $${params.length + 1}`;
@@ -54,7 +68,7 @@ export async function getKajianList(limit?: number, offset?: number, category?: 
   const rows = await sql(query, params.length > 0 ? params : undefined);
 
   try {
-    await redis.set(cacheKey, rows);
+    await redis.set(cacheKey, rows, { ex: 300 });
   } catch { /* Redis optional */ }
 
   return rows;
@@ -68,14 +82,31 @@ export async function getKajianBySlug(slug: string) {
   } catch {}
 
   const rows = await sql(
-    `SELECT * FROM kajian WHERE slug = $1`,
+    `SELECT k.*, 
+            ks.title AS series_title, ks.slug AS series_slug,
+            ks.description AS series_description, ks.ustadz AS series_ustadz
+     FROM kajian k
+     LEFT JOIN kajian_series ks ON ks.id = k.series_id
+     WHERE k.slug = $1`,
     [slug]
   );
   const data = rows[0] ?? null;
 
+  // If it's part of a series, fetch all episodes
+  if (data && data.series_type === 'series' && data.series_id) {
+    const episodes = await sql(
+      `SELECT id, title, slug, episode_number, date, time_display, url_zoom, url_youtube, description
+       FROM kajian
+       WHERE series_id = $1
+       ORDER BY episode_number ASC`,
+      [data.series_id]
+    );
+    data.series_episodes = episodes;
+  }
+
   if (data) {
     try {
-      await redis.set(cacheKey, data);
+      await redis.set(cacheKey, data, { ex: 300 });
     } catch {}
   }
   return data;
@@ -89,18 +120,111 @@ export async function getKajianById(id: string | number) {
   } catch {}
 
   const rows = await sql(
-    `SELECT * FROM kajian WHERE id = $1`,
+    `SELECT k.*, 
+            ks.title AS series_title, ks.slug AS series_slug
+     FROM kajian k
+     LEFT JOIN kajian_series ks ON ks.id = k.series_id
+     WHERE k.id = $1`,
     [id]
   );
   const data = rows[0] ?? null;
 
   if (data) {
     try {
-      await redis.set(cacheKey, data);
+      await redis.set(cacheKey, data, { ex: 300 });
     } catch {}
   }
   return data;
 }
+
+// ─── Series ───────────────────────────────────────────────────────────────────
+
+export async function getSeriesList() {
+  const cacheKey = `api:kajian:series:list`;
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) return cached as any[];
+  } catch {}
+
+  const rows = await sql(`
+    SELECT ks.*,
+           COUNT(k.id) AS episode_count
+    FROM kajian_series ks
+    LEFT JOIN kajian k ON k.series_id = ks.id
+    GROUP BY ks.id
+    ORDER BY ks.id DESC
+  `);
+
+  try {
+    await redis.set(cacheKey, rows, { ex: 300 });
+  } catch {}
+  return rows;
+}
+
+export async function getSeriesById(id: string | number) {
+  const cacheKey = `api:kajian:series:id:${id}`;
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) return cached;
+  } catch {}
+
+  const rows = await sql(`SELECT * FROM kajian_series WHERE id = $1`, [id]);
+  const data = rows[0] ?? null;
+
+  if (data) {
+    const episodes = await sql(
+      `SELECT id, title, slug, episode_number, date, time_display, url_zoom, url_youtube, description, image
+       FROM kajian
+       WHERE series_id = $1
+       ORDER BY episode_number ASC`,
+      [id]
+    );
+    data.episodes = episodes;
+    try {
+      await redis.set(cacheKey, data, { ex: 300 });
+    } catch {}
+  }
+  return data;
+}
+
+export async function getSeriesBySlug(slug: string) {
+  const cacheKey = `api:kajian:series:slug:${slug}`;
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) return cached;
+  } catch {}
+
+  const rows = await sql(`SELECT * FROM kajian_series WHERE slug = $1`, [slug]);
+  const data = rows[0] ?? null;
+
+  if (data) {
+    const episodes = await sql(
+      `SELECT id, title, slug, episode_number, date, time_display, url_zoom, url_youtube, description, image
+       FROM kajian
+       WHERE series_id = $1
+       ORDER BY episode_number ASC`,
+      [data.id]
+    );
+    data.episodes = episodes;
+    try {
+      await redis.set(cacheKey, data, { ex: 300 });
+    } catch {}
+  }
+  return data;
+}
+
+export async function getSeriesEpisodes(seriesId: string | number) {
+  const rows = await sql(
+    `SELECT id, title, slug, episode_number, date, time_display, url_zoom, url_youtube, description, image, spot, filled
+     FROM kajian
+     WHERE series_id = $1
+     ORDER BY episode_number ASC`,
+    [seriesId]
+  );
+  return rows;
+}
+
+// ─── Registration ─────────────────────────────────────────────────────────────
 
 export async function registerKajian(
   userId: number, 
@@ -142,14 +266,33 @@ export async function getUserRegistrations(userId: number) {
   const rows = await sql(`
     SELECT 
       kr.id, kr.registered_at as date, kr.paid_amount as price, kr.status, kr.is_approved, kr.ticket_code,
-      k.title, k.ustadz, k.date, k.time_display, k.image, k.location, k.slug, k.url_zoom, k.url_youtube
+      k.title, k.ustadz, k.date, k.time_display, k.image, k.location, k.slug, k.url_zoom, k.url_youtube,
+      k.series_type, k.episode_number, k.series_id,
+      ks.title AS series_title, ks.slug AS series_slug
     FROM kajian_registrations kr
     JOIN kajian k ON kr.kajian_id = k.id
+    LEFT JOIN kajian_series ks ON ks.id = k.series_id
     WHERE kr.user_id = $1
     ORDER BY kr.id DESC
   `, [userId]);
   return rows;
 }
+
+export async function getRegistrationDetail(registrationId: number | string, userId: number) {
+  const rows = await sql(`
+    SELECT 
+      kr.id, kr.registered_at as date, kr.paid_amount as price, kr.status, kr.is_approved, kr.ticket_code,
+      k.id as kajian_id, k.title, k.ustadz, k.date as kajian_date, k.time_display, k.image, k.location, k.slug, k.url_zoom, k.url_youtube,
+      k.series_type, k.episode_number, k.series_id,
+      ks.title AS series_title, ks.slug AS series_slug, ks.image AS series_image, ks.description AS series_description
+    FROM kajian_registrations kr
+    JOIN kajian k ON kr.kajian_id = k.id
+    LEFT JOIN kajian_series ks ON ks.id = k.series_id
+    WHERE kr.id = $1 AND kr.user_id = $2
+  `, [registrationId, userId]);
+  return rows[0] ?? null;
+}
+
 export async function getAllRegistrations() {
   const rows = await sql(`
     SELECT 
@@ -165,6 +308,7 @@ export async function getAllRegistrations() {
   `);
   return rows;
 }
+
 export async function getKajianParticipants(kajianId: string | number) {
   const rows = await sql(`
     SELECT 

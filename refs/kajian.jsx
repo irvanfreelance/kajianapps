@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { 
-  Star, Moon, Users, Coffee, Compass, Book, CircleDot, Hash, 
-  Smartphone, Landmark, Wallet, Copy, ShoppingCart, ShoppingBag, 
-  User, Home, Search, Bell, LogOut, Headphones, MessageCircle, 
-  CheckCircle2, Heart, Package, ChevronRight, ChevronLeft, 
-  ChevronDown, Minus, Plus, X, Calendar, Clock, MapPin, Mail, 
+import {
+  Star, Moon, Users, Coffee, Compass, Book, CircleDot, Hash,
+  Smartphone, Landmark, Wallet, Copy, ShoppingCart, ShoppingBag,
+  User, Home, Search, Bell, LogOut, Headphones, MessageCircle,
+  CheckCircle2, Heart, Package, ChevronRight, ChevronLeft,
+  ChevronDown, Minus, Plus, X, Calendar, Clock, MapPin, Mail,
   SunMedium, Check, Info, BookOpen, LogIn
 } from "lucide-react";
 
@@ -88,7 +88,7 @@ const STATUS_STEPS = [
 ];
 
 const getStatusStyle = (status) => {
-  switch(status) {
+  switch (status) {
     case "pending": return { bg: "#FFFBEB", color: "#B45309", label: "Menunggu Pembayaran" };
     case "packed": return { bg: "#F0FDF4", color: "#15803D", label: "Sedang Dikemas" };
     case "shipped": return { bg: "#ECFEFF", color: "#0891B2", label: "Dalam Pengiriman" };
@@ -98,7 +98,7 @@ const getStatusStyle = (status) => {
 };
 
 const getVAInstructions = (bankId) => {
-  switch(bankId) {
+  switch (bankId) {
     case "bcava":
       return [
         { title: "m-BCA (BCA mobile)", steps: ["Login ke BCA mobile dan pilih m-BCA.", "Pilih menu m-Transfer > BCA Virtual Account.", "Masukkan nomor Virtual Account di atas.", "Pastikan detail pembayaran sudah benar.", "Masukkan PIN m-BCA Anda."] },
@@ -137,7 +137,7 @@ const PaymentMethodAccordion = ({ method, setMethod, selectedSub, setSelectedSub
           </div>
           <ChevronRight size={20} color={method === m.id ? "#0891B2" : "#CBD5E1"} style={{ transform: method === m.id ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.3s" }} />
         </button>
-        
+
         {method === m.id && m.id !== "qris" && (
           <div style={{ padding: "0 16px 16px", background: "#ECFEFF", animation: "fadeUp 0.3s ease" }}>
             <p style={{ fontSize: 12, color: "#0F172A", marginBottom: 10 }}>Pilih salah satu:</p>
@@ -172,14 +172,14 @@ const PaymentInstructionsBox = ({ method, selectedSub, finalTotal, uniqueCode })
             <p style={{ fontSize: 18, fontWeight: 600, color: "#0891B2", marginTop: 4 }}>{selectedSub.code} 081234567890</p>
           </div>
           <button style={{ height: 32, padding: "0 12px", borderRadius: 8, background: "#F1F5F9", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: "#0F172A" }} onClick={(e) => copyToClipboard(`${selectedSub.code}081234567890`, e)}>
-            <Copy size={14}/> Salin
+            <Copy size={14} /> Salin
           </button>
         </div>
         <div style={{ display: "flex", gap: 8, padding: "10px 12px", background: "#FFFBEB", borderRadius: 8, marginTop: 8 }}>
-          <Info size={16} color="#B45309" style={{flexShrink:0, marginTop: 2}}/>
+          <Info size={16} color="#B45309" style={{ flexShrink: 0, marginTop: 2 }} />
           <p style={{ fontSize: 12, color: "#B45309", lineHeight: 1.5 }}>Pembayaran Anda akan otomatis terverifikasi oleh sistem dalam hitungan menit tanpa perlu konfirmasi manual.</p>
         </div>
-        
+
         <div style={{ marginTop: 20 }}>
           <p style={{ fontSize: 14, fontWeight: 600, color: "#0F172A", marginBottom: 12 }}>Cara Pembayaran</p>
           {getVAInstructions(selectedSub.id).map((inst, i) => (
@@ -210,7 +210,7 @@ const PaymentInstructionsBox = ({ method, selectedSub, finalTotal, uniqueCode })
             <Moon size={32} color="#0891B2" />
           </div>
         </div>
-        <p style={{ fontSize: 12, color: "#64748B", marginTop: 16 }}>QRIS atas nama <span style={{fontWeight: 600}}>Majelis Ilmu</span></p>
+        <p style={{ fontSize: 12, color: "#64748B", marginTop: 16 }}>QRIS atas nama <span style={{ fontWeight: 600 }}>Majelis Ilmu</span></p>
       </div>
     )}
 
@@ -223,10 +223,10 @@ const PaymentInstructionsBox = ({ method, selectedSub, finalTotal, uniqueCode })
             <p style={{ fontSize: 16, fontWeight: 600, color: "#0891B2", marginTop: 4 }}>{selectedSub.acc}</p>
           </div>
           <button style={{ height: 32, padding: "0 12px", borderRadius: 8, background: "#F1F5F9", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: "#0F172A" }} onClick={(e) => copyToClipboard(selectedSub.acc.replace(/\s/g, ''), e)}>
-            <Copy size={14}/> Salin
+            <Copy size={14} /> Salin
           </button>
         </div>
-        <p style={{ fontSize: 12, color: "#EF4444", marginTop: 8, lineHeight: 1.5 }}>* Pastikan nominal transfer pas hingga 3 digit terakhir <span style={{fontWeight: 600}}>({uniqueCode})</span> untuk proses verifikasi otomatis.</p>
+        <p style={{ fontSize: 12, color: "#EF4444", marginTop: 8, lineHeight: 1.5 }}>* Pastikan nominal transfer pas hingga 3 digit terakhir <span style={{ fontWeight: 600 }}>({uniqueCode})</span> untuk proses verifikasi otomatis.</p>
       </div>
     )}
 
@@ -234,10 +234,10 @@ const PaymentInstructionsBox = ({ method, selectedSub, finalTotal, uniqueCode })
       <div style={{ textAlign: "left", marginTop: 16 }}>
         <p style={{ fontSize: 13, color: "#0F172A", marginBottom: 16 }}>Instruksi Pembayaran {selectedSub.name}:</p>
         <ol style={{ paddingLeft: 20, fontSize: 13, color: "#475569", lineHeight: 1.8 }}>
-          <li>Buka aplikasi <span style={{fontWeight: 600}}>{selectedSub.name}</span>.</li>
-          <li>Pilih menu <span style={{fontWeight: 600}}>Transfer / Kirim Dana</span>.</li>
-          <li>Masukkan nomor tujuan <span style={{fontWeight: 600}}>0812-3456-7890</span> (a.n Majelis Ilmu).</li>
-          <li>Masukkan nominal persis <span style={{fontWeight: 600}}>{fmt(finalTotal)}</span>.</li>
+          <li>Buka aplikasi <span style={{ fontWeight: 600 }}>{selectedSub.name}</span>.</li>
+          <li>Pilih menu <span style={{ fontWeight: 600 }}>Transfer / Kirim Dana</span>.</li>
+          <li>Masukkan nomor tujuan <span style={{ fontWeight: 600 }}>0812-3456-7890</span> (a.n Majelis Ilmu).</li>
+          <li>Masukkan nominal persis <span style={{ fontWeight: 600 }}>{fmt(finalTotal)}</span>.</li>
           <li>Konfirmasi dan selesaikan pembayaran.</li>
         </ol>
       </div>
@@ -270,7 +270,7 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
-  
+
   // State for login flow
   const [pendingAction, setPendingAction] = useState(null); // { type: 'kajian'|'checkout', data: any }
 
@@ -294,10 +294,10 @@ export default function App() {
   };
 
   const joinKajian = (kajian, paidAmount = 0) => {
-    if (!user) { 
+    if (!user) {
       setPendingAction({ type: 'kajian', data: { kajian, paidAmount } });
-      setScreen("login"); 
-      return; 
+      setScreen("login");
+      return;
     }
     processJoinKajian(kajian, paidAmount);
   };
@@ -341,10 +341,10 @@ export default function App() {
       email: "abdullah@gmail.com",
       phone: "081234567890"
     };
-    
+
     setUser(simulatedGoogleData);
     showToast("Berhasil masuk sebagai " + simulatedGoogleData.name);
-    
+
     // Resume pending action if exists
     if (pendingAction) {
       if (pendingAction.type === 'kajian') {
@@ -360,15 +360,15 @@ export default function App() {
 
   // ── Screens ──
   if (screen === "splash") return <Splash />;
-  
+
   if (screen === "login") return (
-    <LoginScreen 
-      onBack={() => { 
-        setPendingAction(null); 
-        setScreen("main"); 
+    <LoginScreen
+      onBack={() => {
+        setPendingAction(null);
+        setScreen("main");
         if (selectedKajian) setScreen("kajian-detail");
-      }} 
-      onGoogleLogin={handleGoogleLogin} 
+      }}
+      onGoogleLogin={handleGoogleLogin}
     />
   );
 
@@ -376,24 +376,24 @@ export default function App() {
   if (screen === "product-detail") return <ProductDetail product={selectedProduct} onClose={navigateToMain} onAdd={addToCart} />;
 
   if (screen === "checkout") return (
-    <CheckoutPage 
-      cart={cart} 
-      total={cartTotal} 
-      onClose={() => setScreen("main")} 
-      onDone={(finalTotal) => { 
+    <CheckoutPage
+      cart={cart}
+      total={cartTotal}
+      onClose={() => setScreen("main")}
+      onDone={(finalTotal) => {
         const newOrder = {
           id: `ORD-${Math.floor(Math.random() * 1000000)}`,
-          date: "4 Mei 2026", 
+          date: "4 Mei 2026",
           items: [...cart],
           total: finalTotal,
-          status: "packed" 
+          status: "packed"
         };
         setOrders([newOrder, ...orders]);
-        setCart([]); 
+        setCart([]);
         setScreen("main");
         setTab("home");
-        showToast("Pesanan berhasil! Konfirmasi dikirim via WA"); 
-      }} 
+        showToast("Pesanan berhasil! Konfirmasi dikirim via WA");
+      }}
     />
   );
 
@@ -416,7 +416,7 @@ export default function App() {
       {/* Toast */}
       {toast && (
         <div style={styles.toast}>
-          <CheckCircle2 size={16} color="#fff" style={{flexShrink: 0}} />
+          <CheckCircle2 size={16} color="#fff" style={{ flexShrink: 0 }} />
           <span style={{ fontSize: 14 }}>{toast}</span>
         </div>
       )}
@@ -482,24 +482,24 @@ function LoginScreen({ onBack, onGoogleLogin }) {
   return (
     <div style={{ ...styles.container, background: "#F8FAFC", display: "flex", flexDirection: "column", padding: "0 24px" }}>
       <div style={{ paddingTop: 20 }}>
-        <button onClick={onBack} style={styles.backBtn}><ChevronLeft size={20}/> Batal</button>
+        <button onClick={onBack} style={styles.backBtn}><ChevronLeft size={20} /> Batal</button>
       </div>
-      
+
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", animation: "fadeUp 0.5s ease" }}>
         <div style={{ width: 100, height: 100, borderRadius: 30, background: "linear-gradient(135deg, #CFFAFE, #A5F3FC)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 32px", boxShadow: "0 12px 40px rgba(6,182,212,0.15)" }}>
           <LogIn size={48} color="#0891B2" strokeWidth={1.5} />
         </div>
-        
+
         <h2 style={{ fontSize: 26, color: "#0F172A", marginBottom: 12, fontWeight: 700, textAlign: "center" }}>Masuk ke Akun Anda</h2>
         <p style={{ fontSize: 15, color: "#64748B", lineHeight: 1.6, textAlign: "center", marginBottom: 40 }}>Untuk mendaftar kajian atau checkout pesanan, silakan login terlebih dahulu.</p>
-        
+
         <div style={{ width: "100%", maxWidth: 320 }}>
           <button onClick={onGoogleLogin} style={{ ...styles.secondaryBtn, display: "flex", alignItems: "center", justifyContent: "center", gap: 12, background: "#fff", borderColor: "#E2E8F0", color: "#0F172A", boxShadow: "0 4px 10px rgba(0,0,0,0.05)" }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M22.56 12.25C22.56 11.47 22.49 10.72 22.36 10H12V14.26H17.92C17.67 15.63 16.94 16.79 15.79 17.56V20.33H19.34C21.41 18.43 22.56 15.6 22.56 12.25Z" fill="#4285F4"/>
-              <path d="M12 23C14.97 23 17.46 22.02 19.34 20.33L15.79 17.56C14.77 18.24 13.5 18.66 12 18.66C9.09 18.66 6.63 16.69 5.73 14.04H2.07V16.89C3.91 20.55 8.1 23 12 23Z" fill="#34A853"/>
-              <path d="M5.73 14.04C5.5 13.36 5.37 12.63 5.37 11.88C5.37 11.13 5.5 10.4 5.73 9.72V6.87H2.07C1.31 8.38 0.87 10.08 0.87 11.88C0.87 13.68 1.31 15.38 2.07 16.89L5.73 14.04Z" fill="#FBBC05"/>
-              <path d="M12 5.34C13.62 5.34 15.06 5.89 16.2 6.98L19.42 3.76C17.46 1.93 14.97 0.88 12 0.88C8.1 0.88 3.91 3.33 2.07 6.87L5.73 9.72C6.63 7.07 9.09 5.34 12 5.34Z" fill="#EA4335"/>
+              <path d="M22.56 12.25C22.56 11.47 22.49 10.72 22.36 10H12V14.26H17.92C17.67 15.63 16.94 16.79 15.79 17.56V20.33H19.34C21.41 18.43 22.56 15.6 22.56 12.25Z" fill="#4285F4" />
+              <path d="M12 23C14.97 23 17.46 22.02 19.34 20.33L15.79 17.56C14.77 18.24 13.5 18.66 12 18.66C9.09 18.66 6.63 16.69 5.73 14.04H2.07V16.89C3.91 20.55 8.1 23 12 23Z" fill="#34A853" />
+              <path d="M5.73 14.04C5.5 13.36 5.37 12.63 5.37 11.88C5.37 11.13 5.5 10.4 5.73 9.72V6.87H2.07C1.31 8.38 0.87 10.08 0.87 11.88C0.87 13.68 1.31 15.38 2.07 16.89L5.73 14.04Z" fill="#FBBC05" />
+              <path d="M12 5.34C13.62 5.34 15.06 5.89 16.2 6.98L19.42 3.76C17.46 1.93 14.97 0.88 12 0.88C8.1 0.88 3.91 3.33 2.07 6.87L5.73 9.72C6.63 7.07 9.09 5.34 12 5.34Z" fill="#EA4335" />
             </svg>
             Lanjutkan dengan Google
           </button>
@@ -527,10 +527,10 @@ function HomeTab({ user, kajian, onKajian, onProduct, onNotif, unread, onSearch,
             <h1 style={{ color: "#fff", fontSize: 24, marginTop: 4, fontWeight: 700 }}>{user?.name || "Jamaah"}</h1>
           </div>
           <div style={{ display: "flex", gap: 12 }}>
-            <button onClick={onSearch} style={styles.iconBtn}><Search size={20} color="#fff"/></button>
+            <button onClick={onSearch} style={styles.iconBtn}><Search size={20} color="#fff" /></button>
             {user ? (
               <button onClick={onNotif} style={{ ...styles.iconBtn, position: "relative" }}>
-                <Bell size={20} color="#fff"/>
+                <Bell size={20} color="#fff" />
                 {unread > 0 && <span style={{ position: "absolute", top: -2, right: -2, width: 18, height: 18, borderRadius: "50%", background: "#EF4444", color: "#fff", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, border: "2px solid #155E75" }}>{unread}</span>}
               </button>
             ) : (
@@ -540,7 +540,7 @@ function HomeTab({ user, kajian, onKajian, onProduct, onNotif, unread, onSearch,
             )}
           </div>
         </div>
-        
+
         {/* Quick Stats or Login Prompt */}
         {user ? (
           <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
@@ -557,11 +557,11 @@ function HomeTab({ user, kajian, onKajian, onProduct, onNotif, unread, onSearch,
           </div>
         ) : (
           <div style={{ marginTop: 24, background: "rgba(255,255,255,0.15)", borderRadius: 16, padding: 16, backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-             <div>
-               <p style={{ color: "#fff", fontSize: 14, fontWeight: 600 }}>Belum Masuk?</p>
-               <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, marginTop: 4 }}>Login untuk daftar kajian & belanja</p>
-             </div>
-             <button onClick={onLoginClick} style={{ padding: "8px 16px", background: "#fff", color: "#0891B2", borderRadius: 12, fontSize: 13, fontWeight: 600, border: "none" }}>Masuk</button>
+            <div>
+              <p style={{ color: "#fff", fontSize: 14, fontWeight: 600 }}>Belum Masuk?</p>
+              <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, marginTop: 4 }}>Login untuk daftar kajian & belanja</p>
+            </div>
+            <button onClick={onLoginClick} style={{ padding: "8px 16px", background: "#fff", color: "#0891B2", borderRadius: 12, fontSize: 13, fontWeight: 600, border: "none" }}>Masuk</button>
           </div>
         )}
       </div>
@@ -570,7 +570,7 @@ function HomeTab({ user, kajian, onKajian, onProduct, onNotif, unread, onSearch,
       <div style={{ padding: "28px 20px 0" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h2 style={{ fontSize: 18, color: "#0F172A", fontWeight: 600 }}>Kajian Terdekat</h2>
-          <span style={{ fontSize: 13, color: "#0891B2", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center" }}>Lihat Semua <ChevronRight size={16}/></span>
+          <span style={{ fontSize: 13, color: "#0891B2", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center" }}>Lihat Semua <ChevronRight size={16} /></span>
         </div>
         <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 12 }}>
           {upcoming.map((k, i) => (
@@ -629,7 +629,7 @@ function HomeTab({ user, kajian, onKajian, onProduct, onNotif, unread, onSearch,
           {PRODUCTS_DATA.slice(0, 4).map((p, i) => (
             <div key={p.id} onClick={() => onProduct(p)} style={{ background: "#fff", borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 15px rgba(0,0,0,0.04)", border: "1px solid #F1F5F9", cursor: "pointer", animation: `fadeUp 0.4s ease ${i * 0.08}s both` }}>
               <div style={{ height: 140, background: "#F8FAFC", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative" }}>
-                 <img src={p.image} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <img src={p.image} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
               <div style={{ padding: 14 }}>
                 <p style={{ fontSize: 12, fontWeight: 600, color: "#0F172A", lineHeight: 1.4, height: 34, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{p.name}</p>
@@ -756,9 +756,9 @@ function CartTab({ cart, setCart, total, onCheckout }) {
               <p style={{ fontSize: 15, fontWeight: 600, color: "#0891B2", marginTop: 6 }}>{fmt(item.price)}</p>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <button onClick={() => setCart(cart.map((c) => c.id === item.id ? { ...c, qty: Math.max(1, c.qty - 1) } : c))} style={styles.qtyBtn}><Minus size={16}/></button>
+              <button onClick={() => setCart(cart.map((c) => c.id === item.id ? { ...c, qty: Math.max(1, c.qty - 1) } : c))} style={styles.qtyBtn}><Minus size={16} /></button>
               <span style={{ fontSize: 15, fontWeight: 600, color: "#0F172A", minWidth: 20, textAlign: "center" }}>{item.qty}</span>
-              <button onClick={() => setCart(cart.map((c) => c.id === item.id ? { ...c, qty: c.qty + 1 } : c))} style={styles.qtyBtn}><Plus size={16}/></button>
+              <button onClick={() => setCart(cart.map((c) => c.id === item.id ? { ...c, qty: c.qty + 1 } : c))} style={styles.qtyBtn}><Plus size={16} /></button>
             </div>
           </div>
         ))}
@@ -785,12 +785,12 @@ function ProfileTab({ user, myKajian, orders, onKajian, onLogout, onLoginClick }
   if (!user) {
     return (
       <div style={{ paddingBottom: 20, minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#F8FAFC" }}>
-         <div style={{ width: 100, height: 100, borderRadius: "50%", background: "#CFFAFE", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 24 }}>
-           <User size={48} color="#0891B2" strokeWidth={2}/>
-         </div>
-         <h2 style={{ fontSize: 22, color: "#0F172A", fontWeight: 600, marginBottom: 8 }}>Belum Masuk</h2>
-         <p style={{ fontSize: 14, color: "#64748B", textAlign: "center", padding: "0 40px", marginBottom: 32 }}>Silakan login untuk melihat riwayat pesanan, jadwal kajian, dan pengaturan profil Anda.</p>
-         <button onClick={onLoginClick} style={{ ...styles.primaryBtn, width: "80%" }}>Masuk ke Akun</button>
+        <div style={{ width: 100, height: 100, borderRadius: "50%", background: "#CFFAFE", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 24 }}>
+          <User size={48} color="#0891B2" strokeWidth={2} />
+        </div>
+        <h2 style={{ fontSize: 22, color: "#0F172A", fontWeight: 600, marginBottom: 8 }}>Belum Masuk</h2>
+        <p style={{ fontSize: 14, color: "#64748B", textAlign: "center", padding: "0 40px", marginBottom: 32 }}>Silakan login untuk melihat riwayat pesanan, jadwal kajian, dan pengaturan profil Anda.</p>
+        <button onClick={onLoginClick} style={{ ...styles.primaryBtn, width: "80%" }}>Masuk ke Akun</button>
       </div>
     );
   }
@@ -887,7 +887,7 @@ function ProfileSubPage({ title, onClose, myKajian, orders, onKajian }) {
     <div style={styles.modal}>
       <div style={{ ...styles.modalContent, height: "85vh", display: "flex", flexDirection: "column" }}>
         <div style={{ padding: "20px 24px", borderBottom: "1px solid #F1F5F9", display: "flex", alignItems: "center", gap: 16, position: "sticky", top: 0, background: "#F8FAFC", zIndex: 10 }}>
-          <button onClick={onClose} style={{...styles.backBtn, padding: 0}}><ChevronLeft size={24} color="#0F172A"/></button>
+          <button onClick={onClose} style={{ ...styles.backBtn, padding: 0 }}><ChevronLeft size={24} color="#0F172A" /></button>
           <h2 style={{ fontSize: 18, color: "#0F172A", fontWeight: 600 }}>{cleanTitle}</h2>
         </div>
         <div style={{ padding: 24, flex: 1, overflowY: "auto" }}>
@@ -905,7 +905,7 @@ function ProfileSubPage({ title, onClose, myKajian, orders, onKajian }) {
                   </div>
                   <div style={{ flex: 1 }}>
                     <h4 style={{ color: "#fff", fontSize: 15, fontWeight: 600 }}>{k.title}</h4>
-                    <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, marginTop: 6, fontWeight: 500 }}><Calendar size={12} style={{display:"inline"}}/> {k.date} • {k.time}</p>
+                    <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, marginTop: 6, fontWeight: 500 }}><Calendar size={12} style={{ display: "inline" }} /> {k.date} • {k.time}</p>
                   </div>
                 </div>
               ))
@@ -922,7 +922,7 @@ function ProfileSubPage({ title, onClose, myKajian, orders, onKajian }) {
               orders.map((ord) => {
                 const styleStatus = getStatusStyle(ord.status);
                 const currentStepIdx = STATUS_STEPS.findIndex(s => s.key === ord.status);
-                
+
                 return (
                   <div key={ord.id} style={{ background: "#fff", borderRadius: 20, padding: 20, marginBottom: 16, border: "1px solid #F1F5F9", boxShadow: "0 4px 15px rgba(0,0,0,0.03)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #F1F5F9", paddingBottom: 16, marginBottom: 16 }}>
@@ -934,7 +934,7 @@ function ProfileSubPage({ title, onClose, myKajian, orders, onKajian }) {
                         {styleStatus.label}
                       </span>
                     </div>
-                    
+
                     {/* Items Summary */}
                     <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
                       <div style={{ width: 56, height: 56, borderRadius: 14, background: "#F8FAFC", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
@@ -950,18 +950,18 @@ function ProfileSubPage({ title, onClose, myKajian, orders, onKajian }) {
 
                     {/* Tracking Steps UI */}
                     <div style={{ display: "flex", justifyContent: "space-between", marginTop: 20, paddingTop: 20, borderTop: "1px dashed #E2E8F0", position: "relative" }}>
-                       <div style={{ position: "absolute", top: 31, left: 30, right: 30, height: 2, background: "#E2E8F0", zIndex: 0 }} />
-                       {STATUS_STEPS.map((step, idx) => {
-                          const isActive = currentStepIdx >= idx;
-                          return (
-                            <div key={step.key} style={{ textAlign: "center", zIndex: 1, width: 60 }}>
-                              <div style={{ width: 24, height: 24, borderRadius: "50%", background: isActive ? "#0891B2" : "#F1F5F9", color: isActive ? "#fff" : "#94A3B8", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto", transition: "all 0.3s" }}>
-                                 {isActive ? <Check size={14} strokeWidth={3}/> : <span style={{fontSize: 10, fontWeight: 600}}>{idx + 1}</span>}
-                              </div>
-                              <p style={{ fontSize: 10, color: isActive ? "#0F172A" : "#64748B", marginTop: 8, fontWeight: isActive ? 600 : 500 }}>{step.label}</p>
+                      <div style={{ position: "absolute", top: 31, left: 30, right: 30, height: 2, background: "#E2E8F0", zIndex: 0 }} />
+                      {STATUS_STEPS.map((step, idx) => {
+                        const isActive = currentStepIdx >= idx;
+                        return (
+                          <div key={step.key} style={{ textAlign: "center", zIndex: 1, width: 60 }}>
+                            <div style={{ width: 24, height: 24, borderRadius: "50%", background: isActive ? "#0891B2" : "#F1F5F9", color: isActive ? "#fff" : "#94A3B8", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto", transition: "all 0.3s" }}>
+                              {isActive ? <Check size={14} strokeWidth={3} /> : <span style={{ fontSize: 10, fontWeight: 600 }}>{idx + 1}</span>}
                             </div>
-                          )
-                       })}
+                            <p style={{ fontSize: 10, color: isActive ? "#0F172A" : "#64748B", marginTop: 8, fontWeight: isActive ? 600 : 500 }}>{step.label}</p>
+                          </div>
+                        )
+                      })}
                     </div>
 
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20, paddingTop: 16, borderTop: "1px solid #F1F5F9" }}>
@@ -1032,12 +1032,12 @@ function KajianDetail({ kajian, onClose, onJoin, joined, user }) {
 
   const handleProceed = () => {
     if (!user) {
-       onJoin(kajian, totalToPay); // This will trigger login screen
-       return;
+      onJoin(kajian, totalToPay); // This will trigger login screen
+      return;
     }
-    
+
     if (totalToPay === 0) {
-      onJoin(kajian, 0); 
+      onJoin(kajian, 0);
     } else {
       setStep(1);
       window.scrollTo(0, 0);
@@ -1065,7 +1065,7 @@ function KajianDetail({ kajian, onClose, onJoin, joined, user }) {
   if (step === 2) return (
     <div style={styles.container}>
       <div style={{ padding: 24, minHeight: "100vh", background: "#fff" }}>
-        <button onClick={() => setStep(1)} style={styles.backBtn}><ChevronLeft size={20}/> Kembali</button>
+        <button onClick={() => setStep(1)} style={styles.backBtn}><ChevronLeft size={20} /> Kembali</button>
         <h2 style={{ fontSize: 24, color: "#0F172A", marginTop: 20, fontWeight: 600 }}>Selesaikan Pembayaran</h2>
 
         <div style={{ background: "#F8FAFC", borderRadius: 20, padding: 24, marginTop: 24, textAlign: "center", border: "1px solid #F1F5F9" }}>
@@ -1085,9 +1085,9 @@ function KajianDetail({ kajian, onClose, onJoin, joined, user }) {
   if (step === 1) return (
     <div style={styles.container}>
       <div style={{ padding: 24, minHeight: "100vh", background: "#fff" }}>
-        <button onClick={() => setStep(0)} style={styles.backBtn}><ChevronLeft size={20}/> Kembali</button>
+        <button onClick={() => setStep(0)} style={styles.backBtn}><ChevronLeft size={20} /> Kembali</button>
         <h2 style={{ fontSize: 24, color: "#0F172A", marginTop: 20, fontWeight: 600 }}>Pilih Pembayaran</h2>
-        
+
         <div style={{ background: "#F8FAFC", borderRadius: 20, padding: 20, marginTop: 20, border: "1px solid #F1F5F9" }}>
           <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
             <div style={{ width: 48, height: 48, borderRadius: 12, background: "#CFFAFE", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
@@ -1103,14 +1103,14 @@ function KajianDetail({ kajian, onClose, onJoin, joined, user }) {
             <span style={{ fontSize: 20, fontWeight: 600, color: "#0891B2" }}>{fmt(totalToPay)}</span>
           </div>
         </div>
-        
+
         <h3 style={{ fontSize: 16, fontWeight: 600, color: "#0F172A", marginTop: 32, marginBottom: 16 }}>Metode Pembayaran</h3>
-        
+
         <PaymentMethodAccordion method={method} setMethod={setMethod} selectedSub={selectedSub} setSelectedSub={setSelectedSub} />
 
-        <button 
-          onClick={() => { setStep(2); window.scrollTo(0,0); }} 
-          disabled={!method || (method !== "qris" && !selectedSub)} 
+        <button
+          onClick={() => { setStep(2); window.scrollTo(0, 0); }}
+          disabled={!method || (method !== "qris" && !selectedSub)}
           style={{ ...styles.primaryBtn, marginTop: 24, opacity: (!method || (method !== "qris" && !selectedSub)) ? 0.4 : 1 }}
         >
           Lanjut Pembayaran — {fmt(finalTotal)}
@@ -1123,7 +1123,7 @@ function KajianDetail({ kajian, onClose, onJoin, joined, user }) {
     <div style={{ ...styles.container, background: "#fff", overflowY: "auto", height: "100vh", display: "block" }}>
       <div style={{ height: 320, backgroundImage: `url(${kajian.image})`, backgroundSize: "cover", backgroundPosition: "center", position: "relative" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, padding: "20px 24px", background: "linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)", display: "flex", alignItems: "center" }}>
-          <button onClick={onClose} style={{ ...styles.backBtn, color: "#fff", padding: 0 }}><ChevronLeft size={28}/></button>
+          <button onClick={onClose} style={{ ...styles.backBtn, color: "#fff", padding: 0 }}><ChevronLeft size={28} /></button>
         </div>
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "40px 24px 32px", background: "linear-gradient(to top, rgba(15,23,42,0.95), transparent)", color: "#fff" }}>
           <span style={{ fontSize: 10, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: "rgba(255,255,255,0.2)", backdropFilter: "blur(4px)", display: "inline-block", marginBottom: 12 }}>{kajian.category.toUpperCase()}</span>
@@ -1131,7 +1131,7 @@ function KajianDetail({ kajian, onClose, onJoin, joined, user }) {
           <p style={{ fontSize: 15, marginTop: 6, fontWeight: 500, color: "rgba(255,255,255,0.8)" }}>Oleh {kajian.ustadz}</p>
         </div>
       </div>
-      
+
       <div style={{ padding: 24, background: "#fff", marginTop: -16, borderRadius: "24px 24px 0 0", position: "relative", zIndex: 10 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 28 }}>
           {[
@@ -1147,10 +1147,10 @@ function KajianDetail({ kajian, onClose, onJoin, joined, user }) {
             </div>
           ))}
         </div>
-        
+
         <h3 style={{ fontSize: 16, fontWeight: 600, color: "#0F172A", marginBottom: 12 }}>Deskripsi Kajian</h3>
         <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.8 }}>{kajian.desc}</p>
-        
+
         <div style={{ marginTop: 24, height: 8, borderRadius: 4, background: "#F1F5F9", overflow: "hidden" }}>
           <div style={{ height: "100%", borderRadius: 4, background: kajian.filled / kajian.spot > 0.8 ? "#EF4444" : "#0891B2", width: `${(kajian.filled / kajian.spot) * 100}%` }} />
         </div>
@@ -1182,12 +1182,12 @@ function KajianDetail({ kajian, onClose, onJoin, joined, user }) {
         )}
 
         <div style={{ background: "#FFFBEB", borderRadius: 16, padding: 16, marginTop: 24, display: "flex", gap: 14, alignItems: "center", border: "1px solid #FEF3C7" }}>
-          <Smartphone size={24} color="#D97706" style={{flexShrink: 0}} />
+          <Smartphone size={24} color="#D97706" style={{ flexShrink: 0 }} />
           <p style={{ fontSize: 12, color: "#B45309", lineHeight: 1.6, fontWeight: 500 }}>Tiket dan jadwal akan dikirim otomatis via WhatsApp setelah pendaftaran berhasil.</p>
         </div>
-        
+
         <button onClick={handleProceed} disabled={joined} style={{ ...styles.primaryBtn, marginTop: 24, marginBottom: 40, ...(joined ? { background: "#D1FAE5", color: "#065F46", boxShadow: "none" } : {}) }}>
-          {joined ? "Sudah Terdaftar" : totalToPay === 0 ? "Daftar Sekarang (Rp 0)" : `Bayar & Daftar — ${fmt(totalToPay)}`}
+          {joined ? "Sudah Terdaftar" : totalToPay === 0 ? "Daftar dengan doa" : `Bayar & Daftar — ${fmt(totalToPay)}`}
         </button>
       </div>
     </div>
@@ -1204,37 +1204,37 @@ function ProductDetail({ product, onClose, onAdd }) {
     <div style={{ ...styles.container, background: "#fff", overflowY: "auto", height: "100vh", display: "block" }}>
       <div style={{ position: "relative" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, padding: "20px 24px", background: "linear-gradient(to bottom, rgba(0,0,0,0.5), transparent)", display: "flex", alignItems: "center", zIndex: 10 }}>
-          <button onClick={onClose} style={{ ...styles.backBtn, color: "#fff", padding: 0 }}><ChevronLeft size={28}/></button>
+          <button onClick={onClose} style={{ ...styles.backBtn, color: "#fff", padding: 0 }}><ChevronLeft size={28} /></button>
         </div>
         <div style={{ height: 350, background: "#F8FAFC", overflow: "hidden" }}>
           <img src={product.image} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </div>
       </div>
-      
+
       <div style={{ padding: 24, background: "#fff", marginTop: -20, borderRadius: "24px 24px 0 0", position: "relative", zIndex: 10 }}>
         <span style={{ fontSize: 11, fontWeight: 600, padding: "6px 12px", borderRadius: 20, background: "#ECFEFF", color: "#0891B2", display: "inline-block" }}>{product.category}</span>
         <h2 style={{ fontSize: 26, color: "#0F172A", marginTop: 16, fontWeight: 600, lineHeight: 1.3 }}>{product.name}</h2>
-        
+
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
           <Star size={16} color="#F59E0B" fill="#F59E0B" />
           <span style={{ fontSize: 13, color: "#64748B", fontWeight: 500 }}>{product.rating} • {product.sold} terjual</span>
         </div>
-        
+
         <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginTop: 24 }}>
           <span style={{ fontSize: 32, fontWeight: 600, color: "#0891B2" }}>{fmt(product.price)}</span>
           {product.oldPrice && <span style={{ fontSize: 15, color: "#94A3B8", textDecoration: "line-through", fontWeight: 500 }}>{fmt(product.oldPrice)}</span>}
         </div>
-        
+
         <h3 style={{ fontSize: 16, fontWeight: 600, color: "#0F172A", marginTop: 32, marginBottom: 12 }}>Deskripsi Produk</h3>
         <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.8 }}>{product.desc}</p>
-        
+
         <div style={{ background: "#FFFBEB", borderRadius: 16, padding: 16, marginTop: 24, display: "flex", gap: 14, alignItems: "center", border: "1px solid #FEF3C7" }}>
-          <Package size={24} color="#D97706" style={{flexShrink: 0}} />
+          <Package size={24} color="#D97706" style={{ flexShrink: 0 }} />
           <p style={{ fontSize: 12, color: "#B45309", lineHeight: 1.6, fontWeight: 500 }}>Konfirmasi pesanan & resi pengiriman dikirim otomatis via WhatsApp.</p>
         </div>
-        
+
         <button onClick={() => { onAdd(product); onClose(); }} style={{ ...styles.primaryBtn, marginTop: 32, marginBottom: 40, display: "flex", justifyContent: "center", alignItems: "center", gap: 10 }}>
-          <ShoppingCart size={20}/> Tambah ke Keranjang
+          <ShoppingCart size={20} /> Tambah ke Keranjang
         </button>
       </div>
     </div>
@@ -1271,7 +1271,7 @@ function CheckoutPage({ cart, total, onClose, onDone, setCart }) {
   if (step === 1) return (
     <div style={{ ...styles.container, background: "#fff", minHeight: "100vh", overflowY: "auto" }}>
       <div style={{ padding: 24 }}>
-        <button onClick={() => setStep(0)} style={styles.backBtn}><ChevronLeft size={20}/> Kembali</button>
+        <button onClick={() => setStep(0)} style={styles.backBtn}><ChevronLeft size={20} /> Kembali</button>
         <h2 style={{ fontSize: 24, color: "#0F172A", marginTop: 20, fontWeight: 600 }}>Selesaikan Pembayaran</h2>
 
         <div style={{ background: "#F8FAFC", borderRadius: 20, padding: 24, marginTop: 24, textAlign: "center", border: "1px solid #F1F5F9" }}>
@@ -1281,8 +1281,8 @@ function CheckoutPage({ cart, total, onClose, onDone, setCart }) {
           <PaymentInstructionsBox method={method} selectedSub={selectedSub} finalTotal={finalTotal} uniqueCode={uniqueCode} />
         </div>
 
-        <button onClick={() => { setStep(2); window.scrollTo(0,0); }} style={{ ...styles.primaryBtn, marginTop: 24, marginBottom: 40, display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
-          Saya Sudah Bayar <CheckCircle2 size={18}/>
+        <button onClick={() => { setStep(2); window.scrollTo(0, 0); }} style={{ ...styles.primaryBtn, marginTop: 24, marginBottom: 40, display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
+          Saya Sudah Bayar <CheckCircle2 size={18} />
         </button>
       </div>
     </div>
@@ -1291,9 +1291,9 @@ function CheckoutPage({ cart, total, onClose, onDone, setCart }) {
   return (
     <div style={{ ...styles.container, background: "#fff", minHeight: "100vh", overflowY: "auto" }}>
       <div style={{ padding: 24 }}>
-        <button onClick={onClose} style={styles.backBtn}><ChevronLeft size={20}/> Kembali</button>
+        <button onClick={onClose} style={styles.backBtn}><ChevronLeft size={20} /> Kembali</button>
         <h2 style={{ fontSize: 24, color: "#0F172A", marginTop: 20, fontWeight: 600 }}>Checkout</h2>
-        
+
         <div style={{ background: "#F8FAFC", borderRadius: 20, padding: 20, marginTop: 24, border: "1px solid #F1F5F9" }}>
           {cart.map((item) => (
             <div key={item.id} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #E2E8F0" }}>
@@ -1306,14 +1306,14 @@ function CheckoutPage({ cart, total, onClose, onDone, setCart }) {
             <span style={{ fontSize: 20, fontWeight: 600, color: "#0891B2" }}>{fmt(total)}</span>
           </div>
         </div>
-        
+
         <h3 style={{ fontSize: 16, fontWeight: 600, color: "#0F172A", marginTop: 32, marginBottom: 16 }}>Metode Pembayaran</h3>
-        
+
         <PaymentMethodAccordion method={method} setMethod={setMethod} selectedSub={selectedSub} setSelectedSub={setSelectedSub} />
 
-        <button 
-          onClick={() => { setStep(1); window.scrollTo(0,0); }} 
-          disabled={!method || (method !== "qris" && !selectedSub)} 
+        <button
+          onClick={() => { setStep(1); window.scrollTo(0, 0); }}
+          disabled={!method || (method !== "qris" && !selectedSub)}
           style={{ ...styles.primaryBtn, marginTop: 24, marginBottom: 40, opacity: (!method || (method !== "qris" && !selectedSub)) ? 0.4 : 1 }}
         >
           Lanjut Pembayaran — {fmt(finalTotal)}
@@ -1331,7 +1331,7 @@ function NotifPanel({ notifs, setNotifs, onClose }) {
         <div style={{ padding: 24 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h2 style={{ fontSize: 24, color: "#0F172A", fontWeight: 600 }}>Notifikasi</h2>
-            <button onClick={onClose} style={{...styles.backBtn, padding: 0}}><X size={24} color="#0F172A" /></button>
+            <button onClick={onClose} style={{ ...styles.backBtn, padding: 0 }}><X size={24} color="#0F172A" /></button>
           </div>
           <div style={{ marginTop: 24 }}>
             {notifs.map((n) => (
@@ -1362,9 +1362,9 @@ function SearchOverlay({ query, setQuery, onClose, kajian, products, onKajian, o
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <div style={{ flex: 1, position: "relative" }}>
               <Search size={20} color="#94A3B8" style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)" }} />
-              <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cari kajian atau produk..." style={{...styles.input, paddingLeft: 46}} autoFocus />
+              <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cari kajian atau produk..." style={{ ...styles.input, paddingLeft: 46 }} autoFocus />
             </div>
-            <button onClick={onClose} style={{...styles.backBtn, padding: 8}}><X size={24} color="#0F172A" /></button>
+            <button onClick={onClose} style={{ ...styles.backBtn, padding: 8 }}><X size={24} color="#0F172A" /></button>
           </div>
           {q.length > 0 && (
             <div style={{ marginTop: 24 }}>

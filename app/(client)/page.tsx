@@ -5,7 +5,7 @@ import { getProductsList } from '@/lib/services/products';
 
 export default async function HomePage() {
   const [kajian, products] = await Promise.all([
-    getKajianList().catch(() => []),
+    getKajianList(undefined, undefined, undefined, true).catch(() => []),
     getProductsList().catch(() => []),
   ]);
   return (

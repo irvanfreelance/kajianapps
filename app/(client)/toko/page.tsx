@@ -1,4 +1,4 @@
-import { TokoView } from '@/components/client/Views';
+import { TokoView } from '@/components/client/TokoView';
 import { getProductsList } from '@/lib/services/products';
 
 export default async function TokoPage() {

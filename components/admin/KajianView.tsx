@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import * as XLSX from "xlsx";
-import { Search, Plus, Edit, Trash2, Users, FileDown } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Users, FileDown, Layers } from "lucide-react";
 import { styles, fmt, Pagination, Toast, formatDate } from "./shared";
 import { exportToExcel } from "@/lib/excel";
 import Link from "next/link";
@@ -166,6 +166,9 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
           <button onClick={handleExport} style={styles.excelBtn}>
             <FileDown size={18} /> Export Excel
           </button>
+          <Link href="/panel/kajian/series" style={{...styles.secondaryBtn, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6}}>
+            <Layers size={18} /> Kelola Series
+          </Link>
           <Link href="/panel/kajian/create" style={{...styles.primaryBtn, textDecoration: 'none'}}>
             <Plus size={18} /> Tambah Kajian
           </Link>
@@ -196,7 +199,14 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                       <img src={k.image} style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover" }} alt="" />
                       <div>
-                        <p style={{ fontWeight: 600, color: "#0F172A", fontSize: 14 }}>{k.title}</p>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                          {k.series_type === 'series' && (
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 6, background: "#EDE9FE", color: "#7C3AED", display: "flex", alignItems: "center", gap: 3 }}>
+                              <Layers size={10} /> Eps. {k.episode_number || '?'}
+                            </span>
+                          )}
+                          <p style={{ fontWeight: 600, color: "#0F172A", fontSize: 14 }}>{k.title}</p>
+                        </div>
                         <p style={{ fontSize: 12, color: "#64748B" }}>{k.ustadz}</p>
                       </div>
                     </div>

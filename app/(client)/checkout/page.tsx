@@ -2,7 +2,7 @@
 import { useState, useEffect, Suspense } from "react";
 import {
   ChevronLeft, CheckCircle2,
-  Copy, Info, ChevronDown, Tag,
+  ChevronDown, Tag,
   Landmark, Smartphone, QrCode, Store, CreditCard
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -10,12 +10,13 @@ import { useSession } from "next-auth/react";
 import AddressSelector from "@/components/client/AddressSelector";
 import Image from "next/image";
 
+const GOLD = "#D4AF37";
+const DARK = "#0D0D14";
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 
 // ─── Payment Method Picker with collapsible accordion categories ───
 function PaymentMethodPicker({ groupedMethods, selectedMethod, onSelect, fmt }: any) {
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>(() => {
-    // Auto-open first category
     const first = Object.keys(groupedMethods)[0];
     return first ? { [first]: true } : {};
   });
@@ -25,7 +26,7 @@ function PaymentMethodPicker({ groupedMethods, selectedMethod, onSelect, fmt }: 
   };
 
   const CategoryIcon = ({ category }: { category: string }) => {
-    const props = { size: 18, color: '#0891B2' };
+    const props = { size: 18, color: GOLD };
     if (category === 'Virtual Account') return <Landmark {...props} />;
     if (category === 'E-Wallet') return <Smartphone {...props} />;
     if (category === 'QRIS') return <QrCode {...props} />;
@@ -35,9 +36,9 @@ function PaymentMethodPicker({ groupedMethods, selectedMethod, onSelect, fmt }: 
 
   return (
     <div style={{ animation: "fadeUp 0.25s ease" }}>
-      <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", marginBottom: 6 }}>Pilih Metode Pembayaran</h3>
+      <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 6 }}>Pilih Metode Pembayaran</h3>
       {selectedMethod && (
-        <p style={{ fontSize: 12, color: "#0891B2", fontWeight: 600, marginBottom: 16 }}>
+        <p style={{ fontSize: 12, color: GOLD, fontWeight: 600, marginBottom: 16 }}>
           ✓ Dipilih: {selectedMethod.name}
         </p>
       )}
@@ -46,58 +47,58 @@ function PaymentMethodPicker({ groupedMethods, selectedMethod, onSelect, fmt }: 
           const isOpen = !!openCategories[category];
           const hasSelected = items.some((m: any) => m.id === selectedMethod?.id);
           return (
-            <div key={category} style={{ borderRadius: 18, border: hasSelected ? "2px solid #0891B2" : "1.5px solid #E2E8F0", overflow: "hidden", background: "#fff", transition: "all 0.2s" }}>
-              {/* Category Header — clickable accordion toggle */}
+            <div key={category} style={{ borderRadius: 18, border: hasSelected ? `2px solid ${GOLD}` : "1.5px solid rgba(255,255,255,0.08)", overflow: "hidden", background: "#18181F", transition: "all 0.2s" }}>
+              {/* Category Header */}
               <button
                 onClick={() => toggleCategory(category)}
-                style={{ display: "flex", alignItems: "center", width: "100%", padding: "14px 16px", background: hasSelected ? "#ECFEFF" : "#F8FAFC", border: "none", cursor: "pointer", gap: 12 }}
+                style={{ display: "flex", alignItems: "center", width: "100%", padding: "14px 16px", background: hasSelected ? "rgba(212,175,55,0.12)" : "#18181F", border: "none", cursor: "pointer", gap: 12 }}
               >
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: hasSelected ? 'rgba(8,145,178,0.1)' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: hasSelected ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <CategoryIcon category={category} />
                 </div>
-                <span style={{ flex: 1, textAlign: "left", fontSize: 14, fontWeight: 700, color: hasSelected ? "#0891B2" : "#0F172A" }}>
+                <span style={{ flex: 1, textAlign: "left", fontSize: 14, fontWeight: 700, color: hasSelected ? GOLD : "#fff" }}>
                   {category}
                 </span>
                 {hasSelected && (
-                  <span style={{ fontSize: 11, background: "#0891B2", color: "#fff", borderRadius: 8, padding: "2px 8px", fontWeight: 600 }}>
+                  <span style={{ fontSize: 11, background: GOLD, color: "#0A0A0F", borderRadius: 8, padding: "2px 8px", fontWeight: 700 }}>
                     ✓ {selectedMethod.name}
                   </span>
                 )}
                 <ChevronDown
                   size={18}
-                  color="#94A3B8"
+                  color="rgba(255,255,255,0.4)"
                   style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s", flexShrink: 0 }}
                 />
               </button>
 
               {/* Expanded options */}
               {isOpen && (
-                <div style={{ padding: "8px 12px 12px", display: "flex", flexDirection: "column", gap: 8, borderTop: "1px solid #F1F5F9" }}>
+                <div style={{ padding: "8px 12px 12px", display: "flex", flexDirection: "column", gap: 8, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                   {items.map((m: any) => (
                     <button
                       key={m.id}
                       onClick={() => { onSelect(m); setOpenCategories(prev => ({ ...prev, [category]: false })); }}
                       style={{
                         display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-                        borderRadius: 14, border: selectedMethod?.id === m.id ? "2px solid #0891B2" : "1.5px solid #F1F5F9",
-                        background: selectedMethod?.id === m.id ? "#ECFEFF" : "#fff",
+                        borderRadius: 14, border: selectedMethod?.id === m.id ? `2px solid ${GOLD}` : "1.5px solid rgba(255,255,255,0.04)",
+                        background: selectedMethod?.id === m.id ? "rgba(212,175,55,0.08)" : "rgba(255,255,255,0.02)",
                         textAlign: "left", cursor: "pointer", transition: "all 0.15s", width: "100%"
                       }}
                     >
-                      <div style={{ width: 40, height: 40, borderRadius: 10, background: "#F8FAFC", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #F1F5F9", overflow: "hidden", flexShrink: 0, position: "relative" }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 10, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.1)", overflow: "hidden", flexShrink: 0, position: "relative" }}>
                         <Image src={m.logoUrl} alt={m.name} width={30} height={30} style={{ objectFit: "contain" }} />
                       </div>
                       <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{m.name}</p>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{m.name}</p>
                         {(m.adminFeeFlat > 0 || m.adminFeePct > 0) && (
-                          <p style={{ fontSize: 11, color: "#64748B", marginTop: 1 }}>
+                          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 1 }}>
                             Admin: {m.adminFeeFlat > 0 ? fmt(m.adminFeeFlat) : `${m.adminFeePct}%`}
                           </p>
                         )}
                       </div>
                       <div style={{
                         width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
-                        border: selectedMethod?.id === m.id ? "5px solid #0891B2" : "2px solid #CBD5E1",
+                        border: selectedMethod?.id === m.id ? `5px solid ${GOLD}` : "2px solid rgba(255,255,255,0.2)",
                         background: "#fff", transition: "all 0.15s"
                       }} />
                     </button>
@@ -130,12 +131,10 @@ function CheckoutView() {
   const [instructions, setInstructions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [step, setStep] = useState(1); // 1: Review, 2: Address (prod), 3: Method, 4: Confirm
+  const [step, setStep] = useState(1);
   const [shippingData, setShippingData] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState("");
-  const [copiedVA, setCopiedVA] = useState(false);
 
-  // Redirect if not logged in
   useEffect(() => {
     if (sessionStatus === "unauthenticated") {
       router.push("/login");
@@ -208,7 +207,6 @@ function CheckoutView() {
         if (!res.ok) throw new Error(data.error || "Gagal membuat order");
         router.push(`/status/${data.orderCode}`);
       } else {
-        // kajian (could be paid, or free with infaq)
         const res = await fetch("/api/kajian/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -230,12 +228,6 @@ function CheckoutView() {
     }
   };
 
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedVA(true);
-    setTimeout(() => setCopiedVA(false), 2000);
-  };
-
   const groupedMethods = methods.reduce((acc: any, m: any) => {
     const category =
       m.type === "va" ? "Virtual Account" :
@@ -250,22 +242,21 @@ function CheckoutView() {
 
   if (sessionStatus === "loading" || loading) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", flexDirection: "column", gap: 12 }}>
-        <div style={{ width: 40, height: 40, border: "3px solid #E2E8F0", borderTop: "3px solid #0891B2", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
-        <p style={{ fontSize: 14, color: "#64748B" }}>Memuat checkout...</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", flexDirection: "column", gap: 12, background: DARK, color: "#fff" }}>
+        <div style={{ width: 40, height: 40, border: `3px solid rgba(212,175,55,0.2)`, borderTop: `3px solid ${GOLD}`, borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>Memuat checkout...</p>
         <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
   if (!item) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
-        <p style={{ color: "#94A3B8", fontSize: 14 }}>Item tidak ditemukan</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: DARK }}>
+        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14 }}>Item tidak ditemukan</p>
       </div>
     );
   }
 
-  // ─── Steps ────────────────────────────────────────────────────────────
   const steps = type === "product"
     ? ["Detail", "Alamat", "Bayar", "Konfirmasi"]
     : isFreeKajian
@@ -273,17 +264,17 @@ function CheckoutView() {
       : ["Detail", "Bayar", "Konfirmasi"];
 
   return (
-    <div style={{ background: "#fff", minHeight: "100vh", position: "relative" }}>
+    <div style={{ background: DARK, minHeight: "100vh", position: "relative", color: "#fff" }}>
       {/* Header */}
-      <div style={{ padding: "20px 24px 16px", display: "flex", alignItems: "center", gap: 16, borderBottom: "1px solid #F1F5F9", position: "sticky", top: 0, background: "#fff", zIndex: 10 }}>
+      <div style={{ padding: "20px 24px 16px", display: "flex", alignItems: "center", gap: 16, borderBottom: "1px solid rgba(212,175,55,0.15)", position: "sticky", top: 0, background: "#141420", zIndex: 10 }}>
         <button
           onClick={() => step === 1 ? router.back() : setStep(s => s - 1)}
           style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}
         >
-          <ChevronLeft size={24} color="#0F172A" />
+          <ChevronLeft size={24} color={GOLD} />
         </button>
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", margin: 0 }}>Checkout</h1>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: "#fff", margin: 0 }}>Checkout</h1>
         </div>
         {/* Step indicators */}
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -291,89 +282,89 @@ function CheckoutView() {
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
               <div style={{
                 width: 22, height: 22, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-                background: i + 1 <= step ? "#0891B2" : "#E2E8F0",
-                fontSize: 11, fontWeight: 700, color: i + 1 <= step ? "#fff" : "#94A3B8",
+                background: i + 1 <= step ? GOLD : "rgba(255,255,255,0.1)",
+                fontSize: 11, fontWeight: 700, color: i + 1 <= step ? "#0A0A0F" : "rgba(255,255,255,0.4)",
                 transition: "all 0.2s"
               }}>
                 {i + 1 < step ? <CheckCircle2 size={13} /> : i + 1}
               </div>
               {i < steps.length - 1 && (
-                <div style={{ width: 16, height: 2, background: i + 1 < step ? "#0891B2" : "#E2E8F0", borderRadius: 2, transition: "all 0.2s" }} />
+                <div style={{ width: 16, height: 2, background: i + 1 < step ? GOLD : "rgba(255,255,255,0.1)", borderRadius: 2, transition: "all 0.2s" }} />
               )}
             </div>
           ))}
         </div>
       </div>
 
-      <div style={{ padding: "24px 24px 140px" }}>
+      <div style={{ padding: "24px 24px 140px", maxWidth: 500, margin: "0 auto" }}>
 
         {/* ─── STEP 1: Detail & Review ─── */}
         {step === 1 && (
           <div style={{ animation: "fadeUp 0.25s ease" }}>
             {/* Item Card */}
-            <div style={{ background: "#F8FAFC", borderRadius: 20, padding: 20, border: "1px solid #F1F5F9", marginBottom: 24 }}>
+            <div style={{ background: "#18181F", borderRadius: 20, padding: 20, border: `1px solid rgba(212,175,55,0.15)`, marginBottom: 24 }}>
               <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
                 {item.image && (
-                  <div style={{ width: 64, height: 64, position: "relative", flexShrink: 0 }}>
+                  <div style={{ width: 64, height: 64, position: "relative", flexShrink: 0, overflow: "hidden", borderRadius: 14 }}>
                     <Image
                       src={item.image}
                       alt={item.name || item.title}
                       fill
-                      style={{ borderRadius: 14, objectFit: "cover" }}
+                      style={{ objectFit: "cover" }}
                     />
                   </div>
                 )}
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", lineHeight: 1.3 }}>{item.name || item.title}</p>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: "#fff", lineHeight: 1.3 }}>{item.name || item.title}</p>
                   {type === "kajian" && (
-                    <p style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>
+                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 4 }}>
                       Ustadz {item.ustadz} · {item.date_display || item.dateDisplay}
                     </p>
                   )}
                   {type === "product" && qty > 1 && (
-                    <p style={{ fontSize: 13, color: "#64748B", marginTop: 4 }}>{qty} item</p>
+                    <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 4 }}>{qty} item</p>
                   )}
                 </div>
               </div>
 
-              <div style={{ height: 1, background: "#E2E8F0", margin: "16px 0" }} />
+              <div style={{ height: 1, background: "rgba(212,175,55,0.15)", margin: "16px 0" }} />
 
               {/* Pricing rows */}
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 13, color: "#64748B" }}>
+                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>
                     {type === "product" ? `Subtotal (x${qty})` : "Biaya pendaftaran"}
                   </span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>
                     {priceToUse === 0 ? (
-                      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "#16A34A" }}>
-                        <Tag size={13} />Gratis
+                      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "#4ADE80" }}>
+                        <Tag size={13} />Infak Terbaik (Bebas nominal)
                       </span>
                     ) : fmt(subtotal)}
                   </span>
                 </div>
                 {type === "product" && shippingData && (
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 13, color: "#64748B" }}>Ongkos Kirim</span>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{fmt(shippingCost)}</span>
+                    <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>Ongkos Kirim</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{fmt(shippingCost)}</span>
                   </div>
                 )}
               </div>
 
-              <div style={{ height: 1, background: "#E2E8F0", margin: "12px 0" }} />
+              <div style={{ height: 1, background: "rgba(212,175,55,0.15)", margin: "12px 0" }} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>Total</span>
-                <span style={{ fontSize: 20, fontWeight: 800, color: (type === "kajian" && priceToUse === 0) ? "#16A34A" : "#0891B2" }}>
-                  {(type === "kajian" && priceToUse === 0) ? "Gratis" : fmt(total)}
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Total</span>
+                <span style={{ fontSize: 20, fontWeight: 800, color: GOLD }}>
+                  {fmt(total)}
                 </span>
               </div>
             </div>
 
             {/* User info */}
-            <div style={{ background: "#F8FAFC", borderRadius: 16, padding: 16, border: "1px solid #F1F5F9" }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: "#94A3B8", letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Data Pemesan</p>
-              <p style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{session?.user?.name}</p>
-              <p style={{ fontSize: 13, color: "#64748B", marginTop: 2 }}>{session?.user?.email}</p>
+            <div style={{ background: "#18181F", borderRadius: 16, padding: 16, border: `1px solid rgba(212,175,55,0.1)` }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: GOLD, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Data Pemesan</p>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>{session?.user?.name}</p>
+              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>{session?.user?.email}</p>
             </div>
           </div>
         )}
@@ -381,28 +372,28 @@ function CheckoutView() {
         {/* ─── STEP: Address (Only for Product) ─── */}
         {type === "product" && step === 2 && (
           <div style={{ animation: "fadeUp 0.25s ease" }}>
-            <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", marginBottom: 16 }}>Alamat Pengiriman</h3>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 16 }}>Alamat Pengiriman</h3>
             <AddressSelector onSelect={setShippingData} />
           </div>
         )}
 
-        {/* ─── STEP: Pilih Metode Pembayaran (Step 3 if product, Step 2 if kajian) ─── */}
+        {/* ─── STEP: Pilih Metode Pembayaran ─── */}
         {((type === "product" && step === 3) || (type === "kajian" && step === 2 && !isFreeKajian)) && (
           <div style={{ animation: "fadeUp 0.25s ease", display: "flex", flexDirection: "column", gap: 16 }}>
             {type === "product" && shippingData && (
-              <div style={{ background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 16, padding: 16 }}>
-                <p style={{ fontSize: 12, fontWeight: 700, color: "#94A3B8", letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Konfirmasi Pengiriman & Kurir</p>
+              <div style={{ background: "#18181F", border: `1px solid rgba(212,175,55,0.15)`, borderRadius: 16, padding: 16 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: GOLD, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Konfirmasi Pengiriman & Kurir</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13 }}>
-                  <p style={{ margin: 0, color: "#334155" }}>
+                  <p style={{ margin: 0, color: "rgba(255,255,255,0.8)" }}>
                     <strong>Penerima:</strong> {session?.user?.name}
                   </p>
-                  <p style={{ margin: 0, color: "#334155" }}>
+                  <p style={{ margin: 0, color: "rgba(255,255,255,0.8)" }}>
                     <strong>Alamat:</strong> {shippingData.address}, {shippingData.subdistrictName}, {shippingData.cityName}, {shippingData.provinceName} ({shippingData.postalCode})
                   </p>
-                  <p style={{ margin: 0, color: "#334155" }}>
+                  <p style={{ margin: 0, color: "rgba(255,255,255,0.8)" }}>
                     <strong>Kurir:</strong> <span style={{ textTransform: "uppercase" }}>{shippingData.courier}</span> ({shippingData.courierService})
                   </p>
-                  <p style={{ margin: 0, color: "#334155" }}>
+                  <p style={{ margin: 0, color: "rgba(255,255,255,0.8)" }}>
                     <strong>Ongkir:</strong> {fmt(shippingData.shippingCost)}
                   </p>
                 </div>
@@ -419,40 +410,37 @@ function CheckoutView() {
         )}
 
       </div>
-        {/* ─── Floating Bottom Bar ─── */}
-      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "#fff", padding: "16px 24px 28px", borderTop: "1px solid #F1F5F9", zIndex: 100 }}>
-        {/* Step 1 → next */}
+      {/* ─── Floating Bottom Bar ─── */}
+      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "#141420", padding: "16px 24px 28px", borderTop: `1px solid rgba(212,175,55,0.15)`, zIndex: 100 }}>
+        {errorMsg && (
+          <p style={{ color: "#F87171", fontSize: 12, textAlign: "center", marginBottom: 10 }}>{errorMsg}</p>
+        )}
         {step === 1 && (
           <button
-            onClick={() => type === "product" ? setStep(2) : setStep(2)}
-            style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: "#0891B2", color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+            onClick={() => setStep(2)}
+            style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: GOLD, color: "#0A0A0F", fontSize: 16, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
           >
             {type === "product" ? "Lanjut Alamat" : isFreeKajian ? "Lanjut Konfirmasi" : "Pilih Pembayaran"}
-            <ChevronDown size={18} style={{ transform: "rotate(-90deg)" }} />
           </button>
         )}
 
-        {/* Step 2 (Product only) → Step 3 */}
         {type === "product" && step === 2 && (
           <button
             onClick={() => setStep(3)}
             disabled={!shippingData}
-            style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: !shippingData ? "#CBD5E1" : "#0891B2", color: "#fff", fontSize: 16, fontWeight: 700, cursor: !shippingData ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+            style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: !shippingData ? "rgba(255,255,255,0.1)" : GOLD, color: !shippingData ? "rgba(255,255,255,0.4)" : "#0A0A0F", fontSize: 16, fontWeight: 700, cursor: !shippingData ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
           >
             Lanjut Pembayaran
-            <ChevronDown size={18} style={{ transform: "rotate(-90deg)" }} />
           </button>
         )}
 
-        {/* Step 3 (Product) or Step 2 (Paid Kajian) → submit */}
         {((type === "product" && step === 3) || (type === "kajian" && step === 2 && !isFreeKajian)) && (
           <button
             onClick={handleComplete}
             disabled={submitting || !selectedMethod}
-            style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: submitting || !selectedMethod ? "#94A3B8" : "#0891B2", color: "#fff", fontSize: 16, fontWeight: 700, cursor: submitting || !selectedMethod ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, transition: "all 0.2s" }}
+            style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: submitting || !selectedMethod ? "rgba(255,255,255,0.1)" : GOLD, color: submitting || !selectedMethod ? "rgba(255,255,255,0.4)" : "#0A0A0F", fontSize: 16, fontWeight: 700, cursor: submitting || !selectedMethod ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, transition: "all 0.2s" }}
           >
             {submitting ? "Memproses..." : "Buat Pesanan"}
-            {!submitting && <CheckCircle2 size={20} />}
           </button>
         )}
       </div>
@@ -473,7 +461,7 @@ function CheckoutView() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>Loading...</div>}>
+    <Suspense fallback={<div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: DARK, color: "#fff" }}>Loading...</div>}>
       <CheckoutView />
     </Suspense>
   );

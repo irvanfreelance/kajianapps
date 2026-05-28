@@ -22,17 +22,18 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 }
 
 const styles = {
-  outer: { background: "#F8FAFC", minHeight: "100vh", display: "flex", justifyContent: "center" } as const,
+  outer: { background: "#0D0D14", minHeight: "100vh", display: "flex", justifyContent: "center" } as const,
   container: { 
     width: "100%", 
     maxWidth: 430, 
     minHeight: "100vh", 
-    background: "#fff", 
+    background: "#0D0D14", 
     position: "relative", 
-    boxShadow: "0 0 50px rgba(0,0,0,0.04)", 
+    boxShadow: "0 0 60px rgba(212,175,55,0.05)", 
     display: "flex", 
     flexDirection: "column",
     overflow: "hidden"
   } as const,
   main: { flex: 1, paddingBottom: 100, display: "flex", flexDirection: "column" } as const,
 };
+

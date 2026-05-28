@@ -5,6 +5,9 @@ import { ChevronLeft, User, Phone, Briefcase, Calendar, Save, CheckCircle2 } fro
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
+const GOLD = "#D4AF37";
+const DARK = "#0D0D14";
+
 export default function ProfilEditPage() {
   const router = useRouter();
   const { data: session, update } = useSession();
@@ -56,7 +59,6 @@ export default function ProfilEditPage() {
       const data = await res.json();
       if (data.success) {
         setMessage("Profil berhasil disimpan!");
-        // Update session name if changed
         await update({ name: formData.name });
         setTimeout(() => router.push("/profil"), 1500);
       } else {
@@ -69,27 +71,27 @@ export default function ProfilEditPage() {
     }
   };
 
-  if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>Memuat...</div>;
+  if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: DARK, color: "#fff" }}>Memuat...</div>;
 
   return (
-    <div style={{ background: "#F8FAFC", minHeight: "100vh", paddingBottom: 40 }}>
+    <div style={{ background: DARK, minHeight: "100vh", paddingBottom: 40 }}>
       {/* Header */}
-      <div style={{ padding: "20px 24px 16px", display: "flex", alignItems: "center", gap: 16, borderBottom: "1px solid #F1F5F9", position: "sticky", top: 0, background: "#fff", zIndex: 10 }}>
+      <div style={{ padding: "20px 24px 16px", display: "flex", alignItems: "center", gap: 16, borderBottom: "1px solid rgba(212,175,55,0.15)", position: "sticky", top: 0, background: "#141420", zIndex: 10 }}>
         <button
           onClick={() => router.back()}
           style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}
         >
-          <ChevronLeft size={24} color="#0F172A" />
+          <ChevronLeft size={24} color={GOLD} />
         </button>
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", margin: 0 }}>Edit Profil</h1>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: "#fff", margin: 0 }}>Edit Profil</h1>
         </div>
       </div>
 
-      <div style={{ padding: 24 }}>
+      <div style={{ padding: 24, maxWidth: 500, margin: "0 auto" }}>
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           {message && (
-            <div style={{ background: "#DCFCE7", color: "#166534", padding: "12px 16px", borderRadius: 16, display: "flex", alignItems: "center", gap: 10, fontSize: 14, fontWeight: 600 }}>
+            <div style={{ background: "rgba(34,197,94,0.15)", color: "#4ADE80", padding: "12px 16px", borderRadius: 16, display: "flex", alignItems: "center", gap: 10, fontSize: 14, fontWeight: 600, border: "1px solid rgba(34,197,94,0.25)" }}>
               <CheckCircle2 size={18} /> {message}
             </div>
           )}
@@ -97,7 +99,7 @@ export default function ProfilEditPage() {
           <div style={styles.inputGroup}>
             <label style={styles.label}>Nama Lengkap</label>
             <div style={styles.inputWrapper}>
-              <User size={18} color="#94A3B8" style={styles.inputIcon} />
+              <User size={18} color="rgba(212,175,55,0.7)" style={styles.inputIcon} />
               <input 
                 type="text" 
                 value={formData.name}
@@ -112,7 +114,7 @@ export default function ProfilEditPage() {
           <div style={styles.inputGroup}>
             <label style={styles.label}>Nomor WhatsApp</label>
             <div style={styles.inputWrapper}>
-              <Phone size={18} color="#94A3B8" style={styles.inputIcon} />
+              <Phone size={18} color="rgba(212,175,55,0.7)" style={styles.inputIcon} />
               <input 
                 type="tel" 
                 value={formData.phone}
@@ -132,13 +134,13 @@ export default function ProfilEditPage() {
                   type="button"
                   onClick={() => setFormData({ ...formData, gender: g })}
                   style={{
-                    flex: 1, padding: "14px", borderRadius: 16, border: formData.gender === g ? "2px solid #0891B2" : "1.5px solid #E2E8F0",
-                    background: formData.gender === g ? "#ECFEFF" : "#fff",
-                    color: formData.gender === g ? "#0891B2" : "#64748B",
+                    flex: 1, padding: "14px", borderRadius: 16, border: formData.gender === g ? `2px solid ${GOLD}` : "1.5px solid rgba(255,255,255,0.1)",
+                    background: formData.gender === g ? "rgba(212,175,55,0.15)" : "#18181F",
+                    color: formData.gender === g ? GOLD : "rgba(255,255,255,0.6)",
                     fontWeight: 600, fontSize: 14, cursor: "pointer", transition: "all 0.2s"
                   }}
                 >
-                  {g}
+                  {g === "Laki-laki" ? "Ikhwan (Laki-laki)" : "Akhwat (Perempuan)"}
                 </button>
               ))}
             </div>
@@ -147,7 +149,7 @@ export default function ProfilEditPage() {
           <div style={styles.inputGroup}>
             <label style={styles.label}>Pekerjaan</label>
             <div style={styles.inputWrapper}>
-              <Briefcase size={18} color="#94A3B8" style={styles.inputIcon} />
+              <Briefcase size={18} color="rgba(212,175,55,0.7)" style={styles.inputIcon} />
               <input 
                 type="text" 
                 value={formData.job}
@@ -161,7 +163,7 @@ export default function ProfilEditPage() {
           <div style={styles.inputGroup}>
             <label style={styles.label}>Tahun Lahir</label>
             <div style={styles.inputWrapper}>
-              <Calendar size={18} color="#94A3B8" style={styles.inputIcon} />
+              <Calendar size={18} color="rgba(212,175,55,0.7)" style={styles.inputIcon} />
               <input 
                 type="number" 
                 value={formData.yearBorn}
@@ -177,10 +179,10 @@ export default function ProfilEditPage() {
             disabled={submitting}
             style={{ 
               marginTop: 12, width: "100%", height: 56, borderRadius: 18, border: "none", 
-              background: "#0891B2", color: "#fff", fontSize: 16, fontWeight: 700, 
+              background: GOLD, color: "#0A0A0F", fontSize: 16, fontWeight: 700, 
               cursor: submitting ? "not-allowed" : "pointer", display: "flex", 
               alignItems: "center", justifyContent: "center", gap: 10,
-              boxShadow: "0 10px 20px rgba(8,145,178,0.2)", opacity: submitting ? 0.7 : 1
+              boxShadow: `0 10px 25px rgba(212,175,55,0.25)`, opacity: submitting ? 0.7 : 1
             }}
           >
             {submitting ? "Menyimpan..." : "Simpan Perubahan"}
@@ -194,8 +196,8 @@ export default function ProfilEditPage() {
 
 const styles: any = {
   inputGroup: { display: "flex", flexDirection: "column", gap: 8 },
-  label: { fontSize: 14, fontWeight: 600, color: "#475569", marginLeft: 4 },
+  label: { fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.7)", marginLeft: 4 },
   inputWrapper: { position: "relative" },
   inputIcon: { position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)" },
-  input: { width: "100%", padding: "16px 16px 16px 48px", borderRadius: 18, border: "1.5px solid #E2E8F0", fontSize: 15, outline: "none", color: "#0F172A", transition: "all 0.2s" },
+  input: { width: "100%", padding: "16px 16px 16px 48px", borderRadius: 18, border: "1.5px solid rgba(212,175,55,0.2)", fontSize: 15, outline: "none", background: "#18181F", color: "#fff", transition: "all 0.2s" },
 };

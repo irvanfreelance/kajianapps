@@ -3,6 +3,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, BookOpen, ShoppingBag, Ticket, User } from "lucide-react";
 
+const GOLD = "#D4AF37";
+const DARK_NAV = "#141420";
+
 const navItems = [
   { id: "home", href: "/", label: "Home", Icon: Home },
   { id: "kajian", href: "/kajian", label: "Kajian", Icon: BookOpen },
@@ -19,14 +22,15 @@ export default function BottomNav() {
       {navItems.map((item) => {
         const isActive = pathname === item.href;
         return (
-          <Link 
-            key={item.id} 
-            href={item.href} 
-            style={{ ...styles.navBtn, color: isActive ? "#0891B2" : "#94A3B8", textDecoration: 'none' }}
+          <Link
+            key={item.id}
+            href={item.href}
+            style={{ ...styles.navBtn, color: isActive ? GOLD : "rgba(255,255,255,0.4)", textDecoration: 'none' }}
             prefetch={true}
           >
-            <item.Icon size={22} color={isActive ? "#0891B2" : "#94A3B8"} />
-            <span style={{ fontSize: 10, fontWeight: isActive ? 600 : 400, marginTop: 4 }}>{item.label}</span>
+            {isActive && <div style={styles.activeDot} />}
+            <item.Icon size={22} color={isActive ? GOLD : "rgba(255,255,255,0.35)"} />
+            <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 400, marginTop: 4 }}>{item.label}</span>
           </Link>
         );
       })}
@@ -35,20 +39,21 @@ export default function BottomNav() {
 }
 
 const styles = {
-  bottomNav: { 
-    position: "fixed" as const, 
-    bottom: 0, 
-    width: "100%", 
-    maxWidth: 430, 
-    height: 70, 
-    background: "#fff", 
-    borderTop: "1px solid #F1F5F9", 
-    display: "flex", 
-    justifyContent: "space-around", 
-    alignItems: "center", 
-    zIndex: 100, 
-    paddingBottom: 10,
-    boxShadow: "0 -4px 20px rgba(0,0,0,0.03)"
+  bottomNav: {
+    position: "fixed" as const,
+    bottom: 0,
+    width: "100%",
+    maxWidth: 430,
+    height: 70,
+    background: DARK_NAV,
+    borderTop: "1px solid rgba(212,175,55,0.15)",
+    display: "flex",
+    justifyContent: "space-around",
+    alignItems: "center",
+    zIndex: 100,
+    paddingBottom: 8,
+    boxShadow: "0 -4px 30px rgba(0,0,0,0.4)"
   },
-  navBtn: { display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", cursor: "pointer" },
+  navBtn: { display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", cursor: "pointer", position: "relative" as const, padding: "4px 12px" },
+  activeDot: { position: "absolute" as const, top: 0, left: "50%", transform: "translateX(-50%)", width: 20, height: 3, borderRadius: 2, background: "#D4AF37" },
 };

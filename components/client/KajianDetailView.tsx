@@ -1,13 +1,15 @@
 "use client";
-import { 
-  ChevronLeft, Calendar, Clock, MapPin, User, 
-  Share2, Heart, Info, ArrowRight, X
+import {
+  ChevronLeft, Calendar, Clock, MapPin, User,
+  Share2, Heart, Info, ArrowRight, Layers, Play, PlayCircle, Link as LinkIcon
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
 import Image from "next/image";
+
+const GOLD = "#D4AF37";
+const DARK = "#0D0D14";
 
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 const formatDate = (dateStr: string) => {
@@ -16,23 +18,19 @@ const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
     return new Intl.DateTimeFormat('id-ID', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
     }).format(d).replace("Minggu", "Ahad");
-  } catch {
-    return dateStr;
-  }
+  } catch { return dateStr; }
 };
 
 export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajian: any, relatedKajian?: any[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
   const [fallbackRelated, setFallbackRelated] = useState<any[]>([]);
 
-  // If no related kajian found by category, fetch some latest ones
+  const isSeries = kajian.series_type === 'series';
+  const episodes: any[] = kajian.series_episodes || [];
+
   useEffect(() => {
     if (relatedKajian.length === 0) {
       fetch('/api/kajian/list?limit=4')
@@ -48,122 +46,175 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
 
   const displayRelated = relatedKajian.length > 0 ? relatedKajian : fallbackRelated;
 
-  const handleRegisterFree = async () => {
-    if (loading) return;
-    setLoading(true);
-    try {
-      const res = await fetch('/api/kajian/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          kajianId: kajian.id,
-          paidAmount: 0
-        })
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      router.push(`/checkout/success?type=kajian&code=${data.id}`);
-    } catch (err: any) {
-      alert("Gagal mendaftar: " + err.message);
-    } finally {
-      setLoading(false);
-      setShowModal(false);
-    }
-  };
-
+  // For FREE kajian: go directly to infaq page (no modal)
   const handleRegisterAction = () => {
     if (kajian.type === "paid") {
       router.push(`/checkout?type=kajian&id=${kajian.id}&amount=${kajian.price}`);
     } else {
-      setShowModal(true);
+      router.push(`/kajian/${kajian.slug}/infaq`);
     }
   };
 
   return (
-    <div style={{ background: "#F8FAFC", minHeight: "100vh", paddingBottom: 100 }}>
+    <div style={{ background: DARK, minHeight: "100vh", paddingBottom: 100 }}>
       {/* Hero Image */}
       <div style={{ position: "relative", height: 350, overflow: "hidden", background: "#000" }}>
-        {/* Blurred background for contain fit */}
-        <Image src={kajian.image} fill style={{ objectFit: "cover", filter: "blur(40px)", opacity: 0.5 }} alt="" />
+        <Image src={kajian.image} fill style={{ objectFit: "cover", filter: "blur(40px)", opacity: 0.3 }} alt="" />
         <Image src={kajian.image} width={430} height={350} style={{ objectFit: "contain", position: "relative", zIndex: 1, width: "100%", height: "100%" }} alt={kajian.title} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.8))", zIndex: 2 }} />
-        
-        {/* Top Buttons - ENSURE VISIBILITY with higher z-index and explicit positioning */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(10,10,20,0.95))", zIndex: 2 }} />
+
         <div style={{ position: "absolute", top: 20, left: 20, right: 20, zIndex: 50, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <button onClick={() => router.back()} style={styles.backBtnText}>
+          <button onClick={() => router.back()} style={detailStyles.backBtnText}>
             <ChevronLeft size={20} /> <span>Kembali</span>
           </button>
-          <div style={{ display: "flex", gap: 12 }}>
-            <button style={styles.backBtn}><Share2 size={20} color="#fff"/></button>
-            <button style={styles.backBtn}><Heart size={20} color="#fff"/></button>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button style={detailStyles.backBtn}><Share2 size={18} color={GOLD} /></button>
+            <button style={detailStyles.backBtn}><Heart size={18} color={GOLD} /></button>
           </div>
         </div>
 
-        <div style={{ position: "absolute", bottom: 30, left: 20, right: 20, zIndex: 10 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: "#0891B2", background: "#CFFAFE", padding: "4px 12px", borderRadius: 20, textTransform: "uppercase" }}>{kajian.category}</span>
-          <h1 style={{ color: "#fff", fontSize: 28, fontWeight: 700, marginTop: 12, lineHeight: 1.2 }}>{kajian.title}</h1>
+        <div style={{ position: "absolute", bottom: 24, left: 20, right: 20, zIndex: 10 }}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: DARK, background: GOLD, padding: "4px 12px", borderRadius: 20, textTransform: "uppercase" as const }}>
+              {kajian.category}
+            </span>
+            {isSeries && (
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", background: "rgba(139,92,246,0.2)", padding: "4px 12px", borderRadius: 20, display: "flex", alignItems: "center", gap: 4 }}>
+                <Layers size={11} /> Series • Eps. {kajian.episode_number}
+              </span>
+            )}
+          </div>
+          <h1 style={{ color: "#fff", fontSize: 24, fontWeight: 800, marginTop: 8, lineHeight: 1.25 }}>{kajian.title}</h1>
+          {isSeries && kajian.series_title && (
+            <p style={{ color: GOLD, fontSize: 12, marginTop: 4, fontWeight: 600 }}>📚 {kajian.series_title}</p>
+          )}
         </div>
       </div>
 
       {/* Info Bar */}
-      <div style={{ background: "#fff", padding: "20px", display: "flex", justifyContent: "space-around", borderBottom: "1px solid #F1F5F9" }}>
+      <div style={{ background: "#18181F", padding: "18px 20px", display: "flex", justifyContent: "space-around", borderBottom: `1px solid rgba(212,175,55,0.1)` }}>
         <div style={{ textAlign: "center" }}>
-          <Calendar size={20} color="#0891B2" style={{ margin: "0 auto 6px" }} />
-          <p style={{ fontSize: 12, fontWeight: 600, color: "#0F172A" }}>{formatDate(kajian.date || kajian.date_display)}</p>
+          <Calendar size={18} color={GOLD} style={{ margin: "0 auto 6px" }} />
+          <p style={{ fontSize: 11, fontWeight: 600, color: "#fff" }}>{formatDate(kajian.date || kajian.date_display)}</p>
         </div>
         <div style={{ textAlign: "center" }}>
-          <Clock size={20} color="#0891B2" style={{ margin: "0 auto 6px" }} />
-          <p style={{ fontSize: 12, fontWeight: 600, color: "#0F172A" }}>{kajian.time_display || kajian.time}</p>
+          <Clock size={18} color={GOLD} style={{ margin: "0 auto 6px" }} />
+          <p style={{ fontSize: 11, fontWeight: 600, color: "#fff" }}>{kajian.time_display || kajian.time}</p>
         </div>
         <div style={{ textAlign: "center" }}>
-          <User size={20} color="#0891B2" style={{ margin: "0 auto 6px" }} />
-          <p style={{ fontSize: 12, fontWeight: 600, color: "#0F172A" }}>{kajian.ustadz}</p>
+          <User size={18} color={GOLD} style={{ margin: "0 auto 6px" }} />
+          <p style={{ fontSize: 11, fontWeight: 600, color: "#fff" }}>{kajian.ustadz}</p>
         </div>
       </div>
 
       {/* Content */}
       <div style={{ padding: 20 }}>
-        <div style={{ background: "#fff", borderRadius: 24, padding: 24, boxShadow: "0 4px 20px rgba(0,0,0,0.02)", border: "1px solid #F1F5F9" }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", marginBottom: 16 }}>Deskripsi Kajian</h2>
-          <p style={{ fontSize: 15, color: "#475569", lineHeight: 1.8 }}>
-            {kajian.description || "Assalamu'alaikum Warahmatullahi Wabarakatuh. Mari hadiri kajian rutin yang akan membahas topik mendalam bersama ustadz pilihan. Terbuka untuk umum, ikhwan dan akhwat."}
+        {/* Description */}
+        <div style={{ background: "#18181F", borderRadius: 24, padding: 24, boxShadow: "0 4px 20px rgba(0,0,0,0.2)", border: `1px solid rgba(212,175,55,0.1)` }}>
+          <h2 style={{ fontSize: 17, fontWeight: 700, color: "#fff", marginBottom: 14 }}>Deskripsi Kajian</h2>
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.65)", lineHeight: 1.8 }}>
+            {kajian.description || "Kajian rutin yang membahas topik mendalam bersama ustadz pilihan. Terbuka untuk umum, ikhwan dan akhwat."}
           </p>
 
-          <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 16 }}>
-             <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: "#ECFEFF", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                   <MapPin size={20} color="#0891B2" />
+          <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(212,175,55,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <MapPin size={18} color={GOLD} />
+              </div>
+              <div>
+                <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Lokasi</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{kajian.location || "Masjid Al-Latif, Bandung"}</p>
+              </div>
+            </div>
+
+            {kajian.url_zoom && (
+              <a href={kajian.url_zoom} target="_blank" rel="noreferrer" style={{ display: "flex", gap: 12, alignItems: "center", textDecoration: "none" }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(37,99,235,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <LinkIcon size={18} color="#60A5FA" />
                 </div>
                 <div>
-                   <p style={{ fontSize: 12, color: "#64748B" }}>Lokasi</p>
-                   <p style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>{kajian.location || "Masjid Al-Latif, Bandung"}</p>
+                  <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Link Zoom</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "#60A5FA" }}>Buka Zoom Meeting</p>
                 </div>
-             </div>
+              </a>
+            )}
+
+            {kajian.url_youtube && (
+              <a href={kajian.url_youtube} target="_blank" rel="noreferrer" style={{ display: "flex", gap: 12, alignItems: "center", textDecoration: "none" }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(220,38,38,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <PlayCircle size={18} color="#F87171" />
+                </div>
+                <div>
+                  <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Live Streaming</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "#F87171" }}>Buka YouTube</p>
+                </div>
+              </a>
+            )}
           </div>
         </div>
 
-        <div style={{ background: "#FFFBEB", borderRadius: 20, padding: 16, marginTop: 20, display: "flex", gap: 12 }}>
-           <Info size={20} color="#B45309" style={{ flexShrink: 0 }} />
-           <p style={{ fontSize: 13, color: "#B45309", lineHeight: 1.6 }}>Harap datang 15 menit sebelum kajian dimulai. Pastikan berpakaian sopan dan menjaga adab di majelis.</p>
+        {/* Info Note */}
+        <div style={{ background: "rgba(212,175,55,0.08)", borderRadius: 18, padding: 14, marginTop: 16, display: "flex", gap: 12, border: `1px solid rgba(212,175,55,0.15)` }}>
+          <Info size={18} color={GOLD} style={{ flexShrink: 0 }} />
+          <p style={{ fontSize: 13, color: "rgba(212,175,55,0.85)", lineHeight: 1.6 }}>Harap datang 15 menit sebelum kajian dimulai. Pastikan berpakaian sopan dan menjaga adab di majelis.</p>
         </div>
 
-        {/* Related Kajian Grid */}
-        {displayRelated.length > 0 && (
-          <div style={{ marginTop: 40 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0F172A" }}>Kajian Terkait</h2>
-              <Link href="/kajian" style={{ fontSize: 13, fontWeight: 600, color: "#0891B2", textDecoration: "none" }}>Lihat Semua</Link>
+        {/* ── Series Episode List ── */}
+        {isSeries && episodes.length > 0 && (
+          <div style={{ marginTop: 32 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h2 style={{ fontSize: 17, fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: 8 }}>
+                <Layers size={18} color={GOLD} /> Semua Episode
+              </h2>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {episodes.map((ep: any) => {
+                const isCurrent = ep.id === kajian.id;
+                return (
+                  <Link
+                    key={ep.id}
+                    href={`/kajian/${ep.slug}`}
+                    style={{
+                      background: isCurrent ? "rgba(212,175,55,0.1)" : "#18181F",
+                      borderRadius: 16, padding: 14, display: "flex", gap: 12, alignItems: "center",
+                      textDecoration: "none", border: isCurrent ? `1.5px solid rgba(212,175,55,0.4)` : `1px solid rgba(255,255,255,0.06)`
+                    }}
+                  >
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: isCurrent ? GOLD : "rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      {isCurrent ? <Play size={16} color={DARK} fill={DARK} /> : <span style={{ fontSize: 14, fontWeight: 800, color: "rgba(255,255,255,0.6)" }}>{ep.episode_number}</span>}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: isCurrent ? GOLD : "#fff", lineHeight: 1.3 }}>{ep.title}</p>
+                      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 3 }}>
+                        {formatDate(ep.date)} • {ep.time_display}
+                      </p>
+                    </div>
+                    {!isCurrent && <ChevronLeft size={16} color="rgba(255,255,255,0.2)" style={{ transform: "rotate(180deg)" }} />}
+                    {isCurrent && <span style={{ fontSize: 10, fontWeight: 700, color: GOLD, background: "rgba(212,175,55,0.15)", padding: "3px 8px", borderRadius: 8 }}>Kamu Di Sini</span>}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Related Kajian */}
+        {displayRelated.length > 0 && (
+          <div style={{ marginTop: 36 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h2 style={{ fontSize: 17, fontWeight: 700, color: "#fff" }}>Kajian Terkait</h2>
+              <Link href="/kajian" style={{ fontSize: 13, fontWeight: 600, color: GOLD, textDecoration: "none" }}>Lihat Semua</Link>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
               {displayRelated.map((k) => (
-                <Link key={k.id} href={`/kajian/${k.slug}`} style={{ textDecoration: "none", background: "#fff", borderRadius: 20, padding: 12, display: "flex", gap: 16, border: "1px solid #F1F5F9" }}>
-                  <div style={{ width: 80, height: 80, position: "relative", flexShrink: 0 }}>
-                    <Image src={k.image} fill style={{ borderRadius: 12, objectFit: "cover" }} alt={k.title} />
+                <Link key={k.id} href={`/kajian/${k.slug}`} style={{ textDecoration: "none", background: "#18181F", borderRadius: 18, padding: 12, display: "flex", gap: 14, border: `1px solid rgba(212,175,55,0.1)` }}>
+                  <div style={{ width: 72, height: 72, position: "relative", flexShrink: 0, borderRadius: 12, overflow: "hidden" }}>
+                    <Image src={k.image} fill style={{ objectFit: "cover" }} alt={k.title} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: "#0891B2", textTransform: "uppercase" }}>{k.category}</p>
-                    <h3 style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", margin: "4px 0", lineHeight: 1.4 }}>{k.title}</h3>
-                    <p style={{ fontSize: 12, color: "#64748B" }}>{k.ustadz}</p>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: GOLD, textTransform: "uppercase" as const }}>{k.category}</p>
+                    <h3 style={{ fontSize: 13, fontWeight: 700, color: "#fff", margin: "4px 0", lineHeight: 1.4 }}>{k.title}</h3>
+                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>{k.ustadz}</p>
                   </div>
                 </Link>
               ))}
@@ -172,63 +223,43 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
         )}
       </div>
 
-      {/* Floating Bottom Action */}
-      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "#fff", padding: "16px 20px 24px", borderTop: "1px solid #F1F5F9", display: "flex", justifyContent: "space-between", alignItems: "center", zIndex: 100 }}>
+      {/* Floating Bottom CTA */}
+      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "#141420", padding: "14px 20px 24px", borderTop: `1px solid rgba(212,175,55,0.15)`, display: "flex", justifyContent: "space-between", alignItems: "center", zIndex: 100 }}>
         <div>
-          <p style={{ fontSize: 12, color: "#64748B" }}>Biaya Pendaftaran</p>
-          <p style={{ fontSize: 20, fontWeight: 700, color: "#0891B2" }}>{kajian.type === "free" ? "GRATIS" : fmt(kajian.price)}</p>
+          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>Biaya Pendaftaran</p>
+          <p style={{ fontSize: 20, fontWeight: 800, color: kajian.type === "free" ? GOLD : "#fff" }}>
+            {kajian.type === "free" ? "Infak Terbaik" : fmt(kajian.price)}
+          </p>
         </div>
-        <button 
-           onClick={handleRegisterAction}
-           disabled={loading}
-           style={{ background: loading ? "#94A3B8" : "#0891B2", color: "#fff", padding: "14px 28px", borderRadius: 16, border: "none", fontSize: 15, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", boxShadow: "0 10px 20px rgba(8,145,178,0.2)" }}
+        <button
+          onClick={handleRegisterAction}
+          disabled={loading}
+          style={{
+            background: loading ? "rgba(212,175,55,0.4)" : GOLD,
+            color: DARK, padding: "13px 26px", borderRadius: 16,
+            border: "none", fontSize: 14, fontWeight: 700,
+            cursor: loading ? "not-allowed" : "pointer",
+            boxShadow: `0 8px 20px rgba(212,175,55,0.25)`
+          }}
         >
-           {loading ? "Memproses..." : "Daftar Sekarang"}
+          {loading ? "Memproses..." : "Daftar Sekarang"}
         </button>
       </div>
-
-      {/* Confirmation Modal */}
-      {showModal && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: "#0F172A" }}>Konfirmasi Pendaftaran</h3>
-              <button onClick={() => setShowModal(false)} style={{ border: "none", background: "none", cursor: "pointer" }}><X size={20} color="#94A3B8" /></button>
-            </div>
-            <p style={{ fontSize: 14, color: "#64748B", lineHeight: 1.6, marginBottom: 24 }}>
-              Anda akan mendaftar ke kajian <strong>{kajian.title}</strong>. Pendaftaran ini gratis. Anda juga dapat memberikan infaq sukarela untuk mendukung dakwah kami.
-            </p>
-            
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <button 
-                onClick={handleRegisterFree}
-                disabled={loading}
-                style={{ ...styles.modalBtn, background: "#F1F5F9", color: "#0F172A" }}
-              >
-                {loading ? "Memproses..." : "Daftar Saja (Gratis)"}
-              </button>
-              <button 
-                onClick={() => router.push(`/kajian/${kajian.slug}/infaq`)}
-                style={{ ...styles.modalBtn, background: "#0891B2", color: "#fff" }}
-              >
-                Daftar & Berikan Infaq <ArrowRight size={18} style={{ marginLeft: 8 }} />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
-const styles: any = {
-  backBtn: { width: 40, height: 40, borderRadius: 12, background: "rgba(0,0,0,0.3)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", backdropFilter: "blur(8px)" },
-  backBtnText: { 
-    display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 12, 
-    background: "rgba(0,0,0,0.3)", border: "none", color: "#fff", fontSize: 13, fontWeight: 600,
-    cursor: "pointer", backdropFilter: "blur(8px)" 
+const detailStyles: any = {
+  backBtn: {
+    width: 38, height: 38, borderRadius: 10,
+    background: "rgba(0,0,0,0.4)", border: `1px solid rgba(212,175,55,0.2)`,
+    display: "flex", alignItems: "center", justifyContent: "center",
+    cursor: "pointer", backdropFilter: "blur(8px)"
   },
-  modalOverlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, backdropFilter: "blur(4px)" },
-  modalContent: { background: "#fff", borderRadius: 24, padding: 24, width: "100%", maxWidth: 380, animation: "slideUp 0.3s ease-out" },
-  modalBtn: { width: "100%", padding: "16px", borderRadius: 16, border: "none", fontSize: 15, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" },
+  backBtnText: {
+    display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 12,
+    background: "rgba(0,0,0,0.4)", border: `1px solid rgba(212,175,55,0.2)`,
+    color: "#fff", fontSize: 13, fontWeight: 600,
+    cursor: "pointer", backdropFilter: "blur(8px)"
+  },
 };

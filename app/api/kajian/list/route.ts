@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const offset = searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : undefined;
     const category = searchParams.get('category') || undefined;
 
-    const data = await getKajianList(limit, offset, category);
+    const data = await getKajianList(limit, offset, category, true);
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching kajian:', error);
