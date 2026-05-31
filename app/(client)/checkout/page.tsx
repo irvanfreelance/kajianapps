@@ -2,7 +2,7 @@
 import { useState, useEffect, Suspense } from "react";
 import {
   ChevronLeft, CheckCircle2,
-  ChevronDown, Tag,
+  ChevronDown, Tag, Info,
   Landmark, Smartphone, QrCode, Store, CreditCard
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -140,6 +140,7 @@ function CheckoutView() {
   const [step, setStep] = useState(1);
   const [shippingData, setShippingData] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState("");
+  const [showRegisteredModal, setShowRegisteredModal] = useState(false);
 
   useEffect(() => {
     if (sessionStatus === "unauthenticated") {
@@ -240,7 +241,11 @@ function CheckoutView() {
         }
       }
     } catch (err: any) {
-      setErrorMsg(err.message);
+      if (err.message?.includes("sudah terdaftar")) {
+        setShowRegisteredModal(true);
+      } else {
+        setErrorMsg(err.message);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -505,6 +510,73 @@ function CheckoutView() {
           </button>
         )}
       </div>
+
+      {/* Already Registered Modal Overlay */}
+      {showRegisteredModal && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(44,30,21,0.5)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          zIndex: 9999, backdropFilter: "blur(6px)", padding: 24,
+          animation: "fadeIn 0.25s ease-out"
+        }}>
+          <style>{`
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          `}</style>
+          <div style={{
+            background: "#ffffff", borderRadius: 28, padding: "32px 24px 24px",
+            maxWidth: 380, width: "100%", textAlign: "center",
+            boxShadow: "0 25px 50px -12px rgba(141,110,83,0.25)",
+            border: `1.5px solid ${BORDER_COLOR}`,
+            display: "flex", flexDirection: "column", alignItems: "center"
+          }}>
+            <div style={{
+              width: 64, height: 64, borderRadius: "50%",
+              background: "rgba(141,110,83,0.08)", display: "flex",
+              alignItems: "center", justifyContent: "center", marginBottom: 20
+            }}>
+              <Info size={28} color={GOLD} />
+            </div>
+            
+            <h3 style={{
+              fontSize: 19, fontWeight: 800, color: TEXT_DARK,
+              margin: "0 0 10px 0"
+            }}>
+              Anda Sudah Terdaftar
+            </h3>
+            
+            <p style={{
+              fontSize: 13, color: TEXT_MUTED, lineHeight: 1.6,
+              margin: "0 0 24px 0"
+            }}>
+              Anda sudah memiliki pendaftaran aktif untuk kajian ini. Silakan kunjungi halaman tiket Anda untuk melihat QR Code masuk atau tautan streaming.
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
+              <button 
+                onClick={() => router.push("/tiket")}
+                style={{
+                  width: "100%", background: GOLD, color: "#ffffff",
+                  padding: "13px 0", borderRadius: 16, border: "none",
+                  fontSize: 14, fontWeight: 700, cursor: "pointer",
+                  boxShadow: "0 4px 12px rgba(141,110,83,0.2)"
+                }}
+              >
+                Lihat Tiket Saya
+              </button>
+              <button 
+                onClick={() => setShowRegisteredModal(false)}
+                style={{
+                  width: "100%", background: "transparent", color: TEXT_MUTED,
+                  padding: "12px 0", borderRadius: 16, border: `1.5px solid ${BORDER_COLOR}`,
+                  fontSize: 14, fontWeight: 600, cursor: "pointer"
+                }}
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes fadeUp {

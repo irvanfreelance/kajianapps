@@ -32,6 +32,7 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [fallbackRelated, setFallbackRelated] = useState<any[]>([]);
+  const [showRegisteredModal, setShowRegisteredModal] = useState(false);
 
   const isSeries = kajian.series_type === 'series';
   const episodes: any[] = kajian.series_episodes || [];
@@ -51,8 +52,23 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
 
   const displayRelated = relatedKajian.length > 0 ? relatedKajian : fallbackRelated;
 
-  // For FREE kajian: go directly to infaq page (no modal)
-  const handleRegisterAction = () => {
+  // Check registration status before proceeding to infaq/checkout
+  const handleRegisterAction = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/kajian/check-registration?kajianId=${kajian.id}`);
+      const data = await res.json();
+      if (data.registered) {
+        setShowRegisteredModal(true);
+        setLoading(false);
+        return;
+      }
+    } catch (err) {
+      console.error("Error checking registration:", err);
+    } finally {
+      setLoading(false);
+    }
+
     if (kajian.type === "paid") {
       router.push(`/checkout?type=kajian&id=${kajian.id}&amount=${kajian.price}`);
     } else {
@@ -227,6 +243,72 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
           {loading ? "Memproses..." : "Daftar Sekarang"}
         </button>
       </div>
+
+      {/* Already Registered Modal Overlay */}
+      {showRegisteredModal && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(44,30,21,0.5)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          zIndex: 9999, backdropFilter: "blur(6px)", padding: 24,
+          animation: "fadeIn 0.25s ease-out"
+        }}>
+          <style>{`
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          `}</style>
+          <div style={{
+            background: "#ffffff", borderRadius: 28, padding: "32px 24px 24px",
+            maxWidth: 380, width: "100%", textAlign: "center",
+            boxShadow: "0 25px 50px -12px rgba(141,110,83,0.25)",
+            border: `1.5px solid ${BORDER_COLOR}`,
+            display: "flex", flexDirection: "column", alignItems: "center"
+          }}>
+            <div style={{
+              width: 64, height: 64, borderRadius: "50%",
+              background: "rgba(141,110,83,0.08)", display: "flex",
+              alignItems: "center", justifyContent: "center", marginBottom: 20
+            }}>
+              <Info size={28} color={GOLD} />
+            </div>
+            
+            <h3 style={{
+              fontSize: 19, fontWeight: 800, color: TEXT_DARK,
+              margin: "0 0 10px 0"
+            }}>
+              Anda Sudah Terdaftar
+            </h3>
+            
+            <p style={{
+              fontSize: 13, color: TEXT_MUTED, lineHeight: 1.6,
+              margin: "0 0 24px 0"
+            }}>
+              Anda sudah memiliki pendaftaran aktif untuk kajian ini. Silakan kunjungi halaman tiket Anda untuk melihat QR Code masuk atau tautan streaming.
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
+              <Link href="/tiket" style={{ textDecoration: "none" }}>
+                <button style={{
+                  width: "100%", background: GOLD, color: "#ffffff",
+                  padding: "13px 0", borderRadius: 16, border: "none",
+                  fontSize: 14, fontWeight: 700, cursor: "pointer",
+                  boxShadow: "0 4px 12px rgba(141,110,83,0.2)"
+                }}>
+                  Lihat Tiket Saya
+                </button>
+              </Link>
+              <button 
+                onClick={() => setShowRegisteredModal(false)}
+                style={{
+                  width: "100%", background: "transparent", color: TEXT_MUTED,
+                  padding: "12px 0", borderRadius: 16, border: `1.5px solid ${BORDER_COLOR}`,
+                  fontSize: 14, fontWeight: 600, cursor: "pointer"
+                }}
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
