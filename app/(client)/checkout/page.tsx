@@ -10,8 +10,14 @@ import { useSession } from "next-auth/react";
 import AddressSelector from "@/components/client/AddressSelector";
 import Image from "next/image";
 
-const GOLD = "#D4AF37";
-const DARK = "#0D0D14";
+const GOLD = "#8D6E53";
+const DARK = "#ffffff";
+const CARD_BG = "#FCFAF6";
+const BORDER_COLOR = "#EFEAE0";
+const PEACH_BG = "#FAF1E6";
+const TEXT_DARK = "#2C1E15";
+const TEXT_MUTED = "#7A6A5C";
+
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 
 // ─── Payment Method Picker with collapsible accordion categories ───
@@ -36,69 +42,69 @@ function PaymentMethodPicker({ groupedMethods, selectedMethod, onSelect, fmt }: 
 
   return (
     <div style={{ animation: "fadeUp 0.25s ease" }}>
-      <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 6 }}>Pilih Metode Pembayaran</h3>
+      <h3 style={{ fontSize: 16, fontWeight: 700, color: TEXT_DARK, marginBottom: 6, margin: 0 }}>Pilih Metode Pembayaran</h3>
       {selectedMethod && (
-        <p style={{ fontSize: 12, color: GOLD, fontWeight: 600, marginBottom: 16 }}>
+        <p style={{ fontSize: 12, color: GOLD, fontWeight: 600, marginBottom: 16, margin: 0, marginTop: 4 }}>
           ✓ Dipilih: {selectedMethod.name}
         </p>
       )}
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: selectedMethod ? 0 : 16 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: selectedMethod ? 12 : 16 }}>
         {Object.entries(groupedMethods).map(([category, items]: [string, any]) => {
           const isOpen = !!openCategories[category];
           const hasSelected = items.some((m: any) => m.id === selectedMethod?.id);
           return (
-            <div key={category} style={{ borderRadius: 18, border: hasSelected ? `2px solid ${GOLD}` : "1.5px solid rgba(255,255,255,0.08)", overflow: "hidden", background: "#18181F", transition: "all 0.2s" }}>
+            <div key={category} style={{ borderRadius: 18, border: hasSelected ? `2px solid ${GOLD}` : `1.5px solid ${BORDER_COLOR}`, overflow: "hidden", background: CARD_BG, transition: "all 0.2s" }}>
               {/* Category Header */}
               <button
                 onClick={() => toggleCategory(category)}
-                style={{ display: "flex", alignItems: "center", width: "100%", padding: "14px 16px", background: hasSelected ? "rgba(212,175,55,0.12)" : "#18181F", border: "none", cursor: "pointer", gap: 12 }}
+                style={{ display: "flex", alignItems: "center", width: "100%", padding: "14px 16px", background: hasSelected ? PEACH_BG : CARD_BG, border: "none", cursor: "pointer", gap: 12 }}
               >
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: hasSelected ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: hasSelected ? 'rgba(141,110,83,0.15)' : 'rgba(141,110,83,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <CategoryIcon category={category} />
                 </div>
-                <span style={{ flex: 1, textAlign: "left", fontSize: 14, fontWeight: 700, color: hasSelected ? GOLD : "#fff" }}>
+                <span style={{ flex: 1, textAlign: "left", fontSize: 14, fontWeight: 700, color: hasSelected ? GOLD : TEXT_DARK }}>
                   {category}
                 </span>
                 {hasSelected && (
-                  <span style={{ fontSize: 11, background: GOLD, color: "#0A0A0F", borderRadius: 8, padding: "2px 8px", fontWeight: 700 }}>
+                  <span style={{ fontSize: 11, background: GOLD, color: "#fff", borderRadius: 8, padding: "2px 8px", fontWeight: 700 }}>
                     ✓ {selectedMethod.name}
                   </span>
                 )}
                 <ChevronDown
                   size={18}
-                  color="rgba(255,255,255,0.4)"
+                  color="rgba(141,110,83,0.4)"
                   style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s", flexShrink: 0 }}
                 />
               </button>
 
               {/* Expanded options */}
               {isOpen && (
-                <div style={{ padding: "8px 12px 12px", display: "flex", flexDirection: "column", gap: 8, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                <div style={{ padding: "8px 12px 12px", display: "flex", flexDirection: "column", gap: 8, borderTop: "1px solid rgba(141,110,83,0.06)" }}>
                   {items.map((m: any) => (
                     <button
                       key={m.id}
                       onClick={() => { onSelect(m); setOpenCategories(prev => ({ ...prev, [category]: false })); }}
                       style={{
-                        display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-                        borderRadius: 14, border: selectedMethod?.id === m.id ? `2px solid ${GOLD}` : "1.5px solid rgba(255,255,255,0.04)",
-                        background: selectedMethod?.id === m.id ? "rgba(212,175,55,0.08)" : "rgba(255,255,255,0.02)",
+                        display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", boxSizing: "border-box",
+                        borderRadius: 14, border: selectedMethod?.id === m.id ? `2px solid ${GOLD}` : `1.5px solid ${BORDER_COLOR}`,
+                        background: selectedMethod?.id === m.id ? PEACH_BG : "rgba(141,110,83,0.02)",
                         textAlign: "left", cursor: "pointer", transition: "all 0.15s", width: "100%"
                       }}
                     >
-                      <div style={{ width: 40, height: 40, borderRadius: 10, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.1)", overflow: "hidden", flexShrink: 0, position: "relative" }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 10, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${BORDER_COLOR}`, overflow: "hidden", flexShrink: 0, position: "relative" }}>
                         <Image src={m.logoUrl} alt={m.name} width={30} height={30} style={{ objectFit: "contain" }} />
                       </div>
                       <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{m.name}</p>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: TEXT_DARK, margin: 0 }}>{m.name}</p>
                         {(m.adminFeeFlat > 0 || m.adminFeePct > 0) && (
-                          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 1 }}>
+                          <p style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 4, margin: 0 }}>
                             Admin: {m.adminFeeFlat > 0 ? fmt(m.adminFeeFlat) : `${m.adminFeePct}%`}
                           </p>
                         )}
                       </div>
                       <div style={{
                         width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
-                        border: selectedMethod?.id === m.id ? `5px solid ${GOLD}` : "2px solid rgba(255,255,255,0.2)",
+                        border: selectedMethod?.id === m.id ? `5px solid ${GOLD}` : `2px solid ${BORDER_COLOR}`,
                         background: "#fff", transition: "all 0.15s"
                       }} />
                     </button>
@@ -219,7 +225,12 @@ function CheckoutView() {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Gagal mendaftar kajian");
-        router.push(`/status/${data.id_code || `REG-${data.id}`}`);
+        
+        if (isFreeKajian) {
+          router.push(`/checkout/success?type=kajian&code=${data.id_code || `REG-${data.id}`}`);
+        } else {
+          router.push(`/status/${data.id_code || `REG-${data.id}`}`);
+        }
       }
     } catch (err: any) {
       setErrorMsg(err.message);
@@ -242,9 +253,9 @@ function CheckoutView() {
 
   if (sessionStatus === "loading" || loading) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", flexDirection: "column", gap: 12, background: DARK, color: "#fff" }}>
-        <div style={{ width: 40, height: 40, border: `3px solid rgba(212,175,55,0.2)`, borderTop: `3px solid ${GOLD}`, borderRadius: "50%", animation: "spin 1s linear infinite" }} />
-        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>Memuat checkout...</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", flexDirection: "column", gap: 12, background: DARK, color: TEXT_DARK }}>
+        <div style={{ width: 40, height: 40, border: `3px solid ${BORDER_COLOR}`, borderTop: `3px solid ${GOLD}`, borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+        <p style={{ fontSize: 14, color: TEXT_MUTED }}>Memuat checkout...</p>
         <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -252,7 +263,7 @@ function CheckoutView() {
   if (!item) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: DARK }}>
-        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14 }}>Item tidak ditemukan</p>
+        <p style={{ color: TEXT_MUTED, fontSize: 14 }}>Item tidak ditemukan</p>
       </div>
     );
   }
@@ -264,9 +275,9 @@ function CheckoutView() {
       : ["Detail", "Bayar", "Konfirmasi"];
 
   return (
-    <div style={{ background: DARK, minHeight: "100vh", position: "relative", color: "#fff" }}>
+    <div style={{ background: DARK, minHeight: "100vh", position: "relative", color: TEXT_DARK }}>
       {/* Header */}
-      <div style={{ padding: "20px 24px 16px", display: "flex", alignItems: "center", gap: 16, borderBottom: "1px solid rgba(212,175,55,0.15)", position: "sticky", top: 0, background: "#141420", zIndex: 10 }}>
+      <div style={{ padding: "20px 24px 16px", display: "flex", alignItems: "center", gap: 16, borderBottom: `1px solid ${BORDER_COLOR}`, position: "sticky", top: 0, background: CARD_BG, zIndex: 10 }}>
         <button
           onClick={() => step === 1 ? router.back() : setStep(s => s - 1)}
           style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}
@@ -274,7 +285,7 @@ function CheckoutView() {
           <ChevronLeft size={24} color={GOLD} />
         </button>
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 18, fontWeight: 700, color: "#fff", margin: 0 }}>Checkout</h1>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: TEXT_DARK, margin: 0 }}>Checkout</h1>
         </div>
         {/* Step indicators */}
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -282,14 +293,14 @@ function CheckoutView() {
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
               <div style={{
                 width: 22, height: 22, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-                background: i + 1 <= step ? GOLD : "rgba(255,255,255,0.1)",
-                fontSize: 11, fontWeight: 700, color: i + 1 <= step ? "#0A0A0F" : "rgba(255,255,255,0.4)",
+                background: i + 1 <= step ? GOLD : "rgba(141,110,83,0.1)",
+                fontSize: 11, fontWeight: 700, color: i + 1 <= step ? "#fff" : TEXT_MUTED,
                 transition: "all 0.2s"
               }}>
                 {i + 1 < step ? <CheckCircle2 size={13} /> : i + 1}
               </div>
               {i < steps.length - 1 && (
-                <div style={{ width: 16, height: 2, background: i + 1 < step ? GOLD : "rgba(255,255,255,0.1)", borderRadius: 2, transition: "all 0.2s" }} />
+                <div style={{ width: 16, height: 2, background: i + 1 < step ? GOLD : "rgba(141,110,83,0.1)", borderRadius: 2, transition: "all 0.2s" }} />
               )}
             </div>
           ))}
@@ -302,7 +313,7 @@ function CheckoutView() {
         {step === 1 && (
           <div style={{ animation: "fadeUp 0.25s ease" }}>
             {/* Item Card */}
-            <div style={{ background: "#18181F", borderRadius: 20, padding: 20, border: `1px solid rgba(212,175,55,0.15)`, marginBottom: 24 }}>
+            <div style={{ background: CARD_BG, borderRadius: 20, padding: 20, border: `1px solid ${BORDER_COLOR}`, marginBottom: 24 }}>
               <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
                 {item.image && (
                   <div style={{ width: 64, height: 64, position: "relative", flexShrink: 0, overflow: "hidden", borderRadius: 14 }}>
@@ -315,29 +326,29 @@ function CheckoutView() {
                   </div>
                 )}
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 15, fontWeight: 700, color: "#fff", lineHeight: 1.3 }}>{item.name || item.title}</p>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: TEXT_DARK, lineHeight: 1.3, margin: 0 }}>{item.name || item.title}</p>
                   {type === "kajian" && (
-                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 4 }}>
+                    <p style={{ fontSize: 12, color: TEXT_MUTED, marginTop: 6, margin: 0 }}>
                       Ustadz {item.ustadz} · {item.date_display || item.dateDisplay}
                     </p>
                   )}
                   {type === "product" && qty > 1 && (
-                    <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 4 }}>{qty} item</p>
+                    <p style={{ fontSize: 13, color: TEXT_MUTED, marginTop: 6, margin: 0 }}>{qty} item</p>
                   )}
                 </div>
               </div>
 
-              <div style={{ height: 1, background: "rgba(212,175,55,0.15)", margin: "16px 0" }} />
+              <div style={{ height: 1, background: "rgba(141,110,83,0.08)", margin: "16px 0" }} />
 
               {/* Pricing rows */}
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>
+                  <span style={{ fontSize: 13, color: TEXT_MUTED }}>
                     {type === "product" ? `Subtotal (x${qty})` : "Biaya pendaftaran"}
                   </span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: TEXT_DARK }}>
                     {priceToUse === 0 ? (
-                      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "#4ADE80" }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "#16A34A" }}>
                         <Tag size={13} />Infak Terbaik (Bebas nominal)
                       </span>
                     ) : fmt(subtotal)}
@@ -345,15 +356,15 @@ function CheckoutView() {
                 </div>
                 {type === "product" && shippingData && (
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>Ongkos Kirim</span>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{fmt(shippingCost)}</span>
+                    <span style={{ fontSize: 13, color: TEXT_MUTED }}>Ongkos Kirim</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: TEXT_DARK }}>{fmt(shippingCost)}</span>
                   </div>
                 )}
               </div>
 
-              <div style={{ height: 1, background: "rgba(212,175,55,0.15)", margin: "12px 0" }} />
+              <div style={{ height: 1, background: "rgba(141,110,83,0.08)", margin: "12px 0" }} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Total</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: TEXT_DARK }}>Total</span>
                 <span style={{ fontSize: 20, fontWeight: 800, color: GOLD }}>
                   {fmt(total)}
                 </span>
@@ -361,10 +372,10 @@ function CheckoutView() {
             </div>
 
             {/* User info */}
-            <div style={{ background: "#18181F", borderRadius: 16, padding: 16, border: `1px solid rgba(212,175,55,0.1)` }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: GOLD, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Data Pemesan</p>
-              <p style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>{session?.user?.name}</p>
-              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>{session?.user?.email}</p>
+            <div style={{ background: CARD_BG, borderRadius: 16, padding: 16, border: `1px solid ${BORDER_COLOR}` }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: GOLD, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10, margin: 0 }}>Data Pemesan</p>
+              <p style={{ fontSize: 14, fontWeight: 600, color: TEXT_DARK, margin: 0, marginTop: 4 }}>{session?.user?.name}</p>
+              <p style={{ fontSize: 13, color: TEXT_MUTED, marginTop: 4, margin: 0 }}>{session?.user?.email}</p>
             </div>
           </div>
         )}
@@ -372,7 +383,7 @@ function CheckoutView() {
         {/* ─── STEP: Address (Only for Product) ─── */}
         {type === "product" && step === 2 && (
           <div style={{ animation: "fadeUp 0.25s ease" }}>
-            <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 16 }}>Alamat Pengiriman</h3>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: TEXT_DARK, marginBottom: 16 }}>Alamat Pengiriman</h3>
             <AddressSelector onSelect={setShippingData} />
           </div>
         )}
@@ -381,20 +392,20 @@ function CheckoutView() {
         {((type === "product" && step === 3) || (type === "kajian" && step === 2 && !isFreeKajian)) && (
           <div style={{ animation: "fadeUp 0.25s ease", display: "flex", flexDirection: "column", gap: 16 }}>
             {type === "product" && shippingData && (
-              <div style={{ background: "#18181F", border: `1px solid rgba(212,175,55,0.15)`, borderRadius: 16, padding: 16 }}>
-                <p style={{ fontSize: 12, fontWeight: 700, color: GOLD, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Konfirmasi Pengiriman & Kurir</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13 }}>
-                  <p style={{ margin: 0, color: "rgba(255,255,255,0.8)" }}>
-                    <strong>Penerima:</strong> {session?.user?.name}
+              <div style={{ background: CARD_BG, border: `1px solid ${BORDER_COLOR}`, borderRadius: 16, padding: 16 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: GOLD, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10, margin: 0 }}>Konfirmasi Pengiriman & Kurir</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13, marginTop: 8 }}>
+                  <p style={{ margin: 0, color: TEXT_MUTED }}>
+                    <strong style={{ color: TEXT_DARK }}>Penerima:</strong> {session?.user?.name}
                   </p>
-                  <p style={{ margin: 0, color: "rgba(255,255,255,0.8)" }}>
-                    <strong>Alamat:</strong> {shippingData.address}, {shippingData.subdistrictName}, {shippingData.cityName}, {shippingData.provinceName} ({shippingData.postalCode})
+                  <p style={{ margin: 0, color: TEXT_MUTED, marginTop: 2 }}>
+                    <strong style={{ color: TEXT_DARK }}>Alamat:</strong> {shippingData.address}, {shippingData.subdistrictName}, {shippingData.cityName}, {shippingData.provinceName} ({shippingData.postalCode})
                   </p>
-                  <p style={{ margin: 0, color: "rgba(255,255,255,0.8)" }}>
-                    <strong>Kurir:</strong> <span style={{ textTransform: "uppercase" }}>{shippingData.courier}</span> ({shippingData.courierService})
+                  <p style={{ margin: 0, color: TEXT_MUTED, marginTop: 2 }}>
+                    <strong style={{ color: TEXT_DARK }}>Kurir:</strong> <span style={{ textTransform: "uppercase" }}>{shippingData.courier}</span> ({shippingData.courierService})
                   </p>
-                  <p style={{ margin: 0, color: "rgba(255,255,255,0.8)" }}>
-                    <strong>Ongkir:</strong> {fmt(shippingData.shippingCost)}
+                  <p style={{ margin: 0, color: TEXT_MUTED, marginTop: 2 }}>
+                    <strong style={{ color: TEXT_DARK }}>Ongkir:</strong> {fmt(shippingData.shippingCost)}
                   </p>
                 </div>
               </div>
@@ -409,16 +420,49 @@ function CheckoutView() {
           </div>
         )}
 
+        {type === "kajian" && step === 2 && isFreeKajian && (
+          <div style={{ animation: "fadeUp 0.25s ease", display: "flex", flexDirection: "column", gap: 20 }}>
+            <div style={{ background: CARD_BG, borderRadius: 24, padding: 24, border: `1px solid ${BORDER_COLOR}`, textAlign: "center" }}>
+              <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(141,110,83,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                <CheckCircle2 size={32} color={GOLD} />
+              </div>
+              <h3 style={{ fontSize: 18, fontWeight: 700, color: TEXT_DARK, margin: "0 0 8px" }}>Konfirmasi Pendaftaran</h3>
+              <p style={{ fontSize: 14, color: TEXT_MUTED, lineHeight: 1.5, margin: 0 }}>
+                Anda akan mendaftar untuk kajian:
+              </p>
+              <p style={{ fontSize: 16, fontWeight: 700, color: TEXT_DARK, margin: "12px 0 4px" }}>
+                {item.title || item.name}
+              </p>
+              <p style={{ fontSize: 13, color: GOLD, fontWeight: 600, margin: 0 }}>
+                Ustadz {item.ustadz}
+              </p>
+              
+              <div style={{ height: 1, background: "rgba(141,110,83,0.08)", margin: "20px 0" }} />
+              
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 14, color: TEXT_MUTED }}>Nominal Infak</span>
+                <span style={{ fontSize: 18, fontWeight: 800, color: "#16A34A" }}>Rp 0 (Gratis)</span>
+              </div>
+            </div>
+            
+            <div style={{ background: "rgba(141,110,83,0.04)", borderRadius: 16, padding: 16, border: `1px solid ${BORDER_COLOR}` }}>
+              <p style={{ fontSize: 13, color: TEXT_MUTED, lineHeight: 1.5, margin: 0, textAlign: "center" }}>
+                Silakan klik tombol <strong>Konfirmasi Pendaftaran</strong> di bawah untuk menyelesaikan proses pendaftaran.
+              </p>
+            </div>
+          </div>
+        )}
+
       </div>
       {/* ─── Floating Bottom Bar ─── */}
-      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "#141420", padding: "16px 24px 28px", borderTop: `1px solid rgba(212,175,55,0.15)`, zIndex: 100 }}>
+      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: CARD_BG, padding: "16px 24px 28px", borderTop: `1px solid ${BORDER_COLOR}`, zIndex: 100, boxShadow: "0 -4px 30px rgba(141,110,83,0.04)" }}>
         {errorMsg && (
-          <p style={{ color: "#F87171", fontSize: 12, textAlign: "center", marginBottom: 10 }}>{errorMsg}</p>
+          <p style={{ color: "#DC2626", fontSize: 12, textAlign: "center", marginBottom: 10, margin: 0 }}>{errorMsg}</p>
         )}
         {step === 1 && (
           <button
             onClick={() => setStep(2)}
-            style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: GOLD, color: "#0A0A0F", fontSize: 16, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+            style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: GOLD, color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: `0 6px 20px rgba(141,110,83,0.18)` }}
           >
             {type === "product" ? "Lanjut Alamat" : isFreeKajian ? "Lanjut Konfirmasi" : "Pilih Pembayaran"}
           </button>
@@ -428,7 +472,7 @@ function CheckoutView() {
           <button
             onClick={() => setStep(3)}
             disabled={!shippingData}
-            style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: !shippingData ? "rgba(255,255,255,0.1)" : GOLD, color: !shippingData ? "rgba(255,255,255,0.4)" : "#0A0A0F", fontSize: 16, fontWeight: 700, cursor: !shippingData ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+            style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: !shippingData ? "rgba(141,110,83,0.2)" : GOLD, color: !shippingData ? "rgba(255,255,255,0.4)" : "#fff", fontSize: 16, fontWeight: 700, cursor: !shippingData ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: !shippingData ? "none" : `0 6px 20px rgba(141,110,83,0.18)` }}
           >
             Lanjut Pembayaran
           </button>
@@ -438,9 +482,19 @@ function CheckoutView() {
           <button
             onClick={handleComplete}
             disabled={submitting || !selectedMethod}
-            style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: submitting || !selectedMethod ? "rgba(255,255,255,0.1)" : GOLD, color: submitting || !selectedMethod ? "rgba(255,255,255,0.4)" : "#0A0A0F", fontSize: 16, fontWeight: 700, cursor: submitting || !selectedMethod ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, transition: "all 0.2s" }}
+            style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: submitting || !selectedMethod ? "rgba(141,110,83,0.2)" : GOLD, color: submitting || !selectedMethod ? "rgba(255,255,255,0.4)" : "#fff", fontSize: 16, fontWeight: 700, cursor: submitting || !selectedMethod ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, transition: "all 0.2s", boxShadow: submitting || !selectedMethod ? "none" : `0 6px 20px rgba(141,110,83,0.18)` }}
           >
             {submitting ? "Memproses..." : "Buat Pesanan"}
+          </button>
+        )}
+
+        {type === "kajian" && step === 2 && isFreeKajian && (
+          <button
+            onClick={handleComplete}
+            disabled={submitting}
+            style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: submitting ? "rgba(141,110,83,0.2)" : GOLD, color: "#fff", fontSize: 16, fontWeight: 700, cursor: submitting ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, transition: "all 0.2s", boxShadow: submitting ? "none" : `0 6px 20px rgba(141,110,83,0.18)` }}
+          >
+            {submitting ? "Memproses..." : "Konfirmasi Pendaftaran"}
           </button>
         )}
       </div>
@@ -461,7 +515,7 @@ function CheckoutView() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: DARK, color: "#fff" }}>Loading...</div>}>
+    <Suspense fallback={<div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: DARK, color: TEXT_DARK }}>Loading...</div>}>
       <CheckoutView />
     </Suspense>
   );

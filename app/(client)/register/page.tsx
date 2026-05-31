@@ -4,8 +4,11 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-const GOLD = "#D4AF37";
-const DARK = "#0D0D14";
+const GOLD = "#8D6E53";
+const TEXT_DARK = "#2C1E15";
+const TEXT_MUTED = "#7A6A5C";
+const CARD_BG = "#FCFAF6";
+const BORDER_COLOR = "#EFEAE0";
 
 export default function RegisterPage() {
   const { data: session, status, update } = useSession();
@@ -70,46 +73,46 @@ export default function RegisterPage() {
   };
 
   if (status === 'loading' || (status === 'authenticated' && session?.user?.role !== 'NEW_USER')) {
-    return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: DARK, color: "#fff" }}>Loading...</div>;
+    return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "#ffffff", color: TEXT_DARK }}>Loading...</div>;
   }
 
   return (
-    <div style={{ background: DARK, minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "40px 24px", color: "#fff" }}>
+    <div style={{ background: "#ffffff", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "40px 24px", color: TEXT_DARK }}>
       <div style={{ width: "100%", maxWidth: 460, margin: "0 auto", position: "relative" }}>
         
         <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <h2 style={{ fontSize: 26, fontWeight: 800, color: "#fff" }}>Lengkapi Profil Anda</h2>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", marginTop: 8 }}>
+          <h2 style={{ fontSize: 26, fontWeight: 800, color: TEXT_DARK }}>Lengkapi Profil Anda</h2>
+          <p style={{ fontSize: 14, color: TEXT_MUTED, marginTop: 8 }}>
             Tinggal selangkah lagi untuk menikmati layanan BADAR
           </p>
         </div>
 
-        <div style={{ background: "#18181F", borderRadius: 28, padding: 32, border: `1px solid rgba(212,175,55,0.15)`, boxShadow: "0 20px 40px rgba(0,0,0,0.4)" }}>
+        <div style={{ background: CARD_BG, borderRadius: 28, padding: 32, border: `1px solid ${BORDER_COLOR}`, boxShadow: "0 20px 40px rgba(141,110,83,0.04)" }}>
           <form style={{ display: "flex", flexDirection: "column", gap: 20 }} onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="name" style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 6 }}>Nama Lengkap</label>
+              <label htmlFor="name" style={{ fontSize: 13, fontWeight: 700, color: TEXT_MUTED, display: "block", marginBottom: 6 }}>Nama Lengkap</label>
               <input
                 id="name"
                 type="text"
                 disabled
                 value={session?.user?.name || ''}
-                style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: "1.5px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)", color: "rgba(255,255,255,0.4)", fontSize: 14, cursor: "not-allowed" }}
+                style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: `1.5px solid ${BORDER_COLOR}`, background: "rgba(141,110,83,0.03)", color: TEXT_MUTED, fontSize: 14, cursor: "not-allowed" }}
               />
             </div>
 
             <div>
-              <label htmlFor="email" style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 6 }}>Email</label>
+              <label htmlFor="email" style={{ fontSize: 13, fontWeight: 700, color: TEXT_MUTED, display: "block", marginBottom: 6 }}>Email</label>
               <input
                 id="email"
                 type="email"
                 disabled
                 value={session?.user?.email || ''}
-                style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: "1.5px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)", color: "rgba(255,255,255,0.4)", fontSize: 14, cursor: "not-allowed" }}
+                style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: `1.5px solid ${BORDER_COLOR}`, background: "rgba(141,110,83,0.03)", color: TEXT_MUTED, fontSize: 14, cursor: "not-allowed" }}
               />
             </div>
 
             <div>
-              <label htmlFor="phone" style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 6 }}>Nomor WhatsApp</label>
+              <label htmlFor="phone" style={{ fontSize: 13, fontWeight: 700, color: TEXT_MUTED, display: "block", marginBottom: 6 }}>Nomor WhatsApp</label>
               <input
                 id="phone"
                 name="phone"
@@ -117,21 +120,21 @@ export default function RegisterPage() {
                 required
                 value={formData.phone}
                 onChange={handleChange}
-                style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: `1.5px solid rgba(212,175,55,0.25)`, background: "rgba(255,255,255,0.03)", color: "#fff", fontSize: 14, outline: "none" }}
+                style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: `1.5px solid ${BORDER_COLOR}`, background: "#fff", color: TEXT_DARK, fontSize: 14, outline: "none" }}
                 placeholder="Contoh: 081234567890"
               />
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <div>
-                <label htmlFor="gender" style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 6 }}>Jenis Kelamin</label>
+                <label htmlFor="gender" style={{ fontSize: 13, fontWeight: 700, color: TEXT_MUTED, display: "block", marginBottom: 6 }}>Jenis Kelamin</label>
                 <select
                   id="gender"
                   name="gender"
                   required
                   value={formData.gender}
                   onChange={handleChange}
-                  style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: `1.5px solid rgba(212,175,55,0.25)`, background: "#18181F", color: "#fff", fontSize: 14, outline: "none" }}
+                  style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: `1.5px solid ${BORDER_COLOR}`, background: "#fff", color: TEXT_DARK, fontSize: 14, outline: "none" }}
                 >
                   <option value="" disabled>Pilih...</option>
                   <option value="Laki-laki">Ikhwan</option>
@@ -140,7 +143,7 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label htmlFor="yearBorn" style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 6 }}>Tahun Lahir</label>
+                <label htmlFor="yearBorn" style={{ fontSize: 13, fontWeight: 700, color: TEXT_MUTED, display: "block", marginBottom: 6 }}>Tahun Lahir</label>
                 <input
                   id="yearBorn"
                   name="yearBorn"
@@ -150,21 +153,21 @@ export default function RegisterPage() {
                   max={new Date().getFullYear()}
                   value={formData.yearBorn}
                   onChange={handleChange}
-                  style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: `1.5px solid rgba(212,175,55,0.25)`, background: "rgba(255,255,255,0.03)", color: "#fff", fontSize: 14, outline: "none" }}
+                  style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: `1.5px solid ${BORDER_COLOR}`, background: "#fff", color: TEXT_DARK, fontSize: 14, outline: "none" }}
                   placeholder="Misal: 1995"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="job" style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 6 }}>Pekerjaan</label>
+              <label htmlFor="job" style={{ fontSize: 13, fontWeight: 700, color: TEXT_MUTED, display: "block", marginBottom: 6 }}>Pekerjaan</label>
               <select
                 id="job"
                 name="job"
                 required
                 value={formData.job}
                 onChange={handleChange}
-                style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: `1.5px solid rgba(212,175,55,0.25)`, background: "#18181F", color: "#fff", fontSize: 14, outline: "none" }}
+                style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: `1.5px solid ${BORDER_COLOR}`, background: "#fff", color: TEXT_DARK, fontSize: 14, outline: "none" }}
               >
                 <option value="" disabled>Pilih profesi Anda</option>
                 <option value="Mahasiswa/Pelajar">Mahasiswa / Pelajar</option>
@@ -177,7 +180,7 @@ export default function RegisterPage() {
             </div>
 
             {error && (
-              <div style={{ background: "rgba(239,68,68,0.12)", borderLeft: "4px solid #EF4444", padding: 12, borderRadius: "0 10px 10px 0" }}>
+              <div style={{ background: "rgba(239,68,68,0.06)", borderLeft: "4px solid #EF4444", padding: 12, borderRadius: "0 10px 10px 0" }}>
                 <p style={{ fontSize: 13, color: "#EF4444", margin: 0 }}>{error}</p>
               </div>
             )}
@@ -185,7 +188,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              style={{ width: "100%", padding: "16px", borderRadius: 14, background: GOLD, color: "#0A0A0F", fontSize: 15, fontWeight: 700, border: "none", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, transition: "all 0.2s", boxShadow: `0 10px 25px rgba(212,175,55,0.25)` }}
+              style={{ width: "100%", padding: "16px", borderRadius: 14, background: GOLD, color: "#fff", fontSize: 15, fontWeight: 700, border: "none", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, transition: "all 0.2s", boxShadow: `0 10px 25px rgba(141,110,83,0.15)` }}
             >
               {loading ? 'Menyimpan...' : 'Selesaikan Pendaftaran'}
             </button>

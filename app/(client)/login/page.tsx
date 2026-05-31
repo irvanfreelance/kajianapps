@@ -7,8 +7,11 @@ import { ShieldCheck } from 'lucide-react';
 import Script from 'next/script';
 import Image from 'next/image';
 
-const GOLD = "#D4AF37";
-const DARK = "#0D0D14";
+const GOLD = "#8D6E53"; // Warm Gold-Brown
+const TEXT_DARK = "#2C1E15"; // Deep Coffee Brown
+const TEXT_MUTED = "#7A6A5C"; // Muted Coffee
+const CARD_BG = "#FCFAF6"; // Cream/Off-white Card
+const BORDER_COLOR = "#EFEAE0";
 
 function UserLoginForm() {
   const searchParams = useSearchParams();
@@ -47,7 +50,7 @@ function UserLoginForm() {
   return (
     <div style={{ 
       minHeight: "100vh", 
-      background: `linear-gradient(135deg, ${DARK} 0%, #1A1810 50%, ${DARK} 100%)`, 
+      background: "#ffffff", 
       display: "flex", 
       flexDirection: "column", 
       alignItems: "center", 
@@ -62,42 +65,41 @@ function UserLoginForm() {
         onLoad={initializeOneTap}
       />
 
-      <div style={{ position: "absolute", top: "-10%", right: "-10%", width: "400px", height: "400px", background: "radial-gradient(circle, rgba(212,175,55,0.1), transparent 70%)", borderRadius: "50%", filter: "blur(80px)" }} />
-      <div style={{ position: "absolute", bottom: "-10%", left: "-10%", width: "300px", height: "300px", background: "radial-gradient(circle, rgba(212,175,55,0.08), transparent 70%)", borderRadius: "50%", filter: "blur(60px)" }} />
+      <div style={{ position: "absolute", top: "-10%", right: "-10%", width: "400px", height: "400px", background: "radial-gradient(circle, rgba(141,110,83,0.05), transparent 70%)", borderRadius: "50%", filter: "blur(80px)" }} />
+      <div style={{ position: "absolute", bottom: "-10%", left: "-10%", width: "300px", height: "300px", background: "radial-gradient(circle, rgba(141,110,83,0.04), transparent 70%)", borderRadius: "50%", filter: "blur(60px)" }} />
 
       <div style={{ width: "100%", maxWidth: "420px", position: "relative", zIndex: 10 }}>
         <div style={{ textAlign: "center", marginBottom: 32, animation: "fadeInDown 0.6s ease-out" }}>
           <div style={{ 
-            width: 80, height: 80, background: "rgba(255,255,255,0.03)", backdropFilter: "blur(12px)", 
+            width: 80, height: 80, background: CARD_BG, backdropFilter: "blur(12px)", 
             borderRadius: 24, margin: "0 auto 20px", display: "flex", alignItems: "center", justifyContent: "center",
-            border: `1.5px solid rgba(212,175,55,0.25)`, boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
+            border: `1.5px solid ${BORDER_COLOR}`, boxShadow: "0 10px 30px rgba(141,110,83,0.05)",
             overflow: "hidden"
           }}>
-            <Image src="/badar.png" alt="Logo" width={64} height={64} style={{ objectFit: "contain" }} />
+            <Image src="/64.png" alt="Logo" width={64} height={64} style={{ objectFit: "contain" }} />
           </div>
-          <h1 style={{ fontSize: 30, fontWeight: 800, color: "#fff", letterSpacing: "1px", margin: 0 }}>BADAR</h1>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", marginTop: 4 }}>Baik Dari Rumah</p>
+          <h1 style={{ fontSize: 30, fontWeight: 800, color: TEXT_DARK, letterSpacing: "1px", margin: 0 }}>BADAR</h1>
+          <p style={{ fontSize: 14, color: TEXT_MUTED, marginTop: 4 }}>Baik Dari Rumah</p>
         </div>
 
         <div style={{ 
-          background: "rgba(24, 24, 31, 0.95)", 
-          backdropFilter: "blur(20px)",
+          background: CARD_BG, 
           borderRadius: 32, 
           padding: "40px", 
-          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-          border: `1px solid rgba(212,175,55,0.15)`,
+          boxShadow: "0 20px 40px rgba(141,110,83,0.04)",
+          border: `1px solid ${BORDER_COLOR}`,
           animation: "slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)"
         }}>
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: "#fff", textAlign: "center", marginBottom: 8 }}>Selamat Datang</h2>
-          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", textAlign: "center", marginBottom: 32, lineHeight: 1.5 }}>Silakan masuk untuk akses penuh pendaftaran kajian dan layanan BADAR.</p>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: TEXT_DARK, textAlign: "center", marginBottom: 8 }}>Selamat Datang</h2>
+          <p style={{ fontSize: 13, color: TEXT_MUTED, textAlign: "center", marginBottom: 32, lineHeight: 1.5 }}>Silakan masuk untuk akses penuh pendaftaran kajian dan layanan BADAR.</p>
 
           {errorMessage && (
             <div style={{ 
-              marginBottom: 24, padding: "12px 16px", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", 
+              marginBottom: 24, padding: "12px 16px", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", 
               borderRadius: 16, display: "flex", gap: 10, alignItems: "center", animation: "shake 0.4s ease-in-out" 
             }}>
-              <ShieldCheck size={18} color="#F87171" />
-              <p style={{ fontSize: 13, color: "#F87171", fontWeight: 500 }}>{errorMessage}</p>
+              <ShieldCheck size={18} color="#EF4444" />
+              <p style={{ fontSize: 13, color: "#EF4444", fontWeight: 500 }}>{errorMessage}</p>
             </div>
           )}
 
@@ -111,14 +113,14 @@ function UserLoginForm() {
               gap: 12, 
               padding: "16px", 
               background: "#fff", 
-              border: "none", 
+              border: `1px solid ${BORDER_COLOR}`, 
               borderRadius: 20, 
               fontSize: 15, 
               fontWeight: 700, 
-              color: "#0A0A0F", 
+              color: TEXT_DARK, 
               cursor: "pointer", 
               transition: "all 0.2s",
-              boxShadow: "0 4px 15px rgba(0,0,0,0.1)"
+              boxShadow: "0 4px 15px rgba(141,110,83,0.03)"
             }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24">
@@ -131,14 +133,14 @@ function UserLoginForm() {
           </button>
 
           <div style={{ marginTop: 32, textAlign: "center" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "rgba(255,255,255,0.4)", fontSize: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: TEXT_MUTED, fontSize: 12 }}>
               <ShieldCheck size={14} color={GOLD} />
               <span>Koneksi Aman & Terenkripsi</span>
             </div>
           </div>
         </div>
 
-        <p style={{ textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 12, marginTop: 32, lineHeight: 1.6 }}>
+        <p style={{ textAlign: "center", color: TEXT_MUTED, fontSize: 12, marginTop: 32, lineHeight: 1.6 }}>
           Dengan melanjutkan, Anda menyetujui <br />
           <span style={{ fontWeight: 600, color: GOLD, cursor: "pointer" }}>Syarat & Ketentuan</span> serta <span style={{ fontWeight: 600, color: GOLD, cursor: "pointer" }}>Kebijakan Privasi</span>
         </p>
@@ -165,7 +167,7 @@ function UserLoginForm() {
 
 export default function UserLogin() {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100vh", background: DARK, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>Memuat...</div>}>
+    <Suspense fallback={<div style={{ minHeight: "100vh", background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", color: TEXT_DARK }}>Memuat...</div>}>
       <UserLoginForm />
     </Suspense>
   );

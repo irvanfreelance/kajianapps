@@ -15,8 +15,13 @@ interface Props {
   };
 }
 
-const GOLD = "#D4AF37";
-const DARK = "#0D0D14";
+const GOLD = "#8D6E53";
+const DARK = "#ffffff";
+const CARD_BG = "#FCFAF6";
+const BORDER_COLOR = "#EFEAE0";
+const PEACH_BG = "#FAF1E6";
+const TEXT_DARK = "#2C1E15";
+const TEXT_MUTED = "#7A6A5C";
 
 export default function SelfCheckinView({ kajian }: Props) {
   const [code, setCode] = useState("");
@@ -78,14 +83,14 @@ export default function SelfCheckinView({ kajian }: Props) {
       minHeight: "100vh",
       background: DARK,
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      padding: "24px 20px", fontFamily: "system-ui, -apple-system, sans-serif", color: "#fff"
+      padding: "24px 20px", fontFamily: "system-ui, -apple-system, sans-serif", color: TEXT_DARK
     }}>
       {/* Logo area */}
       <div style={{ marginBottom: 32, textAlign: "center" }}>
-        <div style={{ width: 56, height: 56, borderRadius: 16, background: "rgba(212,175,55,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", border: `1.5px solid ${GOLD}`, boxShadow: `0 8px 24px rgba(212,175,55,0.2)` }}>
+        <div style={{ width: 56, height: 56, borderRadius: 16, background: PEACH_BG, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", border: `1.5px solid ${GOLD}`, boxShadow: `0 8px 24px rgba(141,110,83,0.05)` }}>
           <Hash size={28} color={GOLD} />
         </div>
-        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 2 }}>
+        <p style={{ fontSize: 11, color: TEXT_MUTED, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, margin: 0 }}>
           Self Check-in
         </p>
       </div>
@@ -93,27 +98,27 @@ export default function SelfCheckinView({ kajian }: Props) {
       {/* Card */}
       <div style={{
         width: "100%", maxWidth: 420,
-        background: "#18181F",
-        border: `1.5px solid rgba(212,175,55,0.15)`,
+        background: CARD_BG,
+        border: `1.5px solid ${BORDER_COLOR}`,
         borderRadius: 28, padding: 28,
-        boxShadow: "0 24px 48px rgba(0,0,0,0.5)"
+        boxShadow: "0 24px 48px rgba(141,110,83,0.04)"
       }}>
 
         {/* Kajian Info */}
-        <div style={{ marginBottom: 28, paddingBottom: 24, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <p style={{ fontSize: 11, color: GOLD, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>
+        <div style={{ marginBottom: 28, paddingBottom: 24, borderBottom: "1px solid rgba(141,110,83,0.08)" }}>
+          <p style={{ fontSize: 11, color: GOLD, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8, margin: 0 }}>
             Kajian
           </p>
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: "#fff", lineHeight: 1.3, marginBottom: 8 }}>
+          <h1 style={{ fontSize: 20, fontWeight: 800, color: TEXT_DARK, lineHeight: 1.3, marginBottom: 8, margin: 0, marginTop: 4 }}>
             {kajian.title}
           </h1>
-          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)" }}>{kajian.ustadz}</p>
+          <p style={{ fontSize: 13, color: TEXT_MUTED, margin: 0, marginTop: 4 }}>{kajian.ustadz}</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 12 }}>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+            <p style={{ fontSize: 12, color: TEXT_MUTED, margin: 0 }}>
               📅 {formatDate(kajian.date)}{kajian.time_display ? ` • ${kajian.time_display}` : ""}
             </p>
             {kajian.location && (
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>📍 {kajian.location}</p>
+              <p style={{ fontSize: 12, color: TEXT_MUTED, margin: 0, marginTop: 2 }}>📍 {kajian.location}</p>
             )}
           </div>
         </div>
@@ -121,52 +126,52 @@ export default function SelfCheckinView({ kajian }: Props) {
         {/* Form / Result */}
         {state === "success" ? (
           <div style={{ textAlign: "center", padding: "8px 0" }}>
-            <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(34, 197, 94, 0.15)", border: "2px solid #22C55E", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
-              <CheckCircle2 size={36} color="#22C55E" />
+            <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(34, 197, 94, 0.15)", border: "2px solid #16A34A", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+              <CheckCircle2 size={36} color="#16A34A" />
             </div>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#22C55E", marginBottom: 8 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#16A34A", marginBottom: 8, margin: 0 }}>
               Selamat Datang! 🎉
             </h2>
-            <p style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 6 }}>
+            <p style={{ fontSize: 16, fontWeight: 700, color: TEXT_DARK, marginBottom: 6, margin: 0, marginTop: 8 }}>
               {resultName}
             </p>
-            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", lineHeight: 1.6, marginBottom: 28 }}>
+            <p style={{ fontSize: 13, color: TEXT_MUTED, lineHeight: 1.6, marginBottom: 28, margin: 0, marginTop: 6 }}>
               Kehadiran Anda telah berhasil tercatat. Semoga kajian hari ini bermanfaat dan penuh berkah.
             </p>
             <button
               onClick={handleReset}
-              style={{ width: "100%", padding: "14px 0", borderRadius: 14, background: "rgba(255,255,255,0.06)", border: "none", color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
+              style={{ width: "100%", padding: "14px 0", borderRadius: 14, background: "rgba(141,110,83,0.08)", border: "none", color: GOLD, fontSize: 14, fontWeight: 600, cursor: "pointer" }}
             >
               Check-in peserta lain
             </button>
           </div>
         ) : state === "already" ? (
           <div style={{ textAlign: "center", padding: "8px 0" }}>
-            <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(245, 158, 11, 0.15)", border: "2px solid #F59E0B", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
-              <AlertCircle size={36} color="#F59E0B" />
+            <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(245, 158, 11, 0.15)", border: "2px solid #D4A308", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+              <AlertCircle size={36} color="#D4A308" />
             </div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: "#F59E0B", marginBottom: 8 }}>Sudah Check-in ⚠️</h2>
-            {resultName && <p style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 6 }}>{resultName}</p>}
-            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", lineHeight: 1.6, marginBottom: 28 }}>{errorMsg}</p>
-            <button onClick={handleReset} style={{ width: "100%", padding: "14px 0", borderRadius: 14, background: "rgba(255,255,255,0.06)", border: "none", color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: "#D4A308", marginBottom: 8, margin: 0 }}>Sudah Check-in ⚠️</h2>
+            {resultName && <p style={{ fontSize: 15, fontWeight: 700, color: TEXT_DARK, marginBottom: 6, margin: 0, marginTop: 8 }}>{resultName}</p>}
+            <p style={{ fontSize: 13, color: TEXT_MUTED, lineHeight: 1.6, marginBottom: 28, margin: 0, marginTop: 6 }}>{errorMsg}</p>
+            <button onClick={handleReset} style={{ width: "100%", padding: "14px 0", borderRadius: 14, background: "rgba(141,110,83,0.08)", border: "none", color: GOLD, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
               Coba kode lain
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", marginBottom: 20, lineHeight: 1.6 }}>
-              Masukkan <strong style={{ color: "#fff" }}>Kode Tiket</strong> Anda yang tertera di halaman{" "}
+            <p style={{ fontSize: 14, color: TEXT_MUTED, marginBottom: 20, lineHeight: 1.6, margin: 0 }}>
+              Masukkan <strong style={{ color: TEXT_DARK }}>Kode Tiket</strong> Anda yang tertera di halaman{" "}
               <strong style={{ color: GOLD }}>Tiket Saya</strong>.
             </p>
 
             {state === "error" && (
-              <div style={{ padding: "12px 16px", background: "rgba(239, 68, 68, 0.12)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: 12, marginBottom: 16 }}>
-                <p style={{ fontSize: 13, color: "#FCA5A5", fontWeight: 600, margin: 0 }}>❌ {errorMsg}</p>
+              <div style={{ padding: "12px 16px", background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.2)", borderRadius: 12, marginBottom: 16, marginTop: 16 }}>
+                <p style={{ fontSize: 13, color: "#DC2626", fontWeight: 600, margin: 0 }}>❌ {errorMsg}</p>
               </div>
             )}
 
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1, display: "block", marginBottom: 8 }}>
+            <div style={{ marginBottom: 20, marginTop: 16 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: TEXT_MUTED, textTransform: "uppercase", letterSpacing: 1, display: "block", marginBottom: 8 }}>
                 Kode Tiket
               </label>
               <input
@@ -182,15 +187,15 @@ export default function SelfCheckinView({ kajian }: Props) {
                 style={{
                   width: "100%", boxSizing: "border-box",
                   padding: "16px 18px",
-                  background: "rgba(255,255,255,0.03)", border: `1.5px solid rgba(212,175,55,0.25)`,
-                  borderRadius: 14, color: "#fff", fontSize: 18,
+                  background: "rgba(141,110,83,0.03)", border: `1.5px solid ${BORDER_COLOR}`,
+                  borderRadius: 14, color: TEXT_DARK, fontSize: 18,
                   fontFamily: "monospace", fontWeight: 700, letterSpacing: 3,
                   outline: "none",
                   textAlign: "center",
                   transition: "all 0.2s",
                 }}
               />
-              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 8, textAlign: "center" }}>
+              <p style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 8, textAlign: "center", margin: 0 }}>
                 Boleh dengan atau tanpa awalan "TKT-"
               </p>
             </div>
@@ -201,11 +206,11 @@ export default function SelfCheckinView({ kajian }: Props) {
               style={{
                 width: "100%", padding: "16px 0", borderRadius: 14, border: "none",
                 background: (state === "loading" || !code.trim())
-                  ? "rgba(212,175,55,0.2)"
+                  ? "rgba(141,110,83,0.2)"
                   : GOLD,
-                color: (state === "loading" || !code.trim()) ? "rgba(255,255,255,0.4)" : "#0A0A0F", fontSize: 15, fontWeight: 700, cursor: !code.trim() ? "not-allowed" : "pointer",
+                color: "#fff", fontSize: 15, fontWeight: 700, cursor: !code.trim() ? "not-allowed" : "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-                boxShadow: (state === "loading" || !code.trim()) ? "none" : `0 4px 16px rgba(212,175,55,0.25)`,
+                boxShadow: (state === "loading" || !code.trim()) ? "none" : `0 4px 16px rgba(141,110,83,0.2)`,
                 transition: "all 0.2s",
               }}
             >
@@ -220,7 +225,7 @@ export default function SelfCheckinView({ kajian }: Props) {
       </div>
 
       {/* Footer */}
-      <p style={{ marginTop: 24, fontSize: 11, color: "rgba(255,255,255,0.3)", textAlign: "center" }}>
+      <p style={{ marginTop: 24, fontSize: 11, color: TEXT_MUTED, textAlign: "center", margin: 0 }}>
         Jika ada kendala, hubungi panitia kajian.
       </p>
 

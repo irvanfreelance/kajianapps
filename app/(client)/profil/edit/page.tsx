@@ -5,8 +5,11 @@ import { ChevronLeft, User, Phone, Briefcase, Calendar, Save, CheckCircle2 } fro
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-const GOLD = "#D4AF37";
-const DARK = "#0D0D14";
+const GOLD = "#8D6E53";
+const TEXT_DARK = "#2C1E15";
+const TEXT_MUTED = "#7A6A5C";
+const CARD_BG = "#FCFAF6";
+const BORDER_COLOR = "#EFEAE0";
 
 export default function ProfilEditPage() {
   const router = useRouter();
@@ -24,24 +27,24 @@ export default function ProfilEditPage() {
 
   useEffect(() => {
     if (!session) return;
-    
+
     fetch("/api/user/profile")
       .then(res => res.json())
       .then((data) => {
-         if (data.success && data.data) {
-           setFormData({
-             name: data.data.name || session.user.name || "",
-             phone: data.data.phone || "",
-             gender: data.data.gender || "",
-             job: data.data.job || "",
-             yearBorn: data.data.yearBorn || ""
-           });
-         } else {
-           setFormData(prev => ({ ...prev, name: session.user.name || "" }));
-         }
+        if (data.success && data.data) {
+          setFormData({
+            name: data.data.name || session.user.name || "",
+            phone: data.data.phone || "",
+            gender: data.data.gender || "",
+            job: data.data.job || "",
+            yearBorn: data.data.yearBorn || ""
+          });
+        } else {
+          setFormData(prev => ({ ...prev, name: session.user.name || "" }));
+        }
       })
       .catch(() => {
-         setFormData(prev => ({ ...prev, name: session.user.name || "" }));
+        setFormData(prev => ({ ...prev, name: session.user.name || "" }));
       })
       .finally(() => setLoading(false));
   }, [session]);
@@ -71,12 +74,12 @@ export default function ProfilEditPage() {
     }
   };
 
-  if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: DARK, color: "#fff" }}>Memuat...</div>;
+  if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "#ffffff", color: TEXT_DARK }}>Memuat...</div>;
 
   return (
-    <div style={{ background: DARK, minHeight: "100vh", paddingBottom: 40 }}>
+    <div style={{ background: "#ffffff", minHeight: "100vh", paddingBottom: 40 }}>
       {/* Header */}
-      <div style={{ padding: "20px 24px 16px", display: "flex", alignItems: "center", gap: 16, borderBottom: "1px solid rgba(212,175,55,0.15)", position: "sticky", top: 0, background: "#141420", zIndex: 10 }}>
+      <div style={{ padding: "20px 24px 16px", display: "flex", alignItems: "center", gap: 16, borderBottom: `1px solid ${BORDER_COLOR}`, position: "sticky", top: 0, background: "#ffffff", zIndex: 10 }}>
         <button
           onClick={() => router.back()}
           style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}
@@ -84,14 +87,14 @@ export default function ProfilEditPage() {
           <ChevronLeft size={24} color={GOLD} />
         </button>
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 18, fontWeight: 700, color: "#fff", margin: 0 }}>Edit Profil</h1>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: TEXT_DARK, margin: 0 }}>Edit Profil</h1>
         </div>
       </div>
 
       <div style={{ padding: 24, maxWidth: 500, margin: "0 auto" }}>
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           {message && (
-            <div style={{ background: "rgba(34,197,94,0.15)", color: "#4ADE80", padding: "12px 16px", borderRadius: 16, display: "flex", alignItems: "center", gap: 10, fontSize: 14, fontWeight: 600, border: "1px solid rgba(34,197,94,0.25)" }}>
+            <div style={{ background: "rgba(34,197,94,0.06)", color: "#16A34A", padding: "12px 16px", borderRadius: 16, display: "flex", alignItems: "center", gap: 10, fontSize: 14, fontWeight: 600, border: "1px solid rgba(34,197,94,0.15)" }}>
               <CheckCircle2 size={18} /> {message}
             </div>
           )}
@@ -99,14 +102,14 @@ export default function ProfilEditPage() {
           <div style={styles.inputGroup}>
             <label style={styles.label}>Nama Lengkap</label>
             <div style={styles.inputWrapper}>
-              <User size={18} color="rgba(212,175,55,0.7)" style={styles.inputIcon} />
-              <input 
-                type="text" 
+              <User size={18} color="rgba(141,110,83,0.7)" style={styles.inputIcon} />
+              <input
+                type="text"
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Masukkan nama lengkap" 
-                style={styles.input} 
-                required 
+                placeholder="Masukkan nama lengkap"
+                style={styles.input}
+                required
               />
             </div>
           </div>
@@ -114,13 +117,13 @@ export default function ProfilEditPage() {
           <div style={styles.inputGroup}>
             <label style={styles.label}>Nomor WhatsApp</label>
             <div style={styles.inputWrapper}>
-              <Phone size={18} color="rgba(212,175,55,0.7)" style={styles.inputIcon} />
-              <input 
-                type="tel" 
+              <Phone size={18} color="rgba(141,110,83,0.7)" style={styles.inputIcon} />
+              <input
+                type="tel"
                 value={formData.phone}
                 onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="Contoh: 08123456789" 
-                style={styles.input} 
+                placeholder="Contoh: 08123456789"
+                style={styles.input}
               />
             </div>
           </div>
@@ -134,13 +137,13 @@ export default function ProfilEditPage() {
                   type="button"
                   onClick={() => setFormData({ ...formData, gender: g })}
                   style={{
-                    flex: 1, padding: "14px", borderRadius: 16, border: formData.gender === g ? `2px solid ${GOLD}` : "1.5px solid rgba(255,255,255,0.1)",
-                    background: formData.gender === g ? "rgba(212,175,55,0.15)" : "#18181F",
-                    color: formData.gender === g ? GOLD : "rgba(255,255,255,0.6)",
+                    flex: 1, padding: "14px", borderRadius: 16, border: formData.gender === g ? `2px solid ${GOLD}` : `1.5px solid ${BORDER_COLOR}`,
+                    background: formData.gender === g ? "rgba(141,110,83,0.12)" : CARD_BG,
+                    color: formData.gender === g ? GOLD : TEXT_MUTED,
                     fontWeight: 600, fontSize: 14, cursor: "pointer", transition: "all 0.2s"
                   }}
                 >
-                  {g === "Laki-laki" ? "Ikhwan (Laki-laki)" : "Akhwat (Perempuan)"}
+                  {g === "Laki-laki" ? "Laki-laki" : "Perempuan"}
                 </button>
               ))}
             </div>
@@ -149,13 +152,13 @@ export default function ProfilEditPage() {
           <div style={styles.inputGroup}>
             <label style={styles.label}>Pekerjaan</label>
             <div style={styles.inputWrapper}>
-              <Briefcase size={18} color="rgba(212,175,55,0.7)" style={styles.inputIcon} />
-              <input 
-                type="text" 
+              <Briefcase size={18} color="rgba(141,110,83,0.7)" style={styles.inputIcon} />
+              <input
+                type="text"
                 value={formData.job}
                 onChange={e => setFormData({ ...formData, job: e.target.value })}
-                placeholder="Contoh: Karyawan Swasta" 
-                style={styles.input} 
+                placeholder="Contoh: Karyawan Swasta"
+                style={styles.input}
               />
             </div>
           </div>
@@ -163,13 +166,13 @@ export default function ProfilEditPage() {
           <div style={styles.inputGroup}>
             <label style={styles.label}>Tahun Lahir</label>
             <div style={styles.inputWrapper}>
-              <Calendar size={18} color="rgba(212,175,55,0.7)" style={styles.inputIcon} />
-              <input 
-                type="number" 
+              <Calendar size={18} color="rgba(141,110,83,0.7)" style={styles.inputIcon} />
+              <input
+                type="number"
                 value={formData.yearBorn}
                 onChange={e => setFormData({ ...formData, yearBorn: e.target.value })}
-                placeholder="Contoh: 1995" 
-                style={styles.input} 
+                placeholder="Contoh: 1995"
+                style={styles.input}
               />
             </div>
           </div>
@@ -177,12 +180,12 @@ export default function ProfilEditPage() {
           <button
             type="submit"
             disabled={submitting}
-            style={{ 
-              marginTop: 12, width: "100%", height: 56, borderRadius: 18, border: "none", 
-              background: GOLD, color: "#0A0A0F", fontSize: 16, fontWeight: 700, 
-              cursor: submitting ? "not-allowed" : "pointer", display: "flex", 
+            style={{
+              marginTop: 12, width: "100%", height: 56, borderRadius: 18, border: "none",
+              background: GOLD, color: "#fff", fontSize: 16, fontWeight: 700,
+              cursor: submitting ? "not-allowed" : "pointer", display: "flex",
               alignItems: "center", justifyContent: "center", gap: 10,
-              boxShadow: `0 10px 25px rgba(212,175,55,0.25)`, opacity: submitting ? 0.7 : 1
+              boxShadow: `0 10px 25px rgba(141,110,83,0.15)`, opacity: submitting ? 0.7 : 1
             }}
           >
             {submitting ? "Menyimpan..." : "Simpan Perubahan"}
@@ -196,8 +199,8 @@ export default function ProfilEditPage() {
 
 const styles: any = {
   inputGroup: { display: "flex", flexDirection: "column", gap: 8 },
-  label: { fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.7)", marginLeft: 4 },
+  label: { fontSize: 14, fontWeight: 600, color: TEXT_MUTED, marginLeft: 4 },
   inputWrapper: { position: "relative" },
   inputIcon: { position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)" },
-  input: { width: "100%", padding: "16px 16px 16px 48px", borderRadius: 18, border: "1.5px solid rgba(212,175,55,0.2)", fontSize: 15, outline: "none", background: "#18181F", color: "#fff", transition: "all 0.2s" },
+  input: { width: "100%", padding: "16px 16px 16px 48px", borderRadius: 18, border: `1.5px solid ${BORDER_COLOR}`, fontSize: 15, outline: "none", background: CARD_BG, color: TEXT_DARK, transition: "all 0.2s" },
 };

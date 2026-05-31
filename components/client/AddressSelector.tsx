@@ -7,6 +7,13 @@ interface AddressSelectorProps {
   weight?: number;
 }
 
+const GOLD = "#8D6E53";
+const PEACH_BG = "#FAF1E6";
+const TEXT_DARK = "#2C1E15";
+const TEXT_MUTED = "#7A6A5C";
+const BORDER_COLOR = "#EFEAE0";
+const CARD_BG = "#FCFAF6";
+
 // Searchable Select Component (Moved outside to prevent focus loss)
 const SearchableSelect = ({ 
   label, value, placeholder, items, loading, onSelect, search, setSearch, debouncedSearch, showList, setShowList, labelKey, valueKey, disabled 
@@ -20,7 +27,7 @@ const SearchableSelect = ({
 
   return (
     <div style={{ position: "relative" }}>
-      <label style={{ fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>{label}</label>
+      <label style={{ fontSize: 13, fontWeight: 700, color: TEXT_MUTED, marginBottom: 6, display: "block" }}>{label}</label>
       <div style={{ position: "relative" }}>
         <input
           type="text"
@@ -41,47 +48,48 @@ const SearchableSelect = ({
           placeholder={placeholder}
           disabled={loading || disabled}
           style={{ 
-            width: "100%", padding: "12px 16px", borderRadius: 14, border: "1.5px solid #E2E8F0", 
-            fontSize: 14, outline: "none", background: (loading || disabled) ? "#F8FAFC" : "#fff",
+            width: "100%", padding: "12px 16px", borderRadius: 14, border: `1.5px solid ${BORDER_COLOR}`, 
+            fontSize: 14, outline: "none", background: (loading || disabled) ? "#ffffff" : CARD_BG,
+            color: TEXT_DARK,
             cursor: (loading || disabled) ? "not-allowed" : "text",
             transition: "all 0.2s"
           }}
         />
         {loading ? (
-          <Loader2 size={16} className="animate-spin" style={{ position: "absolute", right: 12, top: "50%", marginTop: -8, color: "#0891B2" }} />
+          <Loader2 size={16} className="animate-spin" style={{ position: "absolute", right: 12, top: "50%", marginTop: -8, color: GOLD }} />
         ) : (
-          <ChevronDown size={16} style={{ position: "absolute", right: 12, top: "50%", marginTop: -8, color: "#94A3B8", pointerEvents: "none" }} />
+          <ChevronDown size={16} style={{ position: "absolute", right: 12, top: "50%", marginTop: -8, color: TEXT_MUTED, pointerEvents: "none" }} />
         )}
       </div>
       
       {showList && !loading && !disabled && (
         <div style={{ 
-          position: "absolute", top: "100%", left: 0, right: 0, zIndex: 100, background: "#fff", 
-          borderRadius: 14, border: "1px solid #E2E8F0", marginTop: 6, boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
+          position: "absolute", top: "100%", left: 0, right: 0, zIndex: 100, background: CARD_BG, 
+          borderRadius: 14, border: `1px solid ${BORDER_COLOR}`, marginTop: 6, boxShadow: "0 20px 25px -5px rgba(141,110,83,0.05), 0 10px 10px -5px rgba(141,110,83,0.02)",
           overflow: "hidden", maxHeight: 250, overflowY: "auto", animation: "fadeIn 0.2s ease"
         }}>
           {filtered.length > 0 ? filtered.map((item: any) => (
             <div
-              key={item[valueKey]}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                onSelect(item[valueKey]);
-                setSearch(item[labelKey]);
-                setShowList(false);
-              }}
-              style={{ 
-                padding: "12px 16px", fontSize: 14, cursor: "pointer", 
-                background: value === item[valueKey] ? "#ECFEFF" : "transparent",
-                color: value === item[valueKey] ? "#0891B2" : "#1E293B",
-                fontWeight: value === item[valueKey] ? 700 : 400
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = value === item[valueKey] ? "#CFFAFE" : "#F8FAFC")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = value === item[valueKey] ? "#ECFEFF" : "transparent")}
+               key={item[valueKey]}
+               onMouseDown={(e) => {
+                 e.preventDefault();
+                 onSelect(item[valueKey]);
+                 setSearch(item[labelKey]);
+                 setShowList(false);
+               }}
+               style={{ 
+                 padding: "12px 16px", fontSize: 14, cursor: "pointer", 
+                 background: value === item[valueKey] ? PEACH_BG : "transparent",
+                 color: value === item[valueKey] ? GOLD : TEXT_DARK,
+                 fontWeight: value === item[valueKey] ? 700 : 400
+               }}
+               onMouseEnter={(e) => (e.currentTarget.style.background = value === item[valueKey] ? PEACH_BG : "rgba(141,110,83,0.04)")}
+               onMouseLeave={(e) => (e.currentTarget.style.background = value === item[valueKey] ? PEACH_BG : "transparent")}
             >
               {item[labelKey]}
             </div>
           )) : (
-            <div style={{ padding: "12px 16px", fontSize: 13, color: "#94A3B8", textAlign: "center" }}>
+            <div style={{ padding: "12px 16px", fontSize: 13, color: TEXT_MUTED, textAlign: "center" }}>
               {search.length > 0 ? "Mencari..." : "Mulai mengetik..."}
             </div>
           )}
@@ -270,12 +278,12 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
       <div>
-        <label style={{ fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>Alamat Lengkap</label>
+        <label style={{ fontSize: 13, fontWeight: 700, color: TEXT_MUTED, marginBottom: 6, display: "block" }}>Alamat Lengkap</label>
         <textarea
           value={address}
           onChange={(e) => setAddress(e.target.value)}
           placeholder="Nama jalan, nomor rumah, RT/RW..."
-          style={{ width: "100%", padding: "12px 16px", borderRadius: 14, border: "1.5px solid #E2E8F0", fontSize: 14, minHeight: 80, outline: "none", transition: "border-color 0.2s" }}
+          style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", borderRadius: 14, border: `1.5px solid ${BORDER_COLOR}`, fontSize: 14, minHeight: 80, outline: "none", background: CARD_BG, color: TEXT_DARK, transition: "border-color 0.2s" }}
         />
       </div>
 
@@ -332,28 +340,28 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
       />
 
       <div>
-        <label style={{ fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>Kode Pos</label>
+        <label style={{ fontSize: 13, fontWeight: 700, color: TEXT_MUTED, marginBottom: 6, display: "block" }}>Kode Pos</label>
         <input
           type="text"
           value={postalCode}
           onChange={(e) => setPostalCode(e.target.value)}
           placeholder="Contoh: 40123"
-          style={{ width: "100%", padding: "12px 16px", borderRadius: 14, border: "1.5px solid #E2E8F0", fontSize: 14, outline: "none" }}
+          style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", borderRadius: 14, border: `1.5px solid ${BORDER_COLOR}`, fontSize: 14, outline: "none", background: CARD_BG, color: TEXT_DARK }}
         />
       </div>
 
-      <div style={{ height: 1, background: "#F1F5F9", margin: "8px 0" }} />
+      <div style={{ height: 1, background: "rgba(141,110,83,0.08)", margin: "8px 0" }} />
 
       {loadingCost && (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#64748B", fontSize: 13, padding: "12px 0" }}>
-          <Loader2 size={16} className="animate-spin" />
+        <div style={{ display: "flex", alignItems: "center", gap: 8, color: TEXT_MUTED, fontSize: 13, padding: "12px 0" }}>
+          <Loader2 size={16} className="animate-spin" style={{ color: GOLD }} />
           Mencari ongkos kirim...
         </div>
       )}
 
       {services.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 4 }}>
-          <label style={{ fontSize: 12, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: 1 }}>Pilih Layanan Kurir</label>
+          <label style={{ fontSize: 12, fontWeight: 700, color: TEXT_MUTED, textTransform: "uppercase", letterSpacing: 1 }}>Pilih Layanan Kurir</label>
           <div style={{ maxHeight: 300, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8, paddingRight: 4 }}>
             {services.map((s, idx) => (
               <button
@@ -361,16 +369,16 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
                 onClick={() => handleServiceSelect(s)}
                 style={{
                   display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px",
-                  borderRadius: 14, border: selectedService?.service === s.service ? "2px solid #0891B2" : "1.5px solid #F1F5F9",
-                  background: selectedService?.service === s.service ? "#ECFEFF" : "#fff",
+                  borderRadius: 14, border: selectedService?.service === s.service ? `2px solid ${GOLD}` : `1.5px solid ${BORDER_COLOR}`,
+                  background: selectedService?.service === s.service ? PEACH_BG : CARD_BG,
                   textAlign: "left", cursor: "pointer", transition: "all 0.15s"
                 }}
               >
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>{s.service}</p>
-                  <p style={{ fontSize: 11, color: "#64748B" }}>Estimasi: {s.cost[0].etd} hari</p>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: TEXT_DARK, margin: 0 }}>{s.service}</p>
+                  <p style={{ fontSize: 11, color: TEXT_MUTED, margin: 0, marginTop: 4 }}>Estimasi: {s.cost[0].etd} hari</p>
                 </div>
-                <p style={{ fontSize: 14, fontWeight: 800, color: "#0891B2" }}>
+                <p style={{ fontSize: 14, fontWeight: 800, color: GOLD, margin: 0 }}>
                   Rp {s.cost[0].value.toLocaleString("id-ID")}
                 </p>
               </button>
@@ -381,15 +389,15 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
 
       {origin && (
         <div style={{ 
-          marginTop: 8, padding: "12px 16px", borderRadius: 12, background: "#F8FAFC", 
-          border: "1px dashed #CBD5E1", display: "flex", alignItems: "center", gap: 10 
+          marginTop: 8, padding: "12px 16px", borderRadius: 12, background: "rgba(141,110,83,0.03)", 
+          border: `1px dashed ${BORDER_COLOR}`, display: "flex", alignItems: "center", gap: 10 
         }}>
-          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#E2E8F0", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Truck size={16} style={{ color: "#64748B" }} />
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(141,110,83,0.06)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Truck size={16} style={{ color: GOLD }} />
           </div>
           <div>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>Lokasi Pengiriman</p>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "#475569" }}>Dikirim dari {origin.name}</p>
+            <p style={{ fontSize: 11, fontWeight: 700, color: TEXT_MUTED, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2, margin: 0 }}>Lokasi Pengiriman</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: TEXT_DARK, margin: 0, marginTop: 2 }}>Dikirim dari {origin.name}</p>
           </div>
         </div>
       )}

@@ -4,8 +4,13 @@ import { User, Calendar, Clock, ChevronRight, Loader2, Layers } from "lucide-rea
 import Link from "next/link";
 import Image from "next/image";
 
-const GOLD = "#D4AF37";
-const DARK = "#0D0D14";
+const GOLD = "#8D6E53";
+const DARK = "#ffffff";
+const CARD_BG = "#FCFAF6";
+const BORDER_COLOR = "#EFEAE0";
+const PEACH_BG = "#FAF1E6";
+const TEXT_DARK = "#2C1E15";
+const TEXT_MUTED = "#7A6A5C";
 
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 const formatDate = (dateStr: string) => {
@@ -71,8 +76,8 @@ export default function KajianListView({ initialKajian }: { initialKajian: any[]
   return (
     <div style={{ paddingBottom: 50, background: DARK, minHeight: "100vh" }}>
       <div style={{ padding: "24px 20px 0" }}>
-        <h1 style={{ fontSize: 26, color: "#fff", fontWeight: 800 }}>Jadwal Kajian</h1>
-        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", marginTop: 4 }}>Pilih kajian dan daftar sekarang</p>
+        <h1 style={{ fontSize: 26, color: TEXT_DARK, fontWeight: 800, margin: 0 }}>Jadwal Kajian</h1>
+        <p style={{ fontSize: 14, color: TEXT_MUTED, marginTop: 6, margin: 0 }}>Pilih kajian dan daftar sekarang</p>
       </div>
 
       <div style={{ display: "flex", gap: 10, padding: "20px", overflowX: "auto" }}>
@@ -83,9 +88,9 @@ export default function KajianListView({ initialKajian }: { initialKajian: any[]
             style={{
               padding: "8px 20px", borderRadius: 20, fontSize: 13, fontWeight: 600,
               cursor: "pointer", whiteSpace: "nowrap" as const,
-              background: cat === c ? GOLD : "rgba(255,255,255,0.06)",
-              color: cat === c ? "#0A0A0F" : "rgba(255,255,255,0.55)",
-              border: cat === c ? `1px solid ${GOLD}` : "1px solid rgba(255,255,255,0.1)",
+              background: cat === c ? GOLD : CARD_BG,
+              color: cat === c ? "#fff" : TEXT_MUTED,
+              border: cat === c ? `1px solid ${GOLD}` : `1px solid ${BORDER_COLOR}`,
               transition: "all 0.2s"
             }}
           >
@@ -100,47 +105,47 @@ export default function KajianListView({ initialKajian }: { initialKajian: any[]
             key={`${k.id}-${i}`}
             href={`/kajian/${k.slug}`}
             style={{
-              background: "#18181F", borderRadius: 20, padding: 16, marginBottom: 14,
-              boxShadow: "0 4px 20px rgba(0,0,0,0.3)", border: `1px solid rgba(212,175,55,0.1)`,
+              background: CARD_BG, borderRadius: 20, padding: 16, marginBottom: 14,
+              boxShadow: "0 4px 20px rgba(141,110,83,0.03)", border: `1px solid ${BORDER_COLOR}`,
               cursor: "pointer", display: "flex", gap: 14, alignItems: "center",
               textDecoration: 'none', color: 'inherit', animation: "fadeUp 0.3s ease"
             }}
           >
-            <div style={{ width: 80, height: 80, borderRadius: 14, overflow: "hidden", flexShrink: 0, background: "#111", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+            <div style={{ width: 80, height: 80, borderRadius: 14, overflow: "hidden", flexShrink: 0, background: "#f5ece2", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
               <Image src={k.image} alt={k.title} width={80} height={80} style={{ objectFit: "contain" }} />
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: k.type === 'free' ? "#0A0A0F" : "#fff", background: k.type === 'free' ? GOLD : "rgba(255,255,255,0.15)", padding: "2px 8px", borderRadius: 10, letterSpacing: 0.5 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: k.type === 'free' ? GOLD : "#fff", background: k.type === 'free' ? PEACH_BG : GOLD, padding: "3px 8px", borderRadius: 10, letterSpacing: 0.5 }}>
                   {k.type === 'free' ? 'INFAQ' : fmt(k.price)}
                 </span>
                 {k.series_type === 'series' && (
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#A78BFA", background: "rgba(139,92,246,0.15)", padding: "2px 8px", borderRadius: 10, display: "flex", alignItems: "center", gap: 3 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#8B5CF6", background: "rgba(139,92,246,0.08)", padding: "3px 8px", borderRadius: 10, display: "flex", alignItems: "center", gap: 3 }}>
                     <Layers size={10} /> Eps.{k.episode_number}
                   </span>
                 )}
               </div>
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginTop: 2, lineHeight: 1.3 }}>{k.title}</h3>
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 4 }}>{k.ustadz}</p>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: TEXT_DARK, marginTop: 4, lineHeight: 1.3, margin: 0 }}>{k.title}</h3>
+              <p style={{ fontSize: 12, color: TEXT_MUTED, marginTop: 4, margin: 0 }}>{k.ustadz}</p>
               <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                   <Calendar size={11} color={GOLD} />
-                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>{formatDate(k.date)}</span>
+                  <span style={{ fontSize: 11, color: TEXT_MUTED }}>{formatDate(k.date)}</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                   <Clock size={11} color={GOLD} />
-                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>{k.time}</span>
+                  <span style={{ fontSize: 11, color: TEXT_MUTED }}>{k.time}</span>
                 </div>
               </div>
             </div>
-            <ChevronRight size={18} color="rgba(212,175,55,0.4)" />
+            <ChevronRight size={18} color="rgba(141,110,83,0.4)" />
           </Link>
         ))}
       </div>
 
       <div ref={observerTarget} style={{ height: 50, display: "flex", alignItems: "center", justifyContent: "center", width: "100%" }}>
         {isLoading && <Loader2 size={24} color={GOLD} className="animate-spin" />}
-        {!hasMore && kajian.length > 0 && <p style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>Semua kajian telah dimuat</p>}
+        {!hasMore && kajian.length > 0 && <p style={{ fontSize: 12, color: TEXT_MUTED }}>Semua kajian telah dimuat</p>}
       </div>
 
       <style>{`

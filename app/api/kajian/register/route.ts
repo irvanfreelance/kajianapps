@@ -26,6 +26,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Kajian ID harus diisi" }, { status: 400 });
     }
 
+    // Check if user is already registered for this kajian (excluding failed registrations)
+    const existingReg = await sql(`
+      SELECT id FROM kajian_registrations 
+      WHERE user_id = $1 AND kajian_id = $2 AND status != 'FAILED'
+      LIMIT 1
+    `, [userId, kajianId]);
+
+    if (existingReg.length > 0) {
+      return NextResponse.json({ error: "Anda sudah terdaftar untuk kajian ini." }, { status: 400 });
+    }
+
     if (paidAmount > 0 && !paymentMethodId) {
       return NextResponse.json({ error: "Metode pembayaran harus dipilih untuk kajian berbayar" }, { status: 400 });
     }
