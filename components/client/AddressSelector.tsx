@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MapPin, Truck, ChevronDown, Loader2 } from "lucide-react";
 
 interface AddressSelectorProps {
@@ -15,12 +15,12 @@ const BORDER_COLOR = "#EFEAE0";
 const CARD_BG = "#FCFAF6";
 
 // Searchable Select Component (Moved outside to prevent focus loss)
-const SearchableSelect = ({ 
-  label, value, placeholder, items, loading, onSelect, search, setSearch, debouncedSearch, showList, setShowList, labelKey, valueKey, disabled 
+const SearchableSelect = ({
+  label, value, placeholder, items, loading, onSelect, search, setSearch, debouncedSearch, showList, setShowList, labelKey, valueKey, disabled
 }: any) => {
   const selectedItem = items.find((i: any) => i[valueKey] === value);
   const displayValue = showList ? search : (selectedItem ? selectedItem[labelKey] : "");
-  
+
   const filtered = items
     .filter((item: any) => item[labelKey].toLowerCase().includes(debouncedSearch.toLowerCase()))
     .slice(0, 10);
@@ -47,8 +47,8 @@ const SearchableSelect = ({
           }}
           placeholder={placeholder}
           disabled={loading || disabled}
-          style={{ 
-            width: "100%", padding: "12px 16px", borderRadius: 14, border: `1.5px solid ${BORDER_COLOR}`, 
+          style={{
+            width: "100%", padding: "12px 16px", borderRadius: 14, border: `1.5px solid ${BORDER_COLOR}`,
             fontSize: 14, outline: "none", background: (loading || disabled) ? "#ffffff" : CARD_BG,
             color: TEXT_DARK,
             cursor: (loading || disabled) ? "not-allowed" : "text",
@@ -61,30 +61,30 @@ const SearchableSelect = ({
           <ChevronDown size={16} style={{ position: "absolute", right: 12, top: "50%", marginTop: -8, color: TEXT_MUTED, pointerEvents: "none" }} />
         )}
       </div>
-      
+
       {showList && !loading && !disabled && (
-        <div style={{ 
-          position: "absolute", top: "100%", left: 0, right: 0, zIndex: 100, background: CARD_BG, 
+        <div style={{
+          position: "absolute", top: "100%", left: 0, right: 0, zIndex: 100, background: CARD_BG,
           borderRadius: 14, border: `1px solid ${BORDER_COLOR}`, marginTop: 6, boxShadow: "0 20px 25px -5px rgba(141,110,83,0.05), 0 10px 10px -5px rgba(141,110,83,0.02)",
           overflow: "hidden", maxHeight: 250, overflowY: "auto", animation: "fadeIn 0.2s ease"
         }}>
           {filtered.length > 0 ? filtered.map((item: any) => (
             <div
-               key={item[valueKey]}
-               onMouseDown={(e) => {
-                 e.preventDefault();
-                 onSelect(item[valueKey]);
-                 setSearch(item[labelKey]);
-                 setShowList(false);
-               }}
-               style={{ 
-                 padding: "12px 16px", fontSize: 14, cursor: "pointer", 
-                 background: value === item[valueKey] ? PEACH_BG : "transparent",
-                 color: value === item[valueKey] ? GOLD : TEXT_DARK,
-                 fontWeight: value === item[valueKey] ? 700 : 400
-               }}
-               onMouseEnter={(e) => (e.currentTarget.style.background = value === item[valueKey] ? PEACH_BG : "rgba(141,110,83,0.04)")}
-               onMouseLeave={(e) => (e.currentTarget.style.background = value === item[valueKey] ? PEACH_BG : "transparent")}
+              key={item[valueKey]}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onSelect(item[valueKey]);
+                setSearch(item[labelKey]);
+                setShowList(false);
+              }}
+              style={{
+                padding: "12px 16px", fontSize: 14, cursor: "pointer",
+                background: value === item[valueKey] ? PEACH_BG : "transparent",
+                color: value === item[valueKey] ? GOLD : TEXT_DARK,
+                fontWeight: value === item[valueKey] ? 700 : 400
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = value === item[valueKey] ? PEACH_BG : "rgba(141,110,83,0.04)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = value === item[valueKey] ? PEACH_BG : "transparent")}
             >
               {item[labelKey]}
             </div>
@@ -99,21 +99,26 @@ const SearchableSelect = ({
   );
 };
 
+const cleanEtd = (etd: string) => {
+  if (!etd) return "";
+  return etd.replace(/days?/gi, "").trim();
+};
+
 export default function AddressSelector({ onSelect, weight = 1000 }: AddressSelectorProps) {
   const [provinces, setProvinces] = useState<any[]>([]);
   const [cities, setCities] = useState<any[]>([]);
   const [districts, setDistricts] = useState<any[]>([]);
-  
+
   const [selectedProvince, setSelectedProvince] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
-  
+
   const [address, setAddress] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [courier, setCourier] = useState("jne");
   const [services, setServices] = useState<any[]>([]);
   const [selectedService, setSelectedService] = useState<any>(null);
-  
+
   const [loadingProvinces, setLoadingProvinces] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
   const [loadingDistricts, setLoadingDistricts] = useState(false);
@@ -123,7 +128,7 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
   const [searchProvince, setSearchProvince] = useState("");
   const [searchCity, setSearchCity] = useState("");
   const [searchDistrict, setSearchDistrict] = useState("");
-  
+
   const [debouncedProv, setDebouncedProv] = useState("");
   const [debouncedCity, setDebouncedCity] = useState("");
   const [debouncedDist, setDebouncedDist] = useState("");
@@ -132,7 +137,8 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
   const [showCityList, setShowCityList] = useState(false);
   const [showDistList, setShowDistList] = useState(false);
 
-  const [isRestoring, setIsRestoring] = useState(true);
+  const prevProvinceRef = useRef("");
+  const prevCityRef = useRef("");
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -144,10 +150,12 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
           if (parsed.address) setAddress(parsed.address);
           if (parsed.selectedProvince) {
             setSelectedProvince(parsed.selectedProvince);
+            prevProvinceRef.current = parsed.selectedProvince;
             setSearchProvince(parsed.searchProvince || "");
           }
           if (parsed.selectedCity) {
             setSelectedCity(parsed.selectedCity);
+            prevCityRef.current = parsed.selectedCity;
             setSearchCity(parsed.searchCity || "");
           }
           if (parsed.selectedDistrict) {
@@ -162,15 +170,12 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
           console.error("Error loading saved shipping form:", e);
         }
       }
-      setTimeout(() => setIsRestoring(false), 600);
-    } else {
-      setIsRestoring(false);
     }
   }, []);
 
   // Save to localStorage on changes
   useEffect(() => {
-    if (!isRestoring && typeof window !== "undefined") {
+    if (typeof window !== "undefined") {
       const form = {
         address,
         selectedProvince,
@@ -187,7 +192,7 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
       localStorage.setItem("shipping_address_form", JSON.stringify(form));
     }
   }, [
-    isRestoring, address, selectedProvince, searchProvince, selectedCity, searchCity, 
+    address, selectedProvince, searchProvince, selectedCity, searchCity,
     selectedDistrict, searchDistrict, postalCode, courier, services, selectedService
   ]);
 
@@ -197,7 +202,7 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
       const provinceName = provinces.find(p => p.province_id === selectedProvince)?.province;
       const cityData = cities.find(c => c.city_id === selectedCity);
       const districtData = districts.find(d => d.subdistrict_id === selectedDistrict);
-      
+
       onSelect({
         address,
         provinceId: selectedProvince,
@@ -221,7 +226,7 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
         const res = await fetch("/api/rajaongkir/origin");
         const data = await res.json();
         if (data.name) setOrigin(data);
-      } catch (err) {}
+      } catch (err) { }
     };
     fetchOrigin();
   }, []);
@@ -246,13 +251,14 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
     if (selectedProvince) {
       const fetchCities = async () => {
         setLoadingCities(true);
-        if (!isRestoring) {
+        if (prevProvinceRef.current !== "" && prevProvinceRef.current !== selectedProvince) {
           setCities([]);
           setSelectedCity("");
           setDistricts([]);
           setSelectedDistrict("");
           setSelectedService(null);
         }
+        prevProvinceRef.current = selectedProvince;
         try {
           const res = await fetch(`/api/rajaongkir/cities?provinceId=${selectedProvince}`);
           const data = await res.json();
@@ -265,17 +271,18 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
       };
       fetchCities();
     }
-  }, [selectedProvince, isRestoring]);
+  }, [selectedProvince]);
 
   useEffect(() => {
     if (selectedCity) {
       const fetchDistricts = async () => {
         setLoadingDistricts(true);
-        if (!isRestoring) {
+        if (prevCityRef.current !== "" && prevCityRef.current !== selectedCity) {
           setDistricts([]);
           setSelectedDistrict("");
           setSelectedService(null);
         }
+        prevCityRef.current = selectedCity;
         try {
           const res = await fetch(`/api/rajaongkir/districts?cityId=${selectedCity}`);
           const data = await res.json();
@@ -288,7 +295,7 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
       };
       fetchDistricts();
     }
-  }, [selectedCity, isRestoring]);
+  }, [selectedCity]);
 
   // Debounce effects
   useEffect(() => {
@@ -312,7 +319,7 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
     setServices([]);
     setSelectedService(null);
     try {
-      const courierList = "jne:sicepat:jnt:pos:tiki:anteraja:ninja:lion";
+      const courierList = "jne:sicepat:jnt:tiki";
       const res = await fetch("/api/rajaongkir/cost", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -344,7 +351,7 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
     const provinceName = provinces.find(p => p.province_id === selectedProvince)?.province;
     const cityData = cities.find(c => c.city_id === selectedCity);
     const districtData = districts.find(d => d.subdistrict_id === selectedDistrict);
-    
+
     onSelect({
       address,
       provinceId: selectedProvince,
@@ -465,7 +472,7 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
               >
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 700, color: TEXT_DARK, margin: 0 }}>{s.service}</p>
-                  <p style={{ fontSize: 11, color: TEXT_MUTED, margin: 0, marginTop: 4 }}>Estimasi: {s.cost[0].etd} hari</p>
+                  <p style={{ fontSize: 11, color: TEXT_MUTED, margin: 0, marginTop: 4 }}>Estimasi: {cleanEtd(s.cost[0].etd)} hari</p>
                 </div>
                 <p style={{ fontSize: 14, fontWeight: 800, color: GOLD, margin: 0 }}>
                   Rp {s.cost[0].value.toLocaleString("id-ID")}
@@ -477,9 +484,9 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
       )}
 
       {origin && (
-        <div style={{ 
-          marginTop: 8, padding: "12px 16px", borderRadius: 12, background: "rgba(141,110,83,0.03)", 
-          border: `1px dashed ${BORDER_COLOR}`, display: "flex", alignItems: "center", gap: 10 
+        <div style={{
+          marginTop: 8, padding: "12px 16px", borderRadius: 12, background: "rgba(141,110,83,0.03)",
+          border: `1px dashed ${BORDER_COLOR}`, display: "flex", alignItems: "center", gap: 10
         }}>
           <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(141,110,83,0.06)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Truck size={16} style={{ color: GOLD }} />

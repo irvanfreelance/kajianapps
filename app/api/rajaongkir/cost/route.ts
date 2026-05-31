@@ -18,7 +18,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
-    const cacheKey = `rajaongkir:cost:komerce:${ORIGIN_DISTRICT_ID}:${destination}:${weight}:${courier}`;
+    // Fetch origin from settings first
+    let originId = '1391';
+    try {
+      const settingRes = await sql(`SELECT config_value FROM settings WHERE config_key = 'rajaongkir_origin_district_id'`);
+      if (settingRes.length > 0 && settingRes[0].config_value) {
+        originId = settingRes[0].config_value;
+      } else {
+        const envVal = process.env.RAJAONGKIR_ORIGIN_DISTRICT_ID;
+        if (envVal) originId = envVal;
+      }
+    } catch (err) {
+      console.error('Failed to fetch origin from settings:', err);
+      const envVal = process.env.RAJAONGKIR_ORIGIN_DISTRICT_ID;
+      if (envVal) originId = envVal;
+    }
+
+    const cacheKey = `rajaongkir:cost:komerce:${originId}:${destination}:${weight}:${courier}`;
     
     try {
       const cachedData = await redis.get(cacheKey);
@@ -27,17 +43,6 @@ export async function POST(req: Request) {
       }
     } catch (err) {
       console.error('Redis error:', err);
-    }
-
-    // Fetch origin from settings if available
-    let originId = ORIGIN_DISTRICT_ID;
-    try {
-      const settingRes = await sql(`SELECT config_value FROM settings WHERE config_key = 'rajaongkir_origin_district_id'`);
-      if (settingRes.length > 0) {
-        originId = settingRes[0].config_value;
-      }
-    } catch (err) {
-      console.error('Failed to fetch origin from settings:', err);
     }
 
     const res = await fetch(`${BASE_URL}/calculate/district/domestic-cost`, {
