@@ -211,6 +211,9 @@ function CheckoutView() {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Gagal membuat order");
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("shipping_address_form");
+        }
         router.push(`/status/${data.orderCode}`);
       } else {
         const res = await fetch("/api/kajian/register", {
@@ -226,6 +229,10 @@ function CheckoutView() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Gagal mendaftar kajian");
         
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("shipping_address_form");
+        }
+
         if (isFreeKajian) {
           router.push(`/checkout/success?type=kajian&code=${data.id_code || `REG-${data.id}`}`);
         } else {

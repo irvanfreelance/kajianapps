@@ -132,6 +132,89 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
   const [showCityList, setShowCityList] = useState(false);
   const [showDistList, setShowDistList] = useState(false);
 
+  const [isRestoring, setIsRestoring] = useState(true);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("shipping_address_form");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.address) setAddress(parsed.address);
+          if (parsed.selectedProvince) {
+            setSelectedProvince(parsed.selectedProvince);
+            setSearchProvince(parsed.searchProvince || "");
+          }
+          if (parsed.selectedCity) {
+            setSelectedCity(parsed.selectedCity);
+            setSearchCity(parsed.searchCity || "");
+          }
+          if (parsed.selectedDistrict) {
+            setSelectedDistrict(parsed.selectedDistrict);
+            setSearchDistrict(parsed.searchDistrict || "");
+          }
+          if (parsed.postalCode) setPostalCode(parsed.postalCode);
+          if (parsed.courier) setCourier(parsed.courier);
+          if (parsed.services) setServices(parsed.services);
+          if (parsed.selectedService) setSelectedService(parsed.selectedService);
+        } catch (e) {
+          console.error("Error loading saved shipping form:", e);
+        }
+      }
+      setTimeout(() => setIsRestoring(false), 600);
+    } else {
+      setIsRestoring(false);
+    }
+  }, []);
+
+  // Save to localStorage on changes
+  useEffect(() => {
+    if (!isRestoring && typeof window !== "undefined") {
+      const form = {
+        address,
+        selectedProvince,
+        searchProvince,
+        selectedCity,
+        searchCity,
+        selectedDistrict,
+        searchDistrict,
+        postalCode,
+        courier,
+        services,
+        selectedService
+      };
+      localStorage.setItem("shipping_address_form", JSON.stringify(form));
+    }
+  }, [
+    isRestoring, address, selectedProvince, searchProvince, selectedCity, searchCity, 
+    selectedDistrict, searchDistrict, postalCode, courier, services, selectedService
+  ]);
+
+  // Sync to parent on mount / updates if selectedService is set
+  useEffect(() => {
+    if (selectedService && selectedProvince && selectedCity && selectedDistrict) {
+      const provinceName = provinces.find(p => p.province_id === selectedProvince)?.province;
+      const cityData = cities.find(c => c.city_id === selectedCity);
+      const districtData = districts.find(d => d.subdistrict_id === selectedDistrict);
+      
+      onSelect({
+        address,
+        provinceId: selectedProvince,
+        provinceName: provinceName || "",
+        cityId: selectedCity,
+        cityName: cityData?.city_name || "",
+        subdistrictId: selectedDistrict,
+        subdistrictName: districtData?.subdistrict_name || "",
+        postalCode,
+        courier: selectedService.service.split(' ')[0],
+        courierService: selectedService.service,
+        shippingCost: selectedService.cost[0].value,
+        totalWeight: weight
+      });
+    }
+  }, [selectedService, selectedProvince, selectedCity, selectedDistrict, provinces, cities, districts, address, postalCode, weight]);
+
   useEffect(() => {
     const fetchOrigin = async () => {
       try {
@@ -163,10 +246,13 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
     if (selectedProvince) {
       const fetchCities = async () => {
         setLoadingCities(true);
-        setCities([]);
-        setSelectedCity("");
-        setDistricts([]);
-        setSelectedDistrict("");
+        if (!isRestoring) {
+          setCities([]);
+          setSelectedCity("");
+          setDistricts([]);
+          setSelectedDistrict("");
+          setSelectedService(null);
+        }
         try {
           const res = await fetch(`/api/rajaongkir/cities?provinceId=${selectedProvince}`);
           const data = await res.json();
@@ -179,14 +265,17 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
       };
       fetchCities();
     }
-  }, [selectedProvince]);
+  }, [selectedProvince, isRestoring]);
 
   useEffect(() => {
     if (selectedCity) {
       const fetchDistricts = async () => {
         setLoadingDistricts(true);
-        setDistricts([]);
-        setSelectedDistrict("");
+        if (!isRestoring) {
+          setDistricts([]);
+          setSelectedDistrict("");
+          setSelectedService(null);
+        }
         try {
           const res = await fetch(`/api/rajaongkir/districts?cityId=${selectedCity}`);
           const data = await res.json();
@@ -199,7 +288,7 @@ export default function AddressSelector({ onSelect, weight = 1000 }: AddressSele
       };
       fetchDistricts();
     }
-  }, [selectedCity]);
+  }, [selectedCity, isRestoring]);
 
   // Debounce effects
   useEffect(() => {
