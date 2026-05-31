@@ -131,30 +131,6 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
                 <p style={{ fontSize: 13, fontWeight: 600, color: TEXT_DARK, marginTop: 2, margin: 0 }}>{kajian.location || "Masjid Al-Latif, Bandung"}</p>
               </div>
             </div>
-
-            {kajian.url_zoom && (
-              <a href={kajian.url_zoom} target="_blank" rel="noreferrer" style={{ display: "flex", gap: 12, alignItems: "center", textDecoration: "none" }}>
-                <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(37,99,235,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <LinkIcon size={18} color="#2563EB" />
-                </div>
-                <div>
-                  <p style={{ fontSize: 11, color: TEXT_MUTED, margin: 0 }}>Link Zoom</p>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "#2563EB", marginTop: 2, margin: 0 }}>Buka Zoom Meeting</p>
-                </div>
-              </a>
-            )}
-
-            {kajian.url_youtube && (
-              <a href={kajian.url_youtube} target="_blank" rel="noreferrer" style={{ display: "flex", gap: 12, alignItems: "center", textDecoration: "none" }}>
-                <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(220,38,38,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <PlayCircle size={18} color="#DC2626" />
-                </div>
-                <div>
-                  <p style={{ fontSize: 11, color: TEXT_MUTED, margin: 0 }}>Live Streaming</p>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "#DC2626", marginTop: 2, margin: 0 }}>Buka YouTube</p>
-                </div>
-              </a>
-            )}
           </div>
         </div>
 
