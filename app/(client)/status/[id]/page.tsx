@@ -422,7 +422,7 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
             <p style={{ fontSize: 36, fontWeight: 800, color: GOLD, marginTop: 6, margin: 0 }}>{fmt(data.amount)}</p>
 
             {/* ── Virtual Account ── */}
-            {methodType === "VIRTUAL_ACCOUNT" && vaNumber && data.method_provider !== 'Manual' && (
+            {methodType === "VIRTUAL_ACCOUNT" && vaNumber && data.method_provider?.toLowerCase() !== 'manual' && (
               <VirtualAccountDisplay
                 vaNumber={vaNumber}
                 bankName={data.method_name}
@@ -432,14 +432,20 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
             )}
 
             {/* ── Manual Transfer ── */}
-            {data.method_provider === 'Manual' && (
+            {data.method_provider?.toLowerCase() === 'manual' && (
               (() => {
                 const [accNum, accName] = (data.method_code || "").split('|');
+                const formattedAccName = accName
+                  ? accName
+                      .split(/[-_\s]+/)
+                      .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                      .join(" ")
+                  : "";
                 return (
                   <>
                     <VirtualAccountDisplay
                       vaNumber={accNum || ""}
-                      accountName={accName || ""}
+                      accountName={formattedAccName || ""}
                       bankName={data.method_name}
                       copied={copied}
                       onCopy={() => handleCopy(accNum || "")}
