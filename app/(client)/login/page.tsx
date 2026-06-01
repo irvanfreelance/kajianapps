@@ -25,6 +25,7 @@ function UserLoginForm() {
       (window as any).google.accounts.id.initialize({
         client_id: googleClientId,
         callback: (response: any) => {
+          document.cookie = "login_type=user; path=/; max-age=300; SameSite=Lax";
           signIn('google-onetap', {
             credential: response.credential,
             callbackUrl
@@ -104,7 +105,10 @@ function UserLoginForm() {
           )}
 
           <button
-            onClick={() => signIn('google', { callbackUrl })}
+            onClick={() => {
+              document.cookie = "login_type=user; path=/; max-age=300; SameSite=Lax";
+              signIn('google', { callbackUrl });
+            }}
             style={{ 
               width: "100%", 
               display: "flex", 

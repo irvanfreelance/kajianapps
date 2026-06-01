@@ -3,7 +3,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import { sql } from '@/lib/db';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { OAuth2Client } from 'google-auth-library';
-import { headers } from 'next/headers';
+import { headers, cookies } from 'next/headers';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -72,8 +72,15 @@ export const authOptions: NextAuthOptions = {
           const reqHeaders = await headers();
           const referer = reqHeaders.get('referer') || '';
           isAdminLogin = referer.includes('/panel');
+          if (!isAdminLogin) {
+            const cookieStore = await cookies();
+            const loginType = cookieStore.get('login_type')?.value;
+            const cbUrl = cookieStore.get('next-auth.callback-url')?.value || 
+                          cookieStore.get('__Secure-next-auth.callback-url')?.value || '';
+            isAdminLogin = loginType === 'admin' || cbUrl.includes('/panel');
+          }
         } catch (e) {
-          console.error('Error reading referer header:', e);
+          console.error('Error reading referer header or cookies:', e);
         }
 
         if (isAdminLogin) {
