@@ -76,6 +76,28 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
     }
   };
 
+  const handleShare = async () => {
+    const shareData = {
+      title: kajian.title,
+      text: `Ikuti kajian "${kajian.title}" bersama ${kajian.ustadz}`,
+      url: window.location.href,
+    };
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.error("Error sharing:", err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert("Link berhasil disalin ke clipboard!");
+      } catch (err) {
+        console.error("Error copying to clipboard:", err);
+      }
+    }
+  };
+
   return (
     <div style={{ background: DARK, minHeight: "100vh", paddingBottom: 100 }}>
       {/* Hero Image */}
@@ -84,14 +106,8 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
         <Image src={kajian.image} width={430} height={350} style={{ objectFit: "contain", position: "relative", zIndex: 1, width: "100%", height: "100%" }} alt={kajian.title} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(255,255,255,0.1), #ffffff)", zIndex: 2 }} />
 
-        <div style={{ position: "absolute", top: 20, left: 20, right: 20, zIndex: 50, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <button onClick={() => router.back()} style={detailStyles.backBtnText}>
-            <ChevronLeft size={20} /> <span>Kembali</span>
-          </button>
-          <div style={{ display: "flex", gap: 10 }}>
-            <button style={detailStyles.backBtn}><Share2 size={18} color={GOLD} /></button>
-            <button style={detailStyles.backBtn}><Heart size={18} color={GOLD} /></button>
-          </div>
+        <div style={{ position: "absolute", top: 20, right: 20, zIndex: 50 }}>
+          <button onClick={handleShare} style={detailStyles.backBtn} aria-label="Bagikan"><Share2 size={18} color={GOLD} /></button>
         </div>
 
         <div style={{ position: "absolute", bottom: 20, left: 20, right: 20, zIndex: 10 }}>

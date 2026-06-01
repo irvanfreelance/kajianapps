@@ -129,7 +129,10 @@ export default function TicketDetailPage() {
         <button onClick={() => router.back()} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", color: GOLD, padding: 0 }}>
           <ChevronLeft size={24} />
         </button>
-        <h1 style={{ fontSize: 18, fontWeight: 800, color: TEXT_DARK, margin: 0 }}>Detail Tiket</h1>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Image src="/64.png" alt="Badar Logo" width={80} height={32} style={{ objectFit: "contain" }} />
+          <h1 style={{ fontSize: 16, fontWeight: 800, color: TEXT_DARK, margin: 0 }}>Detail Tiket</h1>
+        </div>
       </div>
 
       <div style={{ padding: "20px 16px" }}>

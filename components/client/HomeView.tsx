@@ -38,35 +38,10 @@ export default function HomeView({ kajian, products }: { kajian: any[], products
 
   return (
     <div style={{ paddingBottom: 20, background: DARK2, minHeight: "100vh" }}>
-      {/* Header */}
-      <div style={{
-        background: DARK2,
-        padding: "20px 20px 10px",
-        position: "relative",
-      }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative", zIndex: 1 }}>
-          {/* Logo only - no greetings next to it */}
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <Image src="/64.png" alt="Logo" width={110} height={44} style={{ objectFit: "contain" }} />
-          </div>
-
-          <div style={{ display: "flex", gap: 10 }}>
-            <button style={headerStyles.iconBtn} onClick={() => router.push('/kajian')}><Search size={20} color="#5A4A3A" /></button>
-            {isLoggedIn ? (
-              <button onClick={() => signOut({ callbackUrl: '/login' })} style={headerStyles.iconBtn}>
-                <LogOut size={20} color="#5A4A3A" />
-              </button>
-            ) : (
-              <button onClick={() => router.push('/login')} style={headerStyles.iconBtn}>
-                <LogIn size={20} color="#5A4A3A" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Login/Profile card */}
+      {/* Login/Profile card */}
+      <div style={{ padding: "16px 20px 10px" }}>
         {!isLoggedIn ? (
-          <div style={{ marginTop: 16, background: CARD_BG, borderRadius: 20, padding: "18px 20px", border: `1px solid ${BORDER_COLOR}`, display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 4px 15px rgba(141,110,83,0.03)" }}>
+          <div style={{ background: CARD_BG, borderRadius: 20, padding: "18px 20px", border: `1px solid ${BORDER_COLOR}`, display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 4px 15px rgba(141,110,83,0.03)" }}>
             <div>
               <p style={{ color: DARK, fontSize: 15, fontWeight: 700, margin: 0 }}>Belum Masuk?</p>
               <p style={{ color: MUTED_BROWN, fontSize: 12, marginTop: 4, margin: 0 }}>Login untuk daftar kajian dan belanja</p>
@@ -76,7 +51,7 @@ export default function HomeView({ kajian, products }: { kajian: any[], products
             </button>
           </div>
         ) : (
-          <div style={{ marginTop: 16, background: CARD_BG, borderRadius: 20, padding: "18px 20px", border: `1px solid ${BORDER_COLOR}`, display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 4px 15px rgba(141,110,83,0.03)" }}>
+          <div style={{ background: CARD_BG, borderRadius: 20, padding: "18px 20px", border: `1px solid ${BORDER_COLOR}`, display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 4px 15px rgba(141,110,83,0.03)" }}>
             <div>
               <p style={{ color: DARK, fontSize: 15, fontWeight: 700, margin: 0 }}>{session?.user?.name}</p>
               <p style={{ color: MUTED_BROWN, fontSize: 12, marginTop: 4, margin: 0 }}>{session?.user?.email}</p>

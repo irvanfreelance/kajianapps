@@ -296,8 +296,9 @@ function CheckoutView() {
         >
           <ChevronLeft size={24} color={GOLD} />
         </button>
-        <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 18, fontWeight: 700, color: TEXT_DARK, margin: 0 }}>Checkout</h1>
+        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
+          <Image src="/64.png" alt="Badar Logo" width={80} height={32} style={{ objectFit: "contain" }} />
+          <h1 style={{ fontSize: 16, fontWeight: 700, color: TEXT_DARK, margin: 0 }}>Checkout</h1>
         </div>
         {/* Step indicators */}
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>

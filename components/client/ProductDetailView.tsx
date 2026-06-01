@@ -39,6 +39,28 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
 
   const displayRelated = relatedProducts.length > 0 ? relatedProducts : fallbackRelated;
 
+  const handleShare = async () => {
+    const shareData = {
+      title: product.name,
+      text: `Beli ${product.name} di Toko BADAR`,
+      url: window.location.href,
+    };
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.error("Error sharing:", err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert("Link produk berhasil disalin ke clipboard!");
+      } catch (err) {
+        console.error("Error copying to clipboard:", err);
+      }
+    }
+  };
+
   return (
     <div style={{ background: DARK, minHeight: "100vh", paddingBottom: 100 }}>
       {/* Hero */}
@@ -47,14 +69,8 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
           <Image src={product.image} alt="" fill style={{ objectFit: "cover", filter: "blur(30px)" }} />
         </div>
         <Image src={product.image} alt={product.name} width={430} height={380} style={{ objectFit: "contain", position: "relative", zIndex: 1 }} />
-        <div style={{ position: "absolute", top: 20, left: 20, right: 20, display: "flex", justifyContent: "space-between", zIndex: 10 }}>
-          <button onClick={() => router.back()} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 12, background: "rgba(255,255,255,0.75)", border: `1px solid ${BORDER_COLOR}`, color: TEXT_DARK, fontSize: 13, fontWeight: 600, cursor: "pointer", backdropFilter: "blur(8px)" }}>
-            <ChevronLeft size={20} /> Kembali
-          </button>
-          <div style={{ display: "flex", gap: 10 }}>
-            <button style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,0.75)", border: `1px solid ${BORDER_COLOR}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Share2 size={18} color={GOLD} /></button>
-            <button style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,0.75)", border: `1px solid ${BORDER_COLOR}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Heart size={18} color={GOLD} /></button>
-          </div>
+        <div style={{ position: "absolute", top: 20, right: 20, zIndex: 10 }}>
+          <button onClick={handleShare} style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,0.75)", border: `1px solid ${BORDER_COLOR}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }} aria-label="Bagikan"><Share2 size={18} color={GOLD} /></button>
         </div>
       </div>
 

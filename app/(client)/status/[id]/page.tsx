@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, use, useRef, useCallback } from "react";
-import { CheckCircle2, Copy, Info, Download, Check, Upload, Image as ImageIcon, Clock } from "lucide-react";
+import { CheckCircle2, Copy, Info, Download, Check, Upload, Image as ImageIcon, Clock, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import QRCode from "react-qr-code";
@@ -345,44 +345,70 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
   }
 
   return (
-    <div style={{ background: DARK, minHeight: "100vh", padding: "40px 24px 60px", maxWidth: 600, margin: "0 auto", color: TEXT_DARK }}>
-
-      {isPaid ? (
-        <div style={{ textAlign: "center", marginBottom: 30, animation: "fadeUp 0.3s ease" }}>
-          <div style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(22,197,94,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", border: "1px solid rgba(22,197,94,0.2)" }}>
-            <CheckCircle2 size={40} color="#16A34A" />
-          </div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: TEXT_DARK, margin: 0 }}>
-            {Number(data.amount) === 0 ? "Pendaftaran Berhasil" : "Pembayaran Berhasil"}
-          </h1>
-          <p style={{ fontSize: 14, color: TEXT_MUTED, lineHeight: 1.5, margin: 0, marginTop: 8 }}>
-            {Number(data.amount) === 0
-              ? <>Terima kasih telah mendaftar! Pendaftaran Anda untuk kajian <strong>{code}</strong> telah kami terima.</>
-              : <>Terima kasih! Pembayaran Anda untuk <strong>{code}</strong> telah kami terima.</>
-            }
-          </p>
-          <div style={{ marginTop: 32, display: "flex", flexDirection: "column", gap: 12 }}>
-            <Link href={code.startsWith("REG") ? "/tiket" : "/profil"} style={{ display: "block", width: "100%", padding: "16px", boxSizing: "border-box", borderRadius: 16, background: GOLD, color: "#fff", fontSize: 15, fontWeight: 700, textDecoration: "none", textAlign: "center", boxShadow: `0 8px 20px rgba(141,110,83,0.2)` }}>
-              {code.startsWith("REG") ? "Lihat Tiket Saya" : "Lihat Histori"}
-            </Link>
-            <Link href="/" style={{ display: "block", width: "100%", padding: "16px", boxSizing: "border-box", borderRadius: 16, background: "rgba(141,110,83,0.06)", color: GOLD, fontSize: 15, fontWeight: 600, textDecoration: "none", textAlign: "center" }}>
-              Kembali ke Beranda
-            </Link>
-          </div>
+    <div style={{ background: DARK, minHeight: "100vh", color: TEXT_DARK, display: "flex", flexDirection: "column" }}>
+      {/* Sticky Header */}
+      <div style={{ 
+        padding: "16px 24px", 
+        display: "flex", 
+        alignItems: "center", 
+        gap: 16, 
+        borderBottom: `1px solid ${BORDER_COLOR}`, 
+        position: "sticky", 
+        top: 0, 
+        background: CARD_BG, 
+        zIndex: 10 
+      }}>
+        <button
+          onClick={() => router.push('/')}
+          style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}
+          aria-label="Beranda"
+        >
+          <ChevronLeft size={24} color={GOLD} />
+        </button>
+        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
+          <Image src="/64.png" alt="Badar Logo" width={80} height={32} style={{ objectFit: "contain" }} />
+          <h1 style={{ fontSize: 16, fontWeight: 700, color: TEXT_DARK, margin: 0 }}>Status Transaksi</h1>
         </div>
-      ) : (
-        <div style={{ animation: "fadeUp 0.3s ease" }}>
-          {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-            <h1 style={{ fontSize: 20, fontWeight: 700, color: TEXT_DARK, margin: 0 }}>Selesaikan Pembayaran</h1>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(217,119,6,0.1)", padding: "6px 12px", borderRadius: 20, border: `1px solid rgba(217,119,6,0.2)` }}>
-              <Clock size={14} color="#D97706" />
-              <span style={{ fontSize: 12, fontWeight: 600, color: "#D97706" }}>Menunggu</span>
+      </div>
+
+      <div style={{ padding: "24px 24px 60px", maxWidth: 600, width: "100%", boxSizing: "border-box", margin: "0 auto" }}>
+
+        {isPaid ? (
+          <div style={{ textAlign: "center", marginBottom: 30, animation: "fadeUp 0.3s ease" }}>
+            <div style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(22,197,94,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", border: "1px solid rgba(22,197,94,0.2)" }}>
+              <CheckCircle2 size={40} color="#16A34A" />
+            </div>
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: TEXT_DARK, margin: 0 }}>
+              {Number(data.amount) === 0 ? "Pendaftaran Berhasil" : "Pembayaran Berhasil"}
+            </h1>
+            <p style={{ fontSize: 14, color: TEXT_MUTED, lineHeight: 1.5, margin: 0, marginTop: 8 }}>
+              {Number(data.amount) === 0
+                ? <>Terima kasih telah mendaftar! Pendaftaran Anda untuk kajian <strong>{code}</strong> telah kami terima.</>
+                : <>Terima kasih! Pembayaran Anda untuk <strong>{code}</strong> telah kami terima.</>
+              }
+            </p>
+            <div style={{ marginTop: 32, display: "flex", flexDirection: "column", gap: 12 }}>
+              <Link href={code.startsWith("REG") ? "/tiket" : "/profil"} style={{ display: "block", width: "100%", padding: "16px", boxSizing: "border-box", borderRadius: 16, background: GOLD, color: "#fff", fontSize: 15, fontWeight: 700, textDecoration: "none", textAlign: "center", boxShadow: `0 8px 20px rgba(141,110,83,0.2)` }}>
+                {code.startsWith("REG") ? "Lihat Tiket Saya" : "Lihat Histori"}
+              </Link>
+              <Link href="/" style={{ display: "block", width: "100%", padding: "16px", boxSizing: "border-box", borderRadius: 16, background: "rgba(141,110,83,0.06)", color: GOLD, fontSize: 15, fontWeight: 600, textDecoration: "none", textAlign: "center" }}>
+                Kembali ke Beranda
+              </Link>
             </div>
           </div>
+        ) : (
+          <div style={{ animation: "fadeUp 0.3s ease" }}>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: TEXT_DARK, margin: 0 }}>Selesaikan Pembayaran</h2>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(217,119,6,0.1)", padding: "6px 12px", borderRadius: 20, border: `1px solid rgba(217,119,6,0.2)` }}>
+                <Clock size={14} color="#D97706" />
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#D97706" }}>Menunggu</span>
+              </div>
+            </div>
 
-          {/* Payment card */}
-          <div style={{ background: CARD_BG, borderRadius: 24, padding: 24, textAlign: "center", border: `1.5px solid ${BORDER_COLOR}`, marginBottom: 24 }}>
+            {/* Payment card */}
+            <div style={{ background: CARD_BG, borderRadius: 24, padding: 24, textAlign: "center", border: `1.5px solid ${BORDER_COLOR}`, marginBottom: 24 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 16 }}>
               {data.logo_url && (
                 <div style={{ width: 40, height: 40, borderRadius: 10, background: "#fff", border: `1px solid ${BORDER_COLOR}`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative" }}>
@@ -573,6 +599,7 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
           font-weight: 700;
         }
       `}</style>
+      </div>
     </div>
   );
 }

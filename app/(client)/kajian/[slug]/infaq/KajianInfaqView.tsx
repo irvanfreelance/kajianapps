@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { ChevronLeft, CheckCircle2, Heart, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const GOLD = "#8D6E53";
 const TEXT_DARK = "#2C1E15";
@@ -50,9 +51,12 @@ export default function KajianInfaqView({ kajian }: { kajian: any }) {
         <button onClick={() => router.back()} style={{ background: "rgba(141,110,83,0.06)", border: `1px solid rgba(141,110,83,0.15)`, borderRadius: 10, cursor: "pointer", padding: 8, display: "flex" }}>
           <ChevronLeft size={22} color={GOLD} />
         </button>
-        <div>
-          <h1 style={{ fontSize: 18, fontWeight: 800, color: TEXT_DARK, margin: 0 }}>Infak Terbaik</h1>
-          <p style={{ fontSize: 11, color: TEXT_MUTED, margin: "2px 0 0" }}>Pilih nominal kebaikanmu</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Image src="/64.png" alt="Badar Logo" width={80} height={32} style={{ objectFit: "contain" }} />
+          <div>
+            <h1 style={{ fontSize: 16, fontWeight: 800, color: TEXT_DARK, margin: 0 }}>Infak Terbaik</h1>
+            <p style={{ fontSize: 11, color: TEXT_MUTED, margin: "2px 0 0" }}>Pilih nominal kebaikanmu</p>
+          </div>
         </div>
       </div>
 

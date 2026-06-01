@@ -1,5 +1,7 @@
 "use client";
+
 import BottomNav from "@/components/client/BottomNav";
+import Header from "@/components/client/Header";
 import { usePathname } from "next/navigation";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
@@ -9,9 +11,17 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const mainTabs = ["/", "/kajian", "/toko", "/tiket", "/profil"];
   const showNav = mainTabs.includes(pathname);
 
+  // Exclude global header on specific transactional/auth pages
+  const excludeHeaders = ["/login", "/register", "/checkout"];
+  const showHeader = !excludeHeaders.includes(pathname) && 
+    !pathname.startsWith("/status/") && 
+    !pathname.endsWith("/infaq") && 
+    !pathname.startsWith("/tiket/");
+
   return (
     <div style={styles.outer}>
       <div style={styles.container}>
+        {showHeader && <Header />}
         <main style={styles.main}>
           {children}
         </main>
