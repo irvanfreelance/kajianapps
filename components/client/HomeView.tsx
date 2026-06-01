@@ -79,7 +79,7 @@ export default function HomeView({ kajian, products }: { kajian: any[], products
             <Link key={k.id} href={`/kajian/${k.slug}`} style={{ minWidth: 260, background: CARD_BG, borderRadius: 20, boxShadow: `0 4px 20px rgba(141,110,83,0.04)`, border: `1px solid ${BORDER_COLOR}`, cursor: "pointer", overflow: "hidden", textDecoration: 'none', color: 'inherit' }}>
               <div style={{ height: 140, position: "relative", background: "#f5ece2", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                 <Image src={k.image} fill style={{ objectFit: "cover", filter: "blur(20px)", opacity: 0.15 }} alt="" />
-                <Image src={k.image} width={260} height={140} style={{ objectFit: "contain", position: "relative", zIndex: 1 }} alt={k.title} />
+                <Image src={k.image} fill style={{ objectFit: "contain", zIndex: 1 }} alt={k.title} />
                 <span style={{ position: "absolute", top: 12, right: 12, fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 20, background: GOLD, color: "#fff", zIndex: 2, boxShadow: `0 4px 10px rgba(141,110,83,0.2)` }}>
                   Infaq
                 </span>
@@ -109,7 +109,7 @@ export default function HomeView({ kajian, products }: { kajian: any[], products
           {products.slice(0, 4).map((p: any) => (
             <Link key={p.id} href={`/toko/${p.slug}`} style={{ background: CARD_BG, borderRadius: 18, overflow: "hidden", boxShadow: `0 4px 15px rgba(141,110,83,0.03)`, border: `1px solid ${BORDER_COLOR}`, cursor: "pointer", textDecoration: 'none', color: 'inherit' }}>
               <div style={{ height: 130, background: "#f5ece2", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative" }}>
-                <Image src={p.image} alt={p.name} width={180} height={130} style={{ objectFit: "cover" }} />
+                <Image src={p.image} alt={p.name} fill style={{ objectFit: "contain" }} />
               </div>
               <div style={{ padding: 12 }}>
                 <p style={{ fontSize: 12, fontWeight: 600, color: DARK, lineHeight: 1.4, height: 34, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", margin: 0 }}>{p.name}</p>

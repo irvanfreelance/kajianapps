@@ -22,7 +22,7 @@ export function TokoView({ initialProducts }: { initialProducts: any[] }) {
   return (
     <div style={{ paddingBottom: 20, background: DARK, minHeight: "100vh" }}>
       <div style={{ padding: "24px 20px 0" }}>
-        <h1 style={{ fontSize: 26, color: TEXT_DARK, fontWeight: 800, margin: 0 }}>Toko BADAR</h1>
+        <h1 style={{ fontSize: 26, color: TEXT_DARK, fontWeight: 800, margin: 0 }}>BADAR Store</h1>
         <p style={{ fontSize: 14, color: TEXT_MUTED, marginTop: 6, margin: 0 }}>Produk eksklusif penunjang dakwah</p>
       </div>
 

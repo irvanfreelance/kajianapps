@@ -101,31 +101,38 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
   return (
     <div style={{ background: DARK, minHeight: "100vh", paddingBottom: 100 }}>
       {/* Hero Image */}
-      <div style={{ position: "relative", height: 350, overflow: "hidden", background: "#f5ece2" }}>
-        <Image src={kajian.image} fill style={{ objectFit: "cover", filter: "blur(40px)", opacity: 0.15 }} alt="" />
-        <Image src={kajian.image} width={430} height={350} style={{ objectFit: "contain", position: "relative", zIndex: 1, width: "100%", height: "100%" }} alt={kajian.title} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(255,255,255,0.1), #ffffff)", zIndex: 2 }} />
+      <div style={{ position: "relative", width: "100%", background: "#f5ece2", display: "block", paddingBottom: 28 }}>
+        <Image 
+          src={kajian.image} 
+          alt={kajian.title} 
+          width={0}
+          height={0}
+          sizes="100vw"
+          style={{ width: "100%", height: "auto", display: "block" }} 
+          priority
+        />
 
-        <div style={{ position: "absolute", top: 20, right: 20, zIndex: 50 }}>
+        <div style={{ position: "absolute", top: 20, right: 20, zIndex: 10 }}>
           <button onClick={handleShare} style={detailStyles.backBtn} aria-label="Bagikan"><Share2 size={18} color={GOLD} /></button>
         </div>
+      </div>
 
-        <div style={{ position: "absolute", bottom: 20, left: 20, right: 20, zIndex: 10 }}>
-          <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: GOLD, padding: "4px 12px", borderRadius: 20, textTransform: "uppercase" as const }}>
-              {kajian.category}
+      {/* Content Metadata Card */}
+      <div style={{ background: CARD_BG, borderRadius: "28px 28px 0 0", marginTop: -28, position: "relative", zIndex: 5, padding: "24px 20px 0", borderTop: `1px solid ${BORDER_COLOR}`, boxShadow: "0 -8px 20px rgba(141,110,83,0.02)" }}>
+        <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: GOLD, padding: "4px 12px", borderRadius: 20, textTransform: "uppercase" as const }}>
+            {kajian.category}
+          </span>
+          {isSeries && (
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#8B5CF6", background: "rgba(139,92,246,0.08)", padding: "4px 12px", borderRadius: 20, display: "flex", alignItems: "center", gap: 4 }}>
+              <Layers size={11} /> Series • Eps. {kajian.episode_number}
             </span>
-            {isSeries && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#8B5CF6", background: "rgba(139,92,246,0.08)", padding: "4px 12px", borderRadius: 20, display: "flex", alignItems: "center", gap: 4 }}>
-                <Layers size={11} /> Series • Eps. {kajian.episode_number}
-              </span>
-            )}
-          </div>
-          <h1 style={{ color: TEXT_DARK, fontSize: 24, fontWeight: 800, marginTop: 10, lineHeight: 1.25, margin: 0 }}>{kajian.title}</h1>
-          {isSeries && kajian.series_title && (
-            <p style={{ color: GOLD, fontSize: 12, marginTop: 6, fontWeight: 600, margin: 0 }}>📚 {kajian.series_title}</p>
           )}
         </div>
+        <h1 style={{ color: TEXT_DARK, fontSize: 22, fontWeight: 800, marginTop: 12, lineHeight: 1.3, margin: 0 }}>{kajian.title}</h1>
+        {isSeries && kajian.series_title && (
+          <p style={{ color: GOLD, fontSize: 12, marginTop: 6, fontWeight: 600, margin: 0 }}>📚 {kajian.series_title}</p>
+        )}
       </div>
 
       {/* Info Bar */}

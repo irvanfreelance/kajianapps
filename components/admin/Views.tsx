@@ -49,12 +49,15 @@ export function ProductView({ initialData }: { initialData: any[] }) {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id })
         });
-        if (res.ok) {
+        const json = await res.json();
+        if (res.ok && json.success) {
           setData(data.filter(p => p.id !== id));
           showToast("Produk berhasil dihapus");
+        } else {
+          alert(json.error || "Gagal menghapus produk");
         }
       } catch (err) {
-        alert("Gagal menghapus produk");
+        alert("Gagal menghapus produk: Terjadi kesalahan koneksi");
       }
     }
   };

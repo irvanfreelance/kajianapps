@@ -26,15 +26,15 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
     if (relatedProducts.length === 0) {
       fetch("/api/products/list?limit=5")
         .then(r => r.json()).then(d => { if (Array.isArray(d)) setFallbackRelated(d.filter(p => p.id !== product.id).slice(0, 4)); })
-        .catch(() => {});
+        .catch(() => { });
     }
     fetch(`/api/products/reviews?id=${product.id}`)
       .then(r => r.json()).then(d => {
         if (d.success && Array.isArray(d.data)) {
           setReviews(d.data);
-          if (d.data.length > 0) setAvgRating(Number((d.data.reduce((a: number, c: any) => a + (c.rating||5), 0) / d.data.length).toFixed(1)));
+          if (d.data.length > 0) setAvgRating(Number((d.data.reduce((a: number, c: any) => a + (c.rating || 5), 0) / d.data.length).toFixed(1)));
         }
-      }).catch(() => {});
+      }).catch(() => { });
   }, [product.id, relatedProducts.length]);
 
   const displayRelated = relatedProducts.length > 0 ? relatedProducts : fallbackRelated;
@@ -42,7 +42,7 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
   const handleShare = async () => {
     const shareData = {
       title: product.name,
-      text: `Beli ${product.name} di Toko BADAR`,
+      text: `Beli ${product.name} di BADAR Store`,
       url: window.location.href,
     };
     if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
@@ -64,11 +64,16 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
   return (
     <div style={{ background: DARK, minHeight: "100vh", paddingBottom: 100 }}>
       {/* Hero */}
-      <div style={{ position: "relative", height: 380, background: "#f5ece2", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, opacity: 0.15 }}>
-          <Image src={product.image} alt="" fill style={{ objectFit: "cover", filter: "blur(30px)" }} />
-        </div>
-        <Image src={product.image} alt={product.name} width={430} height={380} style={{ objectFit: "contain", position: "relative", zIndex: 1 }} />
+      <div style={{ position: "relative", width: "100%", background: "#f5ece2", display: "block", paddingBottom: 28 }}>
+        <Image 
+          src={product.image} 
+          alt={product.name} 
+          width={0}
+          height={0}
+          sizes="100vw"
+          style={{ width: "100%", height: "auto", display: "block" }} 
+          priority
+        />
         <div style={{ position: "absolute", top: 20, right: 20, zIndex: 10 }}>
           <button onClick={handleShare} style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,0.75)", border: `1px solid ${BORDER_COLOR}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }} aria-label="Bagikan"><Share2 size={18} color={GOLD} /></button>
         </div>
@@ -139,7 +144,7 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                     <p style={{ fontSize: 14, fontWeight: 700, color: TEXT_DARK, margin: 0 }}>{rev.user_name || "Pelanggan"}</p>
                     <div style={{ display: "flex", gap: 2 }}>
-                      {[1,2,3,4,5].map(s => <Star key={s} size={12} color="#D97706" fill={s <= (rev.rating||5) ? "#D97706" : "none"} />)}
+                      {[1, 2, 3, 4, 5].map(s => <Star key={s} size={12} color="#D97706" fill={s <= (rev.rating || 5) ? "#D97706" : "none"} />)}
                     </div>
                   </div>
                   <p style={{ fontSize: 13, color: TEXT_MUTED, lineHeight: 1.6, marginTop: 4, margin: 0 }}>{rev.testimonial || "Tidak ada komentar."}</p>

@@ -17,8 +17,14 @@ export async function POST(req: Request) {
     await redis.flushall();
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting product:', error);
+    if (error.code === '23503') {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Produk ini tidak dapat dihapus karena sudah memiliki riwayat transaksi/pesanan. Silakan nonaktifkan produk atau edit detailnya saja.' 
+      }, { status: 400 });
+    }
     return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
   }
 }
