@@ -4,15 +4,17 @@ import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, BookOpen, ShoppingBag, ShoppingCart, 
   Users, Settings, LogOut, Ticket, MessageSquare, CreditCard,
-  Bell
+  Bell, Layers
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 const navItems = [
   { id: "dashboard", href: "/panel", label: "Dashboard", Icon: LayoutDashboard },
   { id: "kajian", href: "/panel/kajian", label: "Kelola Kajian", Icon: BookOpen },
+  { id: "kajian-categories", href: "/panel/kajian-categories", label: "Kategori Kajian", Icon: Layers },
   { id: "kajian-regs", href: "/panel/kajian-registrations", label: "Pendaftaran Kajian", Icon: Ticket },
   { id: "products", href: "/panel/products", label: "Katalog Produk", Icon: ShoppingBag },
+  { id: "product-categories", href: "/panel/product-categories", label: "Kategori Produk", Icon: Layers },
   { id: "payment-methods", href: "/panel/payment-methods", label: "Metode Pembayaran", Icon: CreditCard },
   { id: "orders", href: "/panel/orders", label: "Pesanan Masuk", Icon: ShoppingCart },
   { id: "notification-templates", href: "/panel/notification-templates", label: "Template Notifikasi", Icon: Bell },

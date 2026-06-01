@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import * as XLSX from "xlsx";
-import { Search, Plus, Edit, Trash2, X, FileDown, Camera, CheckCircle, CreditCard } from "lucide-react";
+import { Search, Plus, Edit, Trash2, X, FileDown, Camera, CheckCircle, CreditCard, Upload, Loader2 } from "lucide-react";
 import { styles, fmt, formatDate, Pagination, Toast, getStatusStyle } from "./shared";
 import { exportToExcel } from "@/lib/excel";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,24 @@ export function ProductView({ initialData }: { initialData: any[] }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const pageSize = 10;
+  const [categories, setCategories] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/product-categories/list')
+      .then(res => res.json())
+      .then(json => {
+        if (json.success) {
+          setCategories(json.data || []);
+        }
+      })
+      .catch(err => console.error("Failed to load product categories:", err));
+  }, []);
+  
   
   const filtered = data.filter(p => 
     p.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -62,32 +79,66 @@ export function ProductView({ initialData }: { initialData: any[] }) {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!previewUrl) {
+      alert("Gambar produk wajib diunggah!");
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
+      let imageUrl = formData.image || "";
+      if (selectedFile) {
+        const response = await fetch(
+          `/api/admin/upload?filename=${encodeURIComponent(selectedFile.name)}`,
+          { method: 'POST', body: selectedFile }
+        );
+        const newBlob = await response.json();
+        if (newBlob.url) {
+          imageUrl = newBlob.url;
+        } else {
+          throw new Error("Gagal upload gambar");
+        }
+      }
+
       const isUpdate = !!formData.id;
       const endpoint = isUpdate ? '/api/products/update' : '/api/products/create';
+      const payload = {
+        ...formData,
+        image: imageUrl
+      };
       const res = await fetch(endpoint, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
       const json = await res.json();
       
       if (json.success) {
         if (isUpdate) {
-          setData(data.map(p => p.id === formData.id ? { ...p, ...formData } : p));
+          setData(data.map(p => p.id === formData.id ? { ...p, ...payload } : p));
           showToast("Produk berhasil diperbarui");
         } else {
           setData([{ ...json.data }, ...data]);
           showToast("Produk baru ditambahkan");
         }
+        setIsModalOpen(false);
       } else {
         alert("Gagal menyimpan produk: " + json.error);
       }
-    } catch (err) {
-      alert("Terjadi kesalahan sistem");
+    } catch (err: any) {
+      alert("Terjadi kesalahan: " + err.message);
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsModalOpen(false);
   };
 
   return (
@@ -108,7 +159,7 @@ export function ProductView({ initialData }: { initialData: any[] }) {
           <button onClick={handleExport} style={styles.excelBtn}>
             <FileDown size={18} /> Export Excel
           </button>
-          <button onClick={() => { setFormData({ stock: 0, price: 0 }); setIsModalOpen(true); }} style={styles.primaryBtn}>
+          <button onClick={() => { setFormData({ stock: 0, price: 0 }); setSelectedFile(null); setPreviewUrl(""); setIsModalOpen(true); }} style={styles.primaryBtn}>
             <Plus size={18} /> Tambah Produk
           </button>
         </div>
@@ -151,7 +202,7 @@ export function ProductView({ initialData }: { initialData: any[] }) {
                   <td style={styles.td}><p style={{ fontSize: 14, color: "#64748B" }}>{p.sold || 0}</p></td>
                   <td style={styles.td}>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button onClick={() => { setFormData(p); setIsModalOpen(true); }} style={styles.actionBtnEdit}><Edit size={16}/></button>
+                      <button onClick={() => { setFormData(p); setSelectedFile(null); setPreviewUrl(p.image || ""); setIsModalOpen(true); }} style={styles.actionBtnEdit}><Edit size={16}/></button>
                       <button onClick={() => handleDelete(p.id)} style={styles.actionBtnDel}><Trash2 size={16}/></button>
                     </div>
                   </td>
@@ -178,7 +229,17 @@ export function ProductView({ initialData }: { initialData: any[] }) {
                 </div>
                 <div>
                   <label style={styles.label}>Kategori</label>
-                  <input required value={formData.category || ""} onChange={e => setFormData({...formData, category: e.target.value})} style={styles.inputForm} type="text" />
+                  <select 
+                    required 
+                    value={formData.category || ""} 
+                    onChange={e => setFormData({...formData, category: e.target.value})} 
+                    style={styles.inputForm}
+                  >
+                    <option value="">-- Pilih Kategori --</option>
+                    {categories.map((cat: any) => (
+                      <option key={cat.id} value={cat.name}>{cat.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label style={styles.label}>Stok</label>
@@ -193,13 +254,47 @@ export function ProductView({ initialData }: { initialData: any[] }) {
                   <input value={formData.old_price || ""} onChange={e => setFormData({...formData, old_price: parseInt(e.target.value) || 0})} style={styles.inputForm} type="number" />
                 </div>
                 <div style={{ gridColumn: "1 / -1" }}>
-                  <label style={styles.label}>URL Gambar Produk</label>
-                  <input required value={formData.image || ""} onChange={e => setFormData({...formData, image: e.target.value})} style={styles.inputForm} type="text" />
+                  <label style={styles.label}>Gambar Produk</label>
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{
+                      width: "100%", height: 160, borderRadius: 12,
+                      border: "2px dashed #E2E8F0", background: "#F8FAFC",
+                      display: "flex", flexDirection: "column", alignItems: "center",
+                      justifyContent: "center", cursor: "pointer", overflow: "hidden",
+                      position: "relative", transition: "all 0.2s"
+                    }}
+                  >
+                    {previewUrl ? (
+                      <>
+                        <img src={previewUrl} style={{ width: "100%", height: "100%", objectFit: "contain" }} alt="Preview" />
+                        <div className="image-overlay" style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.2s" }}>
+                          <p style={{ color: "#fff", fontWeight: 600, fontSize: 14 }}>Ganti Gambar</p>
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ textAlign: "center", padding: 20 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#EFF6FF", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 8px" }}>
+                          <Upload size={18} color="#3B82F6" />
+                        </div>
+                        <p style={{ fontWeight: 600, color: "#0F172A", fontSize: 13 }}>Klik untuk upload gambar</p>
+                        <p style={{ fontSize: 11, color: "#64748B", marginTop: 4 }}>Format JPG, PNG atau WEBP (Maks. 5MB)</p>
+                      </div>
+                    )}
+                  </div>
+                  <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: "none" }} />
+                  <style>{`.image-overlay:hover { opacity: 1 !important; }`}</style>
                 </div>
               </div>
               <div style={{ marginTop: 24, display: "flex", justifyContent: "flex-end", gap: 12 }}>
-                <button type="button" onClick={() => setIsModalOpen(false)} style={styles.secondaryBtn}>Batal</button>
-                <button type="submit" style={{...styles.primaryBtn, width: "auto"}}>Simpan Produk</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} style={styles.secondaryBtn} disabled={isSubmitting}>Batal</button>
+                <button type="submit" style={{...styles.primaryBtn, width: "auto"}} disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <><Loader2 size={16} className="animate-spin" /> Menyimpan...</>
+                  ) : (
+                    "Simpan Produk"
+                  )}
+                </button>
               </div>
             </form>
           </div>

@@ -23,15 +23,26 @@ const formatDate = (dateStr: string) => {
     }).format(d).replace("Minggu", "Ahad");
   } catch { return dateStr; }
 };
-const CATEGORIES_KAJIAN = ["Semua", "Fiqh", "Tahsin", "Sirah", "Bahasa", "Hadits", "Tarbiyah"];
-
 export default function KajianListView({ initialKajian }: { initialKajian: any[] }) {
   const [cat, setCat] = useState("Semua");
+  const [categories, setCategories] = useState<string[]>(["Semua", "Fiqh", "Tahsin", "Sirah", "Bahasa", "Hadits", "Tarbiyah"]);
   const [kajian, setKajian] = useState(initialKajian);
   const [offset, setOffset] = useState(initialKajian.length);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const observerTarget = useRef(null);
+
+  useEffect(() => {
+    fetch("/api/kajian-categories/list")
+      .then(r => r.json())
+      .then(d => {
+        if (d.success && d.data) {
+          const names = d.data.map((c: any) => c.name);
+          setCategories(["Semua", ...names]);
+        }
+      })
+      .catch(err => console.error("Error loading categories:", err));
+  }, []);
 
   const fetchMoreKajian = async (currentOffset: number, currentCat: string) => {
     if (isLoading || !hasMore) return;
@@ -81,7 +92,7 @@ export default function KajianListView({ initialKajian }: { initialKajian: any[]
       </div>
 
       <div style={{ display: "flex", gap: 10, padding: "20px", overflowX: "auto" }}>
-        {CATEGORIES_KAJIAN.map((c) => (
+        {categories.map((c) => (
           <button
             key={c}
             onClick={() => setCat(c)}

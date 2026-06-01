@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -12,11 +12,24 @@ const TEXT_DARK = "#2C1E15";
 const TEXT_MUTED = "#7A6A5C";
 
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
-const CATS = ["Semua", "Fashion", "Merchandise", "Parfum", "Ibadah", "Buku"];
 
 export function TokoView({ initialProducts }: { initialProducts: any[] }) {
   const router = useRouter();
   const [cat, setCat] = useState("Semua");
+  const [categories, setCategories] = useState<string[]>(["Semua"]);
+
+  useEffect(() => {
+    fetch('/api/product-categories/list')
+      .then(res => res.json())
+      .then(json => {
+        if (json.success && json.data) {
+          const names = json.data.map((c: any) => c.name);
+          setCategories(["Semua", ...names]);
+        }
+      })
+      .catch(err => console.error("Failed to load product categories:", err));
+  }, []);
+
   const filtered = cat === "Semua" ? initialProducts : initialProducts.filter(p => p.category === cat);
 
   return (
@@ -27,7 +40,7 @@ export function TokoView({ initialProducts }: { initialProducts: any[] }) {
       </div>
 
       <div style={{ display: "flex", gap: 10, padding: "20px", overflowX: "auto" }}>
-        {CATS.map(c => (
+        {categories.map(c => (
           <button key={c} onClick={() => setCat(c)} style={{
             padding: "8px 20px", borderRadius: 20, fontSize: 13, fontWeight: 600,
             cursor: "pointer", whiteSpace: "nowrap",
@@ -42,8 +55,15 @@ export function TokoView({ initialProducts }: { initialProducts: any[] }) {
       <div style={{ padding: "0 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         {filtered.map(p => (
           <Link key={p.id} href={`/toko/${p.slug}`} style={{ background: CARD_BG, borderRadius: 20, overflow: "hidden", border: `1px solid ${BORDER_COLOR}`, cursor: "pointer", textDecoration: "none", color: "inherit", boxShadow: "0 4px 15px rgba(141,110,83,0.03)" }}>
-            <div style={{ height: 160, background: "#f5ece2", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-              <Image src={p.image} alt={p.name} width={180} height={160} style={{ objectFit: "cover" }} />
+            <div style={{ position: "relative", width: "100%", overflow: "hidden" }}>
+              <Image 
+                src={p.image} 
+                alt={p.name} 
+                width={500}
+                height={500}
+                sizes="100vw"
+                style={{ width: "100%", height: "auto", display: "block" }} 
+              />
             </div>
             <div style={{ padding: 14 }}>
               <p style={{ fontSize: 11, color: GOLD, marginBottom: 4, fontWeight: 600, margin: 0 }}>{p.category}</p>

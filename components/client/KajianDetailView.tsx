@@ -105,8 +105,8 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
         <Image 
           src={kajian.image} 
           alt={kajian.title} 
-          width={0}
-          height={0}
+          width={500}
+          height={500}
           sizes="100vw"
           style={{ width: "100%", height: "auto", display: "block" }} 
           priority

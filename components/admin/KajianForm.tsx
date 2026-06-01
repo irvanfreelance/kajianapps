@@ -23,6 +23,7 @@ export default function KajianForm({ initialData }: { initialData?: any }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>(initialData?.image || "");
   const [seriesList, setSeriesList] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -30,6 +31,12 @@ export default function KajianForm({ initialData }: { initialData?: any }) {
     fetch('/api/kajian/series/list')
       .then(r => r.json())
       .then(d => { if (d.success) setSeriesList(d.data || []); })
+      .catch(() => {});
+
+    // Fetch dynamic categories
+    fetch('/api/kajian-categories/list')
+      .then(r => r.json())
+      .then(d => { if (d.success) setCategories(d.data || []); })
       .catch(() => {});
   }, []);
 
@@ -217,7 +224,17 @@ export default function KajianForm({ initialData }: { initialData?: any }) {
 
             <div>
               <label style={styles.label}>Kategori</label>
-              <input required value={formData.category || ""} onChange={e => setFormData({ ...formData, category: e.target.value })} style={styles.inputForm} type="text" />
+              <select 
+                required 
+                value={formData.category || ""} 
+                onChange={e => setFormData({ ...formData, category: e.target.value })} 
+                style={styles.inputForm}
+              >
+                <option value="">-- Pilih Kategori --</option>
+                {categories.map((c: any) => (
+                  <option key={c.id} value={c.name}>{c.name}</option>
+                ))}
+              </select>
             </div>
 
             <div>

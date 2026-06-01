@@ -68,8 +68,8 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
         <Image 
           src={product.image} 
           alt={product.name} 
-          width={0}
-          height={0}
+          width={500}
+          height={500}
           sizes="100vw"
           style={{ width: "100%", height: "auto", display: "block" }} 
           priority
@@ -169,8 +169,15 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               {displayRelated.map(p => (
                 <Link key={p.id} href={`/toko/${p.slug}`} style={{ textDecoration: "none", background: "rgba(141,110,83,0.03)", borderRadius: 18, padding: 12, border: `1px solid ${BORDER_COLOR}` }}>
-                  <div style={{ width: "100%", height: 120, position: "relative", marginBottom: 10 }}>
-                    <Image src={p.image} fill style={{ objectFit: "contain", borderRadius: 10 }} alt={p.name} />
+                  <div style={{ position: "relative", width: "100%", overflow: "hidden", marginBottom: 10, borderRadius: 10 }}>
+                    <Image 
+                      src={p.image} 
+                      alt={p.name} 
+                      width={500}
+                      height={500}
+                      sizes="100vw"
+                      style={{ width: "100%", height: "auto", display: "block" }} 
+                    />
                   </div>
                   <p style={{ fontSize: 11, fontWeight: 700, color: GOLD, textTransform: "uppercase", margin: 0 }}>{p.category}</p>
                   <h3 style={{ fontSize: 13, fontWeight: 700, color: TEXT_DARK, margin: "4px 0", lineHeight: 1.4, height: 38, overflow: "hidden" }}>{p.name}</h3>

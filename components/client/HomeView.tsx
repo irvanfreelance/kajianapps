@@ -76,25 +76,31 @@ export default function HomeView({ kajian, products }: { kajian: any[], products
             <p style={{ color: MUTED_BROWN, fontSize: 13, padding: "20px 0" }}>Belum ada kajian gratis terdekat</p>
           )}
           {upcoming.map((k) => (
-            <Link key={k.id} href={`/kajian/${k.slug}`} style={{ minWidth: 260, background: CARD_BG, borderRadius: 20, boxShadow: `0 4px 20px rgba(141,110,83,0.04)`, border: `1px solid ${BORDER_COLOR}`, cursor: "pointer", overflow: "hidden", textDecoration: 'none', color: 'inherit' }}>
-              <div style={{ height: 140, position: "relative", background: "#f5ece2", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                <Image src={k.image} fill style={{ objectFit: "cover", filter: "blur(20px)", opacity: 0.15 }} alt="" />
-                <Image src={k.image} fill style={{ objectFit: "contain", zIndex: 1 }} alt={k.title} />
+            <Link key={k.id} href={`/kajian/${k.slug}`} style={{ width: 180, flexShrink: 0, background: CARD_BG, borderRadius: 20, boxShadow: `0 4px 20px rgba(141,110,83,0.04)`, border: `1px solid ${BORDER_COLOR}`, cursor: "pointer", overflow: "hidden", textDecoration: 'none', color: 'inherit' }}>
+              <div style={{ position: "relative", width: "100%", overflow: "hidden" }}>
+                <Image 
+                  src={k.image} 
+                  alt={k.title} 
+                  width={500}
+                  height={500}
+                  sizes="100vw"
+                  style={{ width: "100%", height: "auto", display: "block" }} 
+                />
                 <span style={{ position: "absolute", top: 12, right: 12, fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 20, background: GOLD, color: "#fff", zIndex: 2, boxShadow: `0 4px 10px rgba(141,110,83,0.2)` }}>
                   Infaq
                 </span>
               </div>
-              <div style={{ padding: 16 }}>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: DARK, marginBottom: 8, lineHeight: 1.3, margin: 0 }}>{k.title}</h3>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, marginTop: 8 }}>
-                  <div style={{ width: 22, height: 22, borderRadius: "50%", background: PEACH_BG, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <User size={11} color={GOLD} />
+              <div style={{ padding: "12px 14px" }}>
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: DARK, marginBottom: 8, lineHeight: 1.3, margin: 0, height: 36, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{k.title}</h3>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, marginTop: 6 }}>
+                  <div style={{ width: 18, height: 18, borderRadius: "50%", background: PEACH_BG, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <User size={10} color={GOLD} />
                   </div>
-                  <p style={{ fontSize: 12, color: MUTED_BROWN, fontWeight: 500, margin: 0 }}>{k.ustadz}</p>
+                  <p style={{ fontSize: 11, color: MUTED_BROWN, fontWeight: 500, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{k.ustadz}</p>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, background: PEACH_BG, padding: "7px 10px", borderRadius: 10 }}>
-                  <Calendar size={13} color={GOLD} />
-                  <span style={{ fontSize: 11, color: DARK, fontWeight: 500 }}>{formatDate(k.date)} • {k.time_display || k.time}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, background: PEACH_BG, padding: "6px 8px", borderRadius: 8 }}>
+                  <Calendar size={11} color={GOLD} />
+                  <span style={{ fontSize: 10, color: DARK, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{formatDate(k.date)}</span>
                 </div>
               </div>
             </Link>
@@ -108,8 +114,15 @@ export default function HomeView({ kajian, products }: { kajian: any[], products
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 16 }}>
           {products.slice(0, 4).map((p: any) => (
             <Link key={p.id} href={`/toko/${p.slug}`} style={{ background: CARD_BG, borderRadius: 18, overflow: "hidden", boxShadow: `0 4px 15px rgba(141,110,83,0.03)`, border: `1px solid ${BORDER_COLOR}`, cursor: "pointer", textDecoration: 'none', color: 'inherit' }}>
-              <div style={{ height: 130, background: "#f5ece2", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative" }}>
-                <Image src={p.image} alt={p.name} fill style={{ objectFit: "contain" }} />
+              <div style={{ position: "relative", width: "100%", overflow: "hidden" }}>
+                <Image 
+                  src={p.image} 
+                  alt={p.name} 
+                  width={500}
+                  height={500}
+                  sizes="100vw"
+                  style={{ width: "100%", height: "auto", display: "block" }} 
+                />
               </div>
               <div style={{ padding: 12 }}>
                 <p style={{ fontSize: 12, fontWeight: 600, color: DARK, lineHeight: 1.4, height: 34, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", margin: 0 }}>{p.name}</p>

@@ -223,3 +223,21 @@ export const settings = pgTable('settings', {
   configValue: text('config_value'),
   updatedAt: timestamp('updated_at').defaultNow()
 });
+
+export const kajianCategories = pgTable('kajian_categories', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  name: varchar('name', { length: 50 }).notNull().unique(),
+  slug: varchar('slug', { length: 100 }).notNull().unique(),
+  createdAt: timestamp('created_at').defaultNow()
+}, (table) => [
+  index('idx_kajian_categories_slug').on(table.slug)
+]);
+
+export const productCategories = pgTable('product_categories', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  name: varchar('name', { length: 50 }).notNull().unique(),
+  slug: varchar('slug', { length: 100 }).notNull().unique(),
+  createdAt: timestamp('created_at').defaultNow()
+}, (table) => [
+  index('idx_product_categories_slug').on(table.slug)
+]);
