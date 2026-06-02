@@ -53,6 +53,11 @@ export function TokoView({ initialProducts }: { initialProducts: any[] }) {
       </div>
 
       <div style={{ padding: "0 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        {filtered.length === 0 && (
+          <div style={{ gridColumn: "1 / -1", padding: "40px 20px", textAlign: "center", color: TEXT_MUTED, fontSize: 14 }}>
+            Belum ada produk saat ini
+          </div>
+        )}
         {filtered.map(p => (
           <Link key={p.id} href={`/toko/${p.slug}`} style={{ background: CARD_BG, borderRadius: 20, overflow: "hidden", border: `1px solid ${BORDER_COLOR}`, cursor: "pointer", textDecoration: "none", color: "inherit", boxShadow: "0 4px 15px rgba(141,110,83,0.03)" }}>
             <div style={{ position: "relative", width: "100%", overflow: "hidden" }}>

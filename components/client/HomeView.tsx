@@ -28,6 +28,15 @@ const BORDER_COLOR = "#EFEAE0";
 const PEACH_BG = "#FAF1E6";
 const MUTED_BROWN = "#7A6A5C";
 
+const isPastKajian = (dateStr: string) => {
+  if (!dateStr) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const kajianDate = new Date(dateStr);
+  kajianDate.setHours(0, 0, 0, 0);
+  return kajianDate.getTime() < today.getTime();
+};
+
 export default function HomeView({ kajian, products }: { kajian: any[], products: any[] }) {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -73,7 +82,7 @@ export default function HomeView({ kajian, products }: { kajian: any[], products
         </div>
         <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 12 }}>
           {upcoming.length === 0 && (
-            <p style={{ color: MUTED_BROWN, fontSize: 13, padding: "20px 0" }}>Belum ada kajian gratis terdekat</p>
+            <p style={{ color: MUTED_BROWN, fontSize: 13, padding: "20px 0" }}>Belum ada jadwal kajian saat ini</p>
           )}
           {upcoming.map((k) => (
             <Link key={k.id} href={`/kajian/${k.slug}`} style={{ width: 180, flexShrink: 0, background: CARD_BG, borderRadius: 20, boxShadow: `0 4px 20px rgba(141,110,83,0.04)`, border: `1px solid ${BORDER_COLOR}`, cursor: "pointer", overflow: "hidden", textDecoration: 'none', color: 'inherit' }}>
@@ -86,9 +95,15 @@ export default function HomeView({ kajian, products }: { kajian: any[], products
                   sizes="100vw"
                   style={{ width: "100%", height: "auto", display: "block" }} 
                 />
-                <span style={{ position: "absolute", top: 12, right: 12, fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 20, background: GOLD, color: "#fff", zIndex: 2, boxShadow: `0 4px 10px rgba(141,110,83,0.2)` }}>
-                  Infaq
-                </span>
+                {isPastKajian(k.date) ? (
+                  <span style={{ position: "absolute", top: 12, right: 12, fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 20, background: "#64748B", color: "#fff", zIndex: 2, boxShadow: `0 4px 10px rgba(0,0,0,0.15)` }}>
+                    Berakhir
+                  </span>
+                ) : (
+                  <span style={{ position: "absolute", top: 12, right: 12, fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 20, background: GOLD, color: "#fff", zIndex: 2, boxShadow: `0 4px 10px rgba(141,110,83,0.2)` }}>
+                    Infaq
+                  </span>
+                )}
               </div>
               <div style={{ padding: "12px 14px" }}>
                 <h3 style={{ fontSize: 14, fontWeight: 700, color: DARK, marginBottom: 8, lineHeight: 1.3, margin: 0, height: 36, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{k.title}</h3>
@@ -112,6 +127,11 @@ export default function HomeView({ kajian, products }: { kajian: any[], products
       <div style={{ padding: "24px 20px 0" }}>
         <h2 style={{ fontSize: 18, color: DARK, marginBottom: 16, fontWeight: 700, margin: 0 }}>Produk Pilihan</h2>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 16 }}>
+          {products.length === 0 && (
+            <div style={{ gridColumn: "1 / -1", padding: "30px 0", textAlign: "center", color: MUTED_BROWN, fontSize: 13 }}>
+              Belum ada produk pilihan saat ini
+            </div>
+          )}
           {products.slice(0, 4).map((p: any) => (
             <Link key={p.id} href={`/toko/${p.slug}`} style={{ background: CARD_BG, borderRadius: 18, overflow: "hidden", boxShadow: `0 4px 15px rgba(141,110,83,0.03)`, border: `1px solid ${BORDER_COLOR}`, cursor: "pointer", textDecoration: 'none', color: 'inherit' }}>
               <div style={{ position: "relative", width: "100%", overflow: "hidden" }}>

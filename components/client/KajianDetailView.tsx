@@ -28,6 +28,15 @@ const formatDate = (dateStr: string) => {
   } catch { return dateStr; }
 };
 
+const isPastKajian = (dateStr: string) => {
+  if (!dateStr) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const kajianDate = new Date(dateStr);
+  kajianDate.setHours(0, 0, 0, 0);
+  return kajianDate.getTime() < today.getTime();
+};
+
 export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajian: any, relatedKajian?: any[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -249,21 +258,21 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
         <div>
           <p style={{ fontSize: 11, color: TEXT_MUTED, margin: 0 }}>Biaya Pendaftaran</p>
           <p style={{ fontSize: 20, fontWeight: 800, color: GOLD, margin: 0 }}>
-            {kajian.type === "free" ? "Infak Terbaik" : fmt(kajian.price)}
+            {isPastKajian(kajian.date) ? "Selesai" : (kajian.type === "free" ? "Infak Terbaik" : fmt(kajian.price))}
           </p>
         </div>
         <button
           onClick={handleRegisterAction}
-          disabled={loading}
+          disabled={loading || isPastKajian(kajian.date)}
           style={{
-            background: loading ? "rgba(141,110,83,0.4)" : GOLD,
-            color: "#fff", padding: "13px 26px", borderRadius: 16,
+            background: (loading || isPastKajian(kajian.date)) ? "rgba(148, 163, 184, 0.4)" : GOLD,
+            color: (loading || isPastKajian(kajian.date)) ? "#64748B" : "#fff", padding: "13px 26px", borderRadius: 16,
             border: "none", fontSize: 14, fontWeight: 700,
-            cursor: loading ? "not-allowed" : "pointer",
-            boxShadow: `0 6px 20px rgba(141,110,83,0.18)`
+            cursor: (loading || isPastKajian(kajian.date)) ? "not-allowed" : "pointer",
+            boxShadow: isPastKajian(kajian.date) ? "none" : `0 6px 20px rgba(141,110,83,0.18)`
           }}
         >
-          {loading ? "Memproses..." : "Daftar Sekarang"}
+          {isPastKajian(kajian.date) ? "Kajian Berakhir" : (loading ? "Memproses..." : "Daftar Sekarang")}
         </button>
       </div>
 

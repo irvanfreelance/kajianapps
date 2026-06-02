@@ -23,6 +23,15 @@ const formatDate = (dateStr: string) => {
     }).format(d).replace("Minggu", "Ahad");
   } catch { return dateStr; }
 };
+const isPastKajian = (dateStr: string) => {
+  if (!dateStr) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const kajianDate = new Date(dateStr);
+  kajianDate.setHours(0, 0, 0, 0);
+  return kajianDate.getTime() < today.getTime();
+};
+
 export default function KajianListView({ initialKajian }: { initialKajian: any[] }) {
   const [cat, setCat] = useState("Semua");
   const [categories, setCategories] = useState<string[]>(["Semua", "Fiqh", "Tahsin", "Sirah", "Bahasa", "Hadits", "Tarbiyah"]);
@@ -111,6 +120,11 @@ export default function KajianListView({ initialKajian }: { initialKajian: any[]
       </div>
 
       <div style={{ padding: "0 20px" }}>
+        {kajian.length === 0 && (
+          <div style={{ padding: "40px 20px", textAlign: "center", color: TEXT_MUTED, fontSize: 14 }}>
+            Belum ada jadwal kajian saat ini
+          </div>
+        )}
         {kajian.map((k, i) => (
           <Link
             key={`${k.id}-${i}`}
@@ -127,9 +141,15 @@ export default function KajianListView({ initialKajian }: { initialKajian: any[]
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: k.type === 'free' ? GOLD : "#fff", background: k.type === 'free' ? PEACH_BG : GOLD, padding: "3px 8px", borderRadius: 10, letterSpacing: 0.5 }}>
-                  {k.type === 'free' ? 'INFAQ' : fmt(k.price)}
-                </span>
+                {isPastKajian(k.date) ? (
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#64748B", background: "#F1F5F9", padding: "3px 8px", borderRadius: 10, letterSpacing: 0.5 }}>
+                    BERAKHIR
+                  </span>
+                ) : (
+                  <span style={{ fontSize: 10, fontWeight: 700, color: k.type === 'free' ? GOLD : "#fff", background: k.type === 'free' ? PEACH_BG : GOLD, padding: "3px 8px", borderRadius: 10, letterSpacing: 0.5 }}>
+                    {k.type === 'free' ? 'INFAQ' : fmt(k.price)}
+                  </span>
+                )}
                 {k.series_type === 'series' && (
                   <span style={{ fontSize: 10, fontWeight: 700, color: "#8B5CF6", background: "rgba(139,92,246,0.08)", padding: "3px 8px", borderRadius: 10, display: "flex", alignItems: "center", gap: 3 }}>
                     <Layers size={10} /> Eps.{k.episode_number}

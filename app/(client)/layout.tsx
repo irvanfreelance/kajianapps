@@ -48,8 +48,17 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
           }
           .wa-float-bubble {
+            position: fixed !important;
+            bottom: 96px !important;
+            right: 24px !important;
             animation: wa-pulse 2s infinite;
-            transition: transform 0.2s ease-in-out;
+            transition: transform 0.2s ease-in-out, right 0.2s ease-in-out;
+            z-index: 9999;
+          }
+          @media (min-width: 430px) {
+            .wa-float-bubble {
+              right: calc(50% - 215px + 24px) !important;
+            }
           }
           .wa-float-bubble:hover {
             transform: scale(1.1) !important;
@@ -69,9 +78,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           rel="noopener noreferrer"
           className="wa-float-bubble"
           style={{
-            position: "absolute",
-            bottom: showNav ? 100 : 24,
-            right: 24,
             width: 52,
             height: 52,
             borderRadius: "50%",
@@ -80,7 +86,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             alignItems: "center",
             justifyContent: "center",
             boxShadow: "0 4px 16px rgba(37,211,102,0.35)",
-            zIndex: 9999,
             cursor: "pointer",
           }}
           title="Hubungi Customer Support"
