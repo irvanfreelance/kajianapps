@@ -105,6 +105,18 @@ async function main() {
     console.log('Error seeding site_title:', e.message);
   }
 
+  // Seed default whatsapp_support to 6281222527915
+  try {
+    await sql(`
+      INSERT INTO settings (config_key, config_value)
+      VALUES ('whatsapp_support', '6281222527915')
+      ON CONFLICT (config_key) DO NOTHING
+    `);
+    console.log('Default whatsapp_support seeded.');
+  } catch (e: any) {
+    console.log('Error seeding whatsapp_support:', e.message);
+  }
+
   // Seed status history for existing orders if empty
   try {
     const orders = await sql(`SELECT id, status FROM orders`);

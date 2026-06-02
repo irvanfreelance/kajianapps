@@ -13,11 +13,11 @@ const PEACH_BG = "#FAF1E6";
 
 const fmt = (n: number) => "Rp " + (n || 0).toLocaleString("id-ID");
 
-const NOMINALS = [0, 10000, 25000, 50000, 100000, 250000];
+const NOMINALS = [10000, 25000, 50000, 100000, 250000, 0];
 
 export default function KajianInfaqView({ kajian }: { kajian: any }) {
   const router = useRouter();
-  const [infaqAmount, setInfaqAmount] = useState<number>(0);
+  const [infaqAmount, setInfaqAmount] = useState<number>(25000);
   const [customInput, setCustomInput] = useState<string>("");
   const [isCustomActive, setIsCustomActive] = useState(false);
 
