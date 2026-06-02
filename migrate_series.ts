@@ -114,8 +114,8 @@ async function main() {
     try {
       const slug = slugify(k.title);
       await sql(`
-        INSERT INTO kajian (title, ustadz, category, date, time_display, type, price, spot, filled, image, location, url_zoom, url_youtube, description, slug, series_type)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,0,$9,$10,$11,$12,$13,$14,'single')
+        INSERT INTO kajian (title, ustadz, category, date, time_display, type, price, spot, filled, image, location, url_zoom, url_youtube, description, slug, series_type, kajian_mode)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,0,$9,$10,$11,$12,$13,$14,'single', 'hybrid')
         ON CONFLICT (slug) DO NOTHING
       `, [k.title, k.ustadz, k.category, k.date, k.time, k.type, k.price, k.spot, k.image, k.location, k.url_zoom, k.url_youtube, k.description, slug]);
       console.log(`✓ Seeded single kajian: ${k.title}`);
@@ -193,8 +193,8 @@ async function main() {
       try {
         const slug = slugify(`${seriesData.slug}-eps-${ep.episode}`);
         await sql(`
-          INSERT INTO kajian (title, ustadz, category, date, time_display, type, price, spot, filled, image, location, url_zoom, url_youtube, description, slug, series_type, series_id, episode_number)
-          VALUES ($1,$2,$3,$4,$5,'free',0,200,0,$6,$7,$8,$9,$10,$11,'series',$12,$13)
+          INSERT INTO kajian (title, ustadz, category, date, time_display, type, price, spot, filled, image, location, url_zoom, url_youtube, description, slug, series_type, series_id, episode_number, kajian_mode)
+          VALUES ($1,$2,$3,$4,$5,'free',0,200,0,$6,$7,$8,$9,$10,$11,'series',$12,$13, 'hybrid')
           ON CONFLICT (slug) DO NOTHING
         `, [
           ep.title, seriesData.ustadz, seriesData.category,

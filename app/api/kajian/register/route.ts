@@ -26,6 +26,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Kajian ID harus diisi" }, { status: 400 });
     }
 
+    // Check if kajian exists and enforce registration rules based on date & recording availability
+    const kajianRes = await sql(`SELECT date, url_youtube FROM kajian WHERE id = $1`, [kajianId]);
+    if (kajianRes.length === 0) {
+      return NextResponse.json({ error: "Kajian tidak ditemukan" }, { status: 404 });
+    }
+    const kajian = kajianRes[0];
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const kajianDate = new Date(kajian.date);
+    kajianDate.setHours(0, 0, 0, 0);
+
+    const isPast = kajianDate.getTime() < today.getTime();
+    const hasRecording = !!kajian.url_youtube;
+
+    if (isPast && !hasRecording) {
+      return NextResponse.json({ error: "Pendaftaran gagal karena kajian telah berakhir dan tidak memiliki rekaman." }, { status: 400 });
+    }
+
     // Check if user is already registered for this kajian (excluding failed registrations)
     const existingReg = await sql(`
       SELECT id FROM kajian_registrations 

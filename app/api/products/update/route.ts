@@ -7,7 +7,7 @@ const slugify = (text: string) => text.toLowerCase().replace(/[^\w ]+/g, '').rep
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { id, name, category, price, oldPrice, old_price, stock, image } = body;
+    const { id, name, category, price, oldPrice, old_price, stock, image, jenis, link } = body;
 
     if (!id || !name || !category || price === undefined || stock === undefined || !image) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
@@ -15,14 +15,16 @@ export async function POST(req: Request) {
 
     const slug = slugify(name);
     const finalOldPrice = oldPrice !== undefined ? oldPrice : (old_price !== undefined ? old_price : null);
+    const finalJenis = jenis || 'fisik';
+    const finalLink = finalJenis === 'digital' ? (link || null) : null;
 
     const result = await sql(`
       UPDATE products 
       SET name = $1, category = $2, price = $3, old_price = $4, 
-          stock = $5, image = $6, slug = $7
-      WHERE id = $8
+          stock = $5, image = $6, slug = $7, jenis = $8, link = $9
+      WHERE id = $10
       RETURNING *
-    `, [name, category, price, finalOldPrice, stock, image, slug, id]);
+    `, [name, category, price, finalOldPrice, stock, image, slug, finalJenis, finalLink, id]);
 
     // Flush cache
     await redis.flushall();

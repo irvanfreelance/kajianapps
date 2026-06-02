@@ -105,10 +105,16 @@ export default function ProductDetailView({ product, relatedProducts = [] }: { p
         </p>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 20 }}>
-          {[
-            { Icon: Truck, title: "Pengiriman", sub: "Seluruh Indonesia" },
-            { Icon: ShieldCheck, title: "Garansi", sub: "7 Hari Retur" },
-          ].map(({ Icon, title, sub }) => (
+          {(product.jenis === "digital"
+            ? [
+                { Icon: ShieldCheck, title: "Akses Instan", sub: "Unduh kapan saja" },
+                { Icon: ShieldCheck, title: "Garansi", sub: "Aman & Terpercaya" },
+              ]
+            : [
+                { Icon: Truck, title: "Pengiriman", sub: "Seluruh Indonesia" },
+                { Icon: ShieldCheck, title: "Garansi", sub: "7 Hari Retur" },
+              ]
+          ).map(({ Icon, title, sub }) => (
             <div key={title} style={{ background: "rgba(141,110,83,0.03)", borderRadius: 14, padding: 14, display: "flex", gap: 10, alignItems: "center", border: `1px solid ${BORDER_COLOR}` }}>
               <Icon size={20} color={GOLD} />
               <div>

@@ -29,7 +29,11 @@ export async function GET(req: Request) {
                  WHEN lower(pm.type) IN ('qr_code', 'qr', 'qris') THEN 'QR_CODE'
                  WHEN lower(pm.type) IN ('over_the_counter', 'retail_outlet', 'retail', 'otc') THEN 'OVER_THE_COUNTER'
                  ELSE upper(pm.type)
-               END as method_type
+               END as method_type,
+               (SELECT json_agg(json_build_object('name', p.name, 'jenis', p.jenis, 'link', p.link, 'qty', oi.qty))
+                FROM order_items oi
+                JOIN products p ON oi.product_id = p.id
+                WHERE oi.order_id = o.id) as items
         FROM orders o
         LEFT JOIN payment_methods pm ON o.payment_method_id = pm.id
         WHERE o.order_code = $1

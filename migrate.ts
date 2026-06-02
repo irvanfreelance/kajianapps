@@ -195,6 +195,27 @@ async function main() {
     console.log('Note: checked_in_at might already exist:', e.message);
   }
 
+  try {
+    await sql(`ALTER TABLE "kajian_registrations" ADD COLUMN "is_approved" boolean DEFAULT FALSE`);
+    console.log('Column is_approved added to kajian_registrations.');
+  } catch (e: any) {
+    console.log('Note: is_approved might already exist:', e.message);
+  }
+
+  try {
+    await sql(`ALTER TABLE "kajian_registrations" ADD COLUMN "ticket_code" varchar(50)`);
+    console.log('Column ticket_code added to kajian_registrations.');
+  } catch (e: any) {
+    console.log('Note: ticket_code might already exist:', e.message);
+  }
+
+  try {
+    await sql(`ALTER TABLE "kajian" ADD COLUMN "kajian_mode" varchar(20) DEFAULT 'offline' NOT NULL`);
+    console.log('Column kajian_mode added to kajian.');
+  } catch (e: any) {
+    console.log('Note: kajian_mode might already exist:', e.message);
+  }
+
   console.log('Migration completed.');
   process.exit(0);
 }

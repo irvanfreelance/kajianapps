@@ -41,6 +41,28 @@ export default function KajianListView({ initialKajian }: { initialKajian: any[]
   const [isLoading, setIsLoading] = useState(false);
   const observerTarget = useRef(null);
 
+  // Keep refs of values needed by the observer to prevent stale closures and infinite loop triggers
+  const offsetRef = useRef(offset);
+  const catRef = useRef(cat);
+  const hasMoreRef = useRef(hasMore);
+  const isLoadingRef = useRef(isLoading);
+
+  useEffect(() => {
+    offsetRef.current = offset;
+  }, [offset]);
+
+  useEffect(() => {
+    catRef.current = cat;
+  }, [cat]);
+
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
+
+  useEffect(() => {
+    isLoadingRef.current = isLoading;
+  }, [isLoading]);
+
   useEffect(() => {
     fetch("/api/kajian-categories/list")
       .then(r => r.json())
@@ -54,8 +76,12 @@ export default function KajianListView({ initialKajian }: { initialKajian: any[]
   }, []);
 
   const fetchMoreKajian = async (currentOffset: number, currentCat: string) => {
-    if (isLoading || !hasMore) return;
+    if (isLoadingRef.current || !hasMoreRef.current) return;
+    
+    // Set loading immediately to block any concurrent scroll triggers
+    isLoadingRef.current = true;
     setIsLoading(true);
+
     try {
       const res = await fetch(`/api/kajian/list?limit=3&offset=${currentOffset}&category=${currentCat}`);
       const data = await res.json();
@@ -63,35 +89,48 @@ export default function KajianListView({ initialKajian }: { initialKajian: any[]
       if (list && list.length > 0) {
         setKajian(prev => [...prev, ...list]);
         setOffset(prev => prev + list.length);
-        if (list.length < 3) setHasMore(false);
+        if (list.length < 3) {
+          setHasMore(false);
+          hasMoreRef.current = false;
+        }
       } else {
         setHasMore(false);
+        hasMoreRef.current = false;
       }
     } catch (err) {
       console.error("Error loading more kajian:", err);
+      // Ensure we stop trying to load more if an error occurs to prevent loops
+      setHasMore(false);
+      hasMoreRef.current = false;
     } finally {
+      isLoadingRef.current = false;
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    setKajian(initialKajian.filter(k => cat === 'Semua' || k.category === cat));
-    setOffset(initialKajian.filter(k => cat === 'Semua' || k.category === cat).length);
+    const filtered = initialKajian.filter(k => cat === 'Semua' || k.category === cat);
+    setKajian(filtered);
+    setOffset(filtered.length);
+    offsetRef.current = filtered.length;
     setHasMore(true);
+    hasMoreRef.current = true;
   }, [cat, initialKajian]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
-        if (entries[0].isIntersecting && hasMore && !isLoading) {
-          fetchMoreKajian(offset, cat);
+        if (entries[0].isIntersecting && hasMoreRef.current && !isLoadingRef.current) {
+          fetchMoreKajian(offsetRef.current, catRef.current);
         }
       },
-      { threshold: 1.0 }
+      { threshold: 0.1 }
     );
     if (observerTarget.current) observer.observe(observerTarget.current);
-    return () => { if (observerTarget.current) observer.unobserve(observerTarget.current); };
-  }, [offset, hasMore, isLoading, cat]);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   return (
     <div style={{ paddingBottom: 50, background: DARK, minHeight: "100vh" }}>
@@ -142,9 +181,15 @@ export default function KajianListView({ initialKajian }: { initialKajian: any[]
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                 {isPastKajian(k.date) ? (
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#64748B", background: "#F1F5F9", padding: "3px 8px", borderRadius: 10, letterSpacing: 0.5 }}>
-                    BERAKHIR
-                  </span>
+                  k.url_youtube ? (
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#16A34A", background: "#DCFCE7", padding: "3px 8px", borderRadius: 10, letterSpacing: 0.5 }}>
+                      REKAMAN
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#64748B", background: "#F1F5F9", padding: "3px 8px", borderRadius: 10, letterSpacing: 0.5 }}>
+                      BERAKHIR
+                    </span>
+                  )
                 ) : (
                   <span style={{ fontSize: 10, fontWeight: 700, color: k.type === 'free' ? GOLD : "#fff", background: k.type === 'free' ? PEACH_BG : GOLD, padding: "3px 8px", borderRadius: 10, letterSpacing: 0.5 }}>
                     {k.type === 'free' ? 'INFAQ' : fmt(k.price)}

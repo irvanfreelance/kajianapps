@@ -244,10 +244,12 @@ export default function TicketDetailPage() {
               <Clock size={16} color={GOLD} />
               <p style={{ fontSize: 13, color: TEXT_DARK, margin: 0 }}>{activeEpisode.time_display || "19:30 WIB"}</p>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <MapPin size={16} color={GOLD} />
-              <p style={{ fontSize: 13, color: TEXT_DARK, margin: 0 }}>{activeEpisode.location || "Masjid At-Taqwa, Depok"}</p>
-            </div>
+            {activeEpisode.kajian_mode !== "online" && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <MapPin size={16} color={GOLD} />
+                <p style={{ fontSize: 13, color: TEXT_DARK, margin: 0 }}>{activeEpisode.location || "Masjid At-Taqwa, Depok"}</p>
+              </div>
+            )}
           </div>
 
           {registration.status === "PENDING" && registration.price > 0 ? (

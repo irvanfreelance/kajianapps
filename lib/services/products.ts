@@ -15,7 +15,7 @@ export async function getProductsList(category?: string, limit?: number) {
 
   let query = `
     SELECT id, name, price, old_price, stock, image,
-           category, rating, sold, description, slug
+           category, rating, sold, description, slug, jenis, link
     FROM products
   `;
   const params: any[] = [];

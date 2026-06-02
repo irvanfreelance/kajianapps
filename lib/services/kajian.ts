@@ -21,7 +21,7 @@ export async function getKajianList(limit?: number, offset?: number, category?: 
            k.type, k.price, 
            CASE WHEN k.series_type = 'series' THEN ks.image ELSE k.image END AS image, 
            k.category, k.spot, k.filled, k.slug,
-           k.url_zoom, k.url_youtube, 
+           k.url_zoom, k.url_youtube, k.kajian_mode,
            CASE WHEN k.series_type = 'series' THEN ks.description ELSE k.description END AS description, 
            k.location,
            k.series_type, k.series_id, k.episode_number,
@@ -95,7 +95,7 @@ export async function getKajianBySlug(slug: string) {
   // If it's part of a series, fetch all episodes
   if (data && data.series_type === 'series' && data.series_id) {
     const episodes = await sql(
-      `SELECT id, title, slug, episode_number, date, time_display, url_zoom, url_youtube, description
+      `SELECT id, title, slug, episode_number, date, time_display, url_zoom, url_youtube, description, kajian_mode
        FROM kajian
        WHERE series_id = $1
        ORDER BY episode_number ASC`,
@@ -173,7 +173,7 @@ export async function getSeriesById(id: string | number) {
 
   if (data) {
     const episodes = await sql(
-      `SELECT id, title, slug, episode_number, date, time_display, url_zoom, url_youtube, description, image
+      `SELECT id, title, slug, episode_number, date, time_display, url_zoom, url_youtube, description, image, kajian_mode
        FROM kajian
        WHERE series_id = $1
        ORDER BY episode_number ASC`,
@@ -199,7 +199,7 @@ export async function getSeriesBySlug(slug: string) {
 
   if (data) {
     const episodes = await sql(
-      `SELECT id, title, slug, episode_number, date, time_display, url_zoom, url_youtube, description, image
+      `SELECT id, title, slug, episode_number, date, time_display, url_zoom, url_youtube, description, image, kajian_mode
        FROM kajian
        WHERE series_id = $1
        ORDER BY episode_number ASC`,
@@ -215,7 +215,7 @@ export async function getSeriesBySlug(slug: string) {
 
 export async function getSeriesEpisodes(seriesId: string | number) {
   const rows = await sql(
-    `SELECT id, title, slug, episode_number, date, time_display, url_zoom, url_youtube, description, image, spot, filled
+    `SELECT id, title, slug, episode_number, date, time_display, url_zoom, url_youtube, description, image, spot, filled, kajian_mode
      FROM kajian
      WHERE series_id = $1
      ORDER BY episode_number ASC`,
@@ -266,7 +266,7 @@ export async function getUserRegistrations(userId: number) {
   const rows = await sql(`
     SELECT 
       kr.id, kr.registered_at as date, kr.paid_amount as price, kr.status, kr.is_approved, kr.ticket_code,
-      k.title, k.ustadz, k.date, k.time_display, k.image, k.location, k.slug, k.url_zoom, k.url_youtube,
+      k.title, k.ustadz, k.date, k.time_display, k.image, k.location, k.slug, k.url_zoom, k.url_youtube, k.kajian_mode,
       k.series_type, k.episode_number, k.series_id,
       ks.title AS series_title, ks.slug AS series_slug
     FROM kajian_registrations kr
@@ -282,7 +282,7 @@ export async function getRegistrationDetail(registrationId: number | string, use
   const rows = await sql(`
     SELECT 
       kr.id, kr.registered_at as date, kr.paid_amount as price, kr.status, kr.is_approved, kr.ticket_code,
-      k.id as kajian_id, k.title, k.ustadz, k.date as kajian_date, k.time_display, k.image, k.location, k.slug, k.url_zoom, k.url_youtube,
+      k.id as kajian_id, k.title, k.ustadz, k.date as kajian_date, k.time_display, k.image, k.location, k.slug, k.url_zoom, k.url_youtube, k.kajian_mode,
       k.series_type, k.episode_number, k.series_id,
       ks.title AS series_title, ks.slug AS series_slug, ks.image AS series_image, ks.description AS series_description
     FROM kajian_registrations kr

@@ -12,12 +12,14 @@ export default function KajianForm({ initialData }: { initialData?: any }) {
     date: initialData.date ? new Date(initialData.date).toISOString().split('T')[0] : "",
     time: initialData.time || initialData.time_display || "",
     series_type: initialData.series_type || 'single',
+    kajian_mode: initialData.kajian_mode || 'offline',
   } : {
     type: 'free',
     spot: 100,
     price: 0,
     image: "",
     series_type: 'single',
+    kajian_mode: 'offline',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -263,6 +265,15 @@ export default function KajianForm({ initialData }: { initialData?: any }) {
             <div>
               <label style={styles.label}>Kuota Jamaah</label>
               <input required value={formData.spot || 100} onChange={e => setFormData({ ...formData, spot: parseInt(e.target.value) || 0 })} style={styles.inputForm} type="number" />
+            </div>
+
+            <div>
+              <label style={styles.label}>Metode Kajian</label>
+              <select value={formData.kajian_mode || "offline"} onChange={e => setFormData({ ...formData, kajian_mode: e.target.value })} style={styles.inputForm}>
+                <option value="offline">Offline (Tatap Muka)</option>
+                <option value="online">Online (Streaming / Zoom)</option>
+                <option value="hybrid">Hybrid (Offline & Online)</option>
+              </select>
             </div>
 
             <div>

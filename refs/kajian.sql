@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS kajian_registrations CASCADE;
 DROP TABLE IF EXISTS products CASCADE;
 DROP TABLE IF EXISTS kajian CASCADE;
+DROP TABLE IF EXISTS kajian_series CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS settings CASCADE;
 
@@ -77,7 +78,22 @@ CREATE TABLE payment_instructions (
 );
 
 -- ====================================================================================
--- 3. TABLE: KAJIAN (Jadwal Kajian)
+-- ====================================================================================
+-- 3a. TABLE: KAJIAN_SERIES (Seri Kajian)
+-- ====================================================================================
+CREATE TABLE kajian_series (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(150) NOT NULL,
+    ustadz VARCHAR(100) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    image TEXT,
+    description TEXT,
+    slug VARCHAR(200) UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ====================================================================================
+-- 3b. TABLE: KAJIAN (Jadwal Kajian)
 -- ====================================================================================
 CREATE TABLE kajian (
     id BIGSERIAL PRIMARY KEY,
@@ -96,6 +112,10 @@ CREATE TABLE kajian (
     url_zoom VARCHAR(255),
     url_youtube VARCHAR(255),
     slug VARCHAR(200) UNIQUE,
+    series_type VARCHAR(20) DEFAULT 'single' NOT NULL,
+    series_id BIGINT REFERENCES kajian_series(id) ON DELETE SET NULL,
+    episode_number INT,
+    kajian_mode VARCHAR(20) NOT NULL DEFAULT 'offline',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -116,6 +136,8 @@ CREATE TABLE products (
     sold INT DEFAULT 0,
     description TEXT,
     slug VARCHAR(200) UNIQUE,
+    jenis VARCHAR(20) DEFAULT 'fisik' NOT NULL,
+    link TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -135,6 +157,11 @@ CREATE TABLE kajian_registrations (
     status VARCHAR(20) DEFAULT 'PENDING',
     is_checkout_sent BOOLEAN DEFAULT FALSE,
     is_paid_sent BOOLEAN DEFAULT FALSE,
+    is_approved BOOLEAN DEFAULT FALSE,
+    payment_proof TEXT,
+    ticket_code VARCHAR(50),
+    is_hadir BOOLEAN DEFAULT FALSE,
+    checked_in_at TIMESTAMP NULL,
     registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -267,25 +294,54 @@ INSERT INTO admins (id, name, email, password_hash, role, status, created_at) VA
 SELECT setval('admins_id_seq', (SELECT MAX(id) FROM admins));
 
 -- 3. Insert Kajian
-INSERT INTO kajian (id, title, ustadz, date, time_display, type, price, spot, filled, image, category, description, location, slug) VALUES
-(1, 'Fiqh Muamalah', 'Ust. Ahmad Zainuddin', '2026-05-02', '19:30 WIB', 'free', 0, 120, 87, 'https://images.pexels.com/photos/8164575/pexels-photo-8164575.jpeg?auto=compress&cs=tinysrgb&w=600', 'Fiqh', 'Pembahasan mendalam tentang hukum-hukum transaksi dalam Islam, termasuk jual beli, sewa-menyewa, dan kerja sama bisnis syariah.', 'Masjid Al-Ikhlas, Bandung', 'fiqh-muamalah'),
-(2, 'Tahsin Al-Quran Lv.2', 'Ust. Muhammad Ridwan', '2026-05-03', '08:00 WIB', 'paid', 150000, 30, 28, 'https://images.pexels.com/photos/8164568/pexels-photo-8164568.jpeg?auto=compress&cs=tinysrgb&w=600', 'Tahsin', 'Kelas intensif perbaikan bacaan Al-Quran dengan metode talaqqi. Level menengah untuk yang sudah menguasai dasar tajwid.', 'Graha Dakwah, Bandung', 'tahsin-al-quran-lv2'),
-(3, 'Sirah Nabawiyah', 'Ust. Khalid Basalamah', '2026-05-04', '09:00 WIB', 'free', 0, 200, 156, 'https://images.pexels.com/photos/8164563/pexels-photo-8164563.jpeg?auto=compress&cs=tinysrgb&w=600', 'Sirah', 'Menelusuri perjalanan hidup Rasulullah ﷺ dari kelahiran hingga hijrah ke Madinah.', 'Online via Zoom', 'sirah-nabawiyah'),
-(4, 'Bahasa Arab Dasar', 'Ust. Fuad Abdurrahman', '2026-05-05', '19:00 WIB', 'paid', 200000, 25, 12, 'https://images.pexels.com/photos/4559592/pexels-photo-4559592.jpeg?auto=compress&cs=tinysrgb&w=600', 'Bahasa', 'Kelas bahasa Arab untuk pemula. Belajar nahwu shorof dasar dengan pendekatan praktis.', 'Wisma Dakwah, Bandung', 'bahasa-arab-dasar'),
-(5, 'Kitab Riyadhus Shalihin', 'Ust. Syafiq Basalamah', '2026-05-07', '16:00 WIB', 'free', 0, 150, 98, 'https://images.pexels.com/photos/8164627/pexels-photo-8164627.jpeg?auto=compress&cs=tinysrgb&w=600', 'Hadits', 'Kajian rutin pembahasan kitab Riyadhus Shalihin karya Imam An-Nawawi.', 'Masjid Al-Ikhlas, Bandung', 'kitab-riyadhus-shalihin'),
-(6, 'Parenting Islami', 'Ustzh. Haneen Akira', '2026-05-10', '10:00 WIB', 'paid', 75000, 50, 43, 'https://images.pexels.com/photos/8164571/pexels-photo-8164571.jpeg?auto=compress&cs=tinysrgb&w=600', 'Tarbiyah', 'Seminar mendidik anak sesuai sunnah Rasulullah ﷺ di era digital.', 'Hall Gedung Sate, Bandung', 'parenting-islami');
+INSERT INTO kajian (id, title, ustadz, date, time_display, type, price, spot, filled, image, category, description, location, slug, kajian_mode) VALUES
+(1, 'Fiqh Muamalah', 'Ust. Ahmad Zainuddin', '2026-05-02', '19:30 WIB', 'free', 0, 120, 87, 'https://images.pexels.com/photos/8164575/pexels-photo-8164575.jpeg?auto=compress&cs=tinysrgb&w=600', 'Fiqh', 'Pembahasan mendalam tentang hukum-hukum transaksi dalam Islam, termasuk jual beli, sewa-menyewa, dan kerja sama bisnis syariah.', 'Masjid Al-Ikhlas, Bandung', 'fiqh-muamalah', 'offline'),
+(2, 'Tahsin Al-Quran Lv.2', 'Ust. Muhammad Ridwan', '2026-05-03', '08:00 WIB', 'paid', 150000, 30, 28, 'https://images.pexels.com/photos/8164568/pexels-photo-8164568.jpeg?auto=compress&cs=tinysrgb&w=600', 'Tahsin', 'Kelas intensif perbaikan bacaan Al-Quran dengan metode talaqqi. Level menengah untuk yang sudah menguasai dasar tajwid.', 'Graha Dakwah, Bandung', 'tahsin-al-quran-lv2', 'offline'),
+(3, 'Sirah Nabawiyah', 'Ust. Khalid Basalamah', '2026-05-04', '09:00 WIB', 'free', 0, 200, 156, 'https://images.pexels.com/photos/8164563/pexels-photo-8164563.jpeg?auto=compress&cs=tinysrgb&w=600', 'Sirah', 'Menelusuri perjalanan hidup Rasulullah ﷺ dari kelahiran hingga hijrah ke Madinah.', 'Online via Zoom', 'sirah-nabawiyah', 'online'),
+(4, 'Bahasa Arab Dasar', 'Ust. Fuad Abdurrahman', '2026-05-05', '19:00 WIB', 'paid', 200000, 25, 12, 'https://images.pexels.com/photos/4559592/pexels-photo-4559592.jpeg?auto=compress&cs=tinysrgb&w=600', 'Bahasa', 'Kelas bahasa Arab untuk pemula. Belajar nahwu shorof dasar dengan pendekatan praktis.', 'Wisma Dakwah, Bandung', 'bahasa-arab-dasar', 'offline'),
+(5, 'Kitab Riyadhus Shalihin', 'Ust. Syafiq Basalamah', '2026-05-07', '16:00 WIB', 'free', 0, 150, 98, 'https://images.pexels.com/photos/8164627/pexels-photo-8164627.jpeg?auto=compress&cs=tinysrgb&w=600', 'Hadits', 'Kajian rutin pembahasan kitab Riyadhus Shalihin karya Imam An-Nawawi.', 'Masjid Al-Ikhlas, Bandung', 'kitab-riyadhus-shalihin', 'offline'),
+(6, 'Parenting Islami', 'Ustzh. Haneen Akira', '2026-05-10', '10:00 WIB', 'paid', 75000, 50, 43, 'https://images.pexels.com/photos/8164571/pexels-photo-8164571.jpeg?auto=compress&cs=tinysrgb&w=600', 'Tarbiyah', 'Seminar mendidik anak sesuai sunnah Rasulullah ﷺ di era digital.', 'Hall Gedung Sate, Bandung', 'parenting-islami', 'offline');
+
+INSERT INTO kajian (id, title, ustadz, date, time_display, type, price, spot, filled, image, category, description, location, url_zoom, url_youtube, slug, created_at, series_type, series_id, episode_number, kajian_mode) VALUES
+(13, 'Ramadhan & Keluarga', 'Ustadz Fitrian Kadir, Lc,M.SI', '2026-05-25', '08.00', 'free', 0, 1000, 0, 'https://4jgsaomzelkwriht.public.blob.vercel-storage.com/BADAR%20%231%20%281%29.jpg', 'Parenting', 'Ramadhan bukan hanya tentang memperbanyak ibadah, tetapi juga tentang memperbaiki arah pulang keluarga kita.
+
+Di saat kita sibuk mengejar kebaikan di luar, sering kali yang paling dekat justru paling terabaikan. Padahal, dari rumah-lah segala perubahan besar dimulai.
+
+Kajian ini mengajak kita melihat kembali: apakah keluarga kita sedang tumbuh menuju kebaikan, atau sekadar berjalan tanpa arah?', NULL, NULL, 'https://youtu.be/N-B8wI_OPRA', 'ramadhan-keluarga', '2026-06-01 13:31:54.887526', 'single', NULL, NULL, 'online'),
+(14, 'Mau Dibawa Kemana Hubungan Kita', 'Ustadz M. Fitrian Kadir Lc,M.SI', '2026-04-25', '08.00', 'free', 0, 1000, 1, 'https://4jgsaomzelkwriht.public.blob.vercel-storage.com/BADAR%20%231%20%282%29.jpg', 'Parenting', 'Tidak ada hubungan yang bisa bertahan hanya karena waktu berjalan. Setiap keluarga, setiap pasangan, perlu bertanya: sebenarnya kita sedang menuju ke mana?
+
+Apakah semakin saling memahami, atau justru semakin jauh tanpa disadari?
+
+Kajian ini mengajak kita kembali menyadari arah hubungan—agar cinta tidak hanya bertahan, tapi juga tumbuh dengan tujuan yang benar.', 'Masjid Al Fath ', NULL, 'https://youtu.be/oIZ4J3ohZOA', 'mau-dibawa-kemana-hubungan-kita', '2026-06-01 13:39:14.048646', 'single', NULL, NULL, 'hybrid'),
+(15, 'Building a life mission together', 'Ustadz M. Fitrian Kadir Lc,M.SI', '2026-05-22', '08.00', 'free', 0, 1000, 2, 'https://4jgsaomzelkwriht.public.blob.vercel-storage.com/BADAR%20%231%20%282%29.png', 'Parenting', 'Hubungan yang kuat tidak hanya dibangun oleh cinta, tetapi oleh arah yang disepakati bersama.
+
+Karena pada akhirnya, keluarga bukan sekadar untuk dijalani, tetapi untuk diperjuangkan menuju tujuan yang sama.
+
+Kajian ini mengajak kita kembali menyatukan visi, memperjelas misi, dan menjadikan rumah sebagai perjalanan yang tumbuh menuju kebaikan.', 'Masjid Al Fath', NULL, 'https://youtu.be/H2pd9gRyG4w', 'building-a-life-mission-together', '2026-06-01 13:42:28.396958', 'single', NULL, NULL, 'hybrid'),
+(16, 'Harmony: Different Roles, One Purpose', 'Ustadz M. Fitrian Kadir Lc, M.SI', '2026-06-20', '07.30', 'free', 0, 100, 3, 'https://4jgsaomzelkwriht.public.blob.vercel-storage.com/%234%20%281%29.jpg', 'Parenting', 'Rumah bukan sekedar bangunan mati yang berisi beberapa orang. Rumah seharusnya menjadi tempat dimana ketenangan bermuara. Setiap individu yang merasa lelah, dia pulang ke rumah dan mendapatkan ketenangan yang dicari. Tentunya kita tidak membahas ketenangan yang selalu diidentikan dengan materi. Namun tenang yang setiap manusia dapat mengaksesnya: ketenangan dari hati.
+
+Mudah bagi Allah menghadirkan ketenangan tersebut. Namun demikian, tugas kita sebagai suami maupun istri adalah mengambl peran. Rumah bukan tentang apa yang dihasilkan nanti, namun bagaimana ikhtiar dalam peran yang kita lakoni.
+
+Untuk menghadirkan peran tersebut, maka setiap individu: suami dan istri perlu paham peran masing-masing. Di zaman dimana gender equality dipahami dengan cara yang tidak bijak; kita perlu kembali belajar. Bagaimana Islam menempatkan laki-laki dan perempuan. Suami dan istri. Setiap mereka adalah penting. Sama mulianya. Tanpa harus menyamakan perannya.
+
+Sebab harmoni tidak hadir dari kesamaan seluruhnya. 
+
+Namun dari perbedaan yang bergerak ke arah yang sama. Harmony: different roles, one purpose.', 'Masjid Al Fath ', NULL, NULL, 'harmony-different-roles-one-purpose', '2026-06-02 06:13:42.211689', 'single', NULL, NULL, 'offline');
+
 SELECT setval('kajian_id_seq', (SELECT MAX(id) FROM kajian));
 
 -- 4. Insert Products
-INSERT INTO products (id, name, price, old_price, stock, image, category, rating, sold, description, slug) VALUES
-(101, 'Gamis Premium Al-Haramain', 389000, 450000, 45, 'https://images.pexels.com/photos/935985/pexels-photo-935985.jpeg?auto=compress&cs=tinysrgb&w=600', 'Fashion', 4.8, 234, 'Gamis pria bahan katun Madinah premium, nyaman dan adem.', 'gamis-premium-al-haramain'),
-(102, 'Hijab Voal Luxury Edition', 129000, NULL, 120, 'https://images.pexels.com/photos/4992410/pexels-photo-4992410.jpeg?auto=compress&cs=tinysrgb&w=600', 'Fashion', 4.9, 567, 'Hijab voal premium dengan pinggiran laser cut.', 'hijab-voal-luxury-edition'),
-(103, 'Tumbler Dakwah ''Istiqomah''', 89000, 120000, 30, 'https://images.pexels.com/photos/1342529/pexels-photo-1342529.jpeg?auto=compress&cs=tinysrgb&w=600', 'Merchandise', 4.7, 189, 'Tumbler stainless 500ml dengan kaligrafi motivasi.', 'tumbler-dakwah-istiqomah'),
-(104, 'Minyak Wangi Oud Al-Madinah', 175000, NULL, 50, 'https://images.pexels.com/photos/965989/pexels-photo-965989.jpeg?auto=compress&cs=tinysrgb&w=600', 'Parfum', 4.9, 412, 'Parfum non-alkohol aroma oud premium dari Madinah.', 'minyak-wangi-oud-al-madinah'),
-(105, 'Sajadah Travel Premium', 159000, 199000, 60, 'https://images.pexels.com/photos/13508493/pexels-photo-13508493.jpeg?auto=compress&cs=tinysrgb&w=600', 'Ibadah', 4.8, 321, 'Sajadah lipat portable dengan kompas kiblat built-in.', 'sajadah-travel-premium'),
-(106, 'Buku ''Jalan Menuju Jannah''', 95000, NULL, 80, 'https://images.pexels.com/photos/415071/pexels-photo-415071.jpeg?auto=compress&cs=tinysrgb&w=600', 'Buku', 4.6, 876, 'Buku best-seller panduan amal yaumiyah lengkap.', 'buku-jalan-menuju-jannah'),
-(107, 'Koko Anak Seri Ramadhan', 145000, 175000, 25, 'https://images.pexels.com/photos/8164741/pexels-photo-8164741.jpeg?auto=compress&cs=tinysrgb&w=600', 'Fashion', 4.7, 198, 'Baju koko anak motif islami, bahan adem dan lembut.', 'koko-anak-seri-ramadhan'),
-(108, 'Tasbih Digital Premium', 65000, NULL, 150, 'https://images.pexels.com/photos/8164585/pexels-photo-8164585.jpeg?auto=compress&cs=tinysrgb&w=600', 'Ibadah', 4.5, 543, 'Tasbih digital dengan counter and pengingat dzikir.', 'tasbih-digital-premium');
+INSERT INTO products (id, name, price, old_price, stock, image, category, rating, sold, description, slug, jenis, link) VALUES
+(101, 'Gamis Premium Al-Haramain', 389000, 450000, 45, 'https://images.pexels.com/photos/935985/pexels-photo-935985.jpeg?auto=compress&cs=tinysrgb&w=600', 'Fashion', 4.8, 234, 'Gamis pria bahan katun Madinah premium, nyaman dan adem.', 'gamis-premium-al-haramain', 'fisik', NULL),
+(102, 'Hijab Voal Luxury Edition', 129000, NULL, 120, 'https://images.pexels.com/photos/4992410/pexels-photo-4992410.jpeg?auto=compress&cs=tinysrgb&w=600', 'Fashion', 4.9, 567, 'Hijab voal premium dengan pinggiran laser cut.', 'hijab-voal-luxury-edition', 'fisik', NULL),
+(103, 'Tumbler Dakwah ''Istiqomah''', 89000, 120000, 30, 'https://images.pexels.com/photos/1342529/pexels-photo-1342529.jpeg?auto=compress&cs=tinysrgb&w=600', 'Merchandise', 4.7, 189, 'Tumbler stainless 500ml dengan kaligrafi motivasi.', 'tumbler-dakwah-istiqomah', 'fisik', NULL),
+(104, 'Minyak Wangi Oud Al-Madinah', 175000, NULL, 50, 'https://images.pexels.com/photos/965989/pexels-photo-965989.jpeg?auto=compress&cs=tinysrgb&w=600', 'Parfum', 4.9, 412, 'Parfum non-alkohol aroma oud premium dari Madinah.', 'minyak-wangi-oud-al-madinah', 'fisik', NULL),
+(105, 'Sajadah Travel Premium', 159000, 199000, 60, 'https://images.pexels.com/photos/13508493/pexels-photo-13508493.jpeg?auto=compress&cs=tinysrgb&w=600', 'Ibadah', 4.8, 321, 'Sajadah lipat portable dengan kompas kiblat built-in.', 'sajadah-travel-premium', 'fisik', NULL),
+(106, 'Buku ''Jalan Menuju Jannah''', 95000, NULL, 80, 'https://images.pexels.com/photos/415071/pexels-photo-415071.jpeg?auto=compress&cs=tinysrgb&w=600', 'Buku', 4.6, 876, 'Buku best-seller panduan amal yaumiyah lengkap.', 'buku-jalan-menuju-jannah', 'fisik', NULL),
+(107, 'Koko Anak Seri Ramadhan', 145000, 175000, 25, 'https://images.pexels.com/photos/8164741/pexels-photo-8164741.jpeg?auto=compress&cs=tinysrgb&w=600', 'Fashion', 4.7, 198, 'Baju koko anak motif islami, bahan adem dan lembut.', 'koko-anak-seri-ramadhan', 'fisik', NULL),
+(108, 'Tasbih Digital Premium', 65000, NULL, 150, 'https://images.pexels.com/photos/8164585/pexels-photo-8164585.jpeg?auto=compress&cs=tinysrgb&w=600', 'Ibadah', 4.5, 543, 'Tasbih digital dengan counter and pengingat dzikir.', 'tasbih-digital-premium', 'fisik', NULL),
+(109, 'E-Book Panduan Ramadhan', 49000, 75000, 9999, 'https://images.pexels.com/photos/415071/pexels-photo-415071.jpeg?auto=compress&cs=tinysrgb&w=600', 'Buku', 4.9, 87, 'E-Book panduan lengkap menyambut bulan suci Ramadhan.', 'e-book-panduan-ramadhan', 'digital', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'),
+(110, 'Video Kajian Fiqih Ramadhan', 75000, 100000, 9999, 'https://images.pexels.com/photos/8164585/pexels-photo-8164585.jpeg?auto=compress&cs=tinysrgb&w=600', 'Ibadah', 4.8, 45, 'Video rekaman kajian fiqih Ramadhan bersama Ustadz Fitrian Kadir.', 'video-kajian-fiqih-ramadhan', 'digital', 'https://youtu.be/N-B8wI_OPRA');
 SELECT setval('products_id_seq', (SELECT MAX(id) FROM products));
 
 -- 5. Insert Orders & Items
@@ -419,7 +475,12 @@ SELECT setval('notification_logs_id_seq', (SELECT MAX(id) FROM notification_logs
 -- 11. Insert Settings (Additional config merging with schema_komunitas)
 INSERT INTO settings (config_key, config_value) VALUES 
 ('app_name', 'Aplikasi Majelis Ilmu'),
-('app_theme', 'Cyan-Tosca');
+('app_theme', 'Cyan-Tosca'),
+('site_favicon', '/badar_favicon.png'),
+('site_title', 'BADAR - Baik Dari Rumah'),
+('whatsapp_support', '6281222527915'),
+('rajaongkir_origin_district_id', '1391'),
+('rajaongkir_origin_name', 'Depok, Cirebon, Jawa Barat');
 
 -- 12. Insert Kajian Registrations (Sample)
 INSERT INTO kajian_registrations (user_id, kajian_id, paid_amount, status, registered_at) VALUES

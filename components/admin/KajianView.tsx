@@ -45,6 +45,7 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
         ? Math.round(((k.hadir_count || 0) / (k.attendance_count || 1)) * 100)
         : 0,
       'Lokasi': k.location,
+      'Metode': k.kajian_mode || 'offline',
       'Deskripsi': k.desc
     }));
     exportToExcel(exportData, 'Data_Kajian');
@@ -78,7 +79,8 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
       'Harga': 50000,
       'Kuota': 100,
       'URL Zoom': '',
-      'URL Youtube': ''
+      'URL Youtube': '',
+      'Metode Kajian': 'offline'
     }];
     exportToExcel(templateData, 'Template_Import_Kajian');
   };
@@ -108,6 +110,7 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
           spot: Number(row['Kuota']) || 0,
           url_zoom: row['URL Zoom'] || null,
           url_youtube: row['URL Youtube'] || null,
+          kajian_mode: row['Metode Kajian'] || 'offline',
           image: " " // Kosongkan gambar sesuai request
         }));
 

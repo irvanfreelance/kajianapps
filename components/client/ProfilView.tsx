@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Package, User, LogOut, ChevronRight, CreditCard, Star, Upload, Video, X } from "lucide-react";
+import { Package, User, LogOut, ChevronRight, CreditCard, Star, Upload, Video, X, Download } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -173,13 +173,29 @@ export function ProfilView() {
                     <StatusBadge status={order.status} />
                   </div>
                   <div style={{ height: 1, background: "rgba(141,110,83,0.06)", margin: "12px 0" }} />
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    {order.items?.map((item: any, i: number) => (
-                      <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-                        <span style={{ color: TEXT_MUTED }}>{item.name} x{item.qty}</span>
-                        <span style={{ fontWeight: 600, color: TEXT_DARK }}>{fmt(item.price * item.qty)}</span>
-                      </div>
-                    ))}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {order.items?.map((item: any, i: number) => {
+                      const isOrderPaid = !["PENDING", "FAILED"].includes(order.status?.toUpperCase());
+                      return (
+                        <div key={i} style={{ display: "flex", flexDirection: "column", gap: 4, background: item.jenis === "digital" && isOrderPaid ? "rgba(141,110,83,0.03)" : "transparent", padding: item.jenis === "digital" && isOrderPaid ? "8px 10px" : "0", borderRadius: 8, border: item.jenis === "digital" && isOrderPaid ? `1px solid ${BORDER_COLOR}` : "none" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+                            <span style={{ color: TEXT_MUTED }}>{item.name} x{item.qty}</span>
+                            <span style={{ fontWeight: 600, color: TEXT_DARK }}>{fmt(item.price * item.qty)}</span>
+                          </div>
+                          {item.jenis === "digital" && isOrderPaid && (
+                            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
+                              {item.link ? (
+                                <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 4, background: GOLD, color: "#fff", padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, textDecoration: "none", cursor: "pointer" }}>
+                                  <Download size={11} /> Unduh
+                                </a>
+                              ) : (
+                                <span style={{ fontSize: 10, color: TEXT_MUTED, fontStyle: "italic" }}>Link belum tersedia</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, paddingTop: 12, borderTop: "1px dashed rgba(141,110,83,0.1)" }}>
                     <span style={{ fontSize: 13, fontWeight: 700, color: TEXT_DARK }}>Total</span>

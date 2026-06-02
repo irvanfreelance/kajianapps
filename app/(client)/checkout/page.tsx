@@ -207,7 +207,7 @@ function CheckoutView() {
           body: JSON.stringify({
             items: [{ productId: item.id, qty: qty, price: item.price }],
             paymentMethodId: selectedMethod?.id,
-            shipping: shippingData
+            shipping: isDigitalProduct ? null : shippingData
           }),
         });
         const data = await res.json();
@@ -280,11 +280,18 @@ function CheckoutView() {
     );
   }
 
+  const isDigitalProduct = type === "product" && item?.jenis === "digital";
+
   const steps = type === "product"
-    ? ["Detail", "Alamat", "Bayar", "Konfirmasi"]
+    ? (isDigitalProduct ? ["Detail", "Bayar", "Konfirmasi"] : ["Detail", "Alamat", "Bayar", "Konfirmasi"])
     : isFreeKajian
       ? ["Detail", "Konfirmasi"]
       : ["Detail", "Bayar", "Konfirmasi"];
+
+  const showAddressStep = type === "product" && !isDigitalProduct && step === 2;
+  const showPaymentStep = 
+    (type === "product" && (isDigitalProduct ? step === 2 : step === 3)) ||
+    (type === "kajian" && step === 2 && !isFreeKajian);
 
   return (
     <div style={{ background: DARK, minHeight: "100vh", position: "relative", color: TEXT_DARK }}>
@@ -393,8 +400,8 @@ function CheckoutView() {
           </div>
         )}
 
-        {/* ─── STEP: Address (Only for Product) ─── */}
-        {type === "product" && step === 2 && (
+        {/* ─── STEP: Address (Only for Physical Product) ─── */}
+        {showAddressStep && (
           <div style={{ animation: "fadeUp 0.25s ease" }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: TEXT_DARK, marginBottom: 16 }}>Alamat Pengiriman</h3>
             <AddressSelector onSelect={setShippingData} />
@@ -402,7 +409,7 @@ function CheckoutView() {
         )}
 
         {/* ─── STEP: Pilih Metode Pembayaran ─── */}
-        {((type === "product" && step === 3) || (type === "kajian" && step === 2 && !isFreeKajian)) && (
+        {showPaymentStep && (
           <div style={{ animation: "fadeUp 0.25s ease", display: "flex", flexDirection: "column", gap: 16 }}>
             {type === "product" && shippingData && (
               <div style={{ background: CARD_BG, border: `1px solid ${BORDER_COLOR}`, borderRadius: 16, padding: 16 }}>
@@ -477,11 +484,11 @@ function CheckoutView() {
             onClick={() => setStep(2)}
             style={{ width: "100%", height: 54, borderRadius: 16, border: "none", background: GOLD, color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: `0 6px 20px rgba(141,110,83,0.18)` }}
           >
-            {type === "product" ? "Lanjut Alamat" : isFreeKajian ? "Lanjut Konfirmasi" : "Pilih Pembayaran"}
+            {type === "product" ? (isDigitalProduct ? "Pilih Pembayaran" : "Lanjut Alamat") : isFreeKajian ? "Lanjut Konfirmasi" : "Pilih Pembayaran"}
           </button>
         )}
 
-        {type === "product" && step === 2 && (
+        {type === "product" && step === 2 && !isDigitalProduct && (
           <button
             onClick={() => setStep(3)}
             disabled={!shippingData}
@@ -491,7 +498,7 @@ function CheckoutView() {
           </button>
         )}
 
-        {((type === "product" && step === 3) || (type === "kajian" && step === 2 && !isFreeKajian)) && (
+        {showPaymentStep && (
           <button
             onClick={handleComplete}
             disabled={submitting || !selectedMethod}

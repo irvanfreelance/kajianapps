@@ -96,9 +96,15 @@ export default function HomeView({ kajian, products }: { kajian: any[], products
                   style={{ width: "100%", height: "auto", display: "block" }} 
                 />
                 {isPastKajian(k.date) ? (
-                  <span style={{ position: "absolute", top: 12, right: 12, fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 20, background: "#64748B", color: "#fff", zIndex: 2, boxShadow: `0 4px 10px rgba(0,0,0,0.15)` }}>
-                    Berakhir
-                  </span>
+                  k.url_youtube ? (
+                    <span style={{ position: "absolute", top: 12, right: 12, fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 20, background: "#16A34A", color: "#fff", zIndex: 2, boxShadow: `0 4px 10px rgba(22,163,74,0.2)` }}>
+                      Rekaman
+                    </span>
+                  ) : (
+                    <span style={{ position: "absolute", top: 12, right: 12, fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 20, background: "#64748B", color: "#fff", zIndex: 2, boxShadow: `0 4px 10px rgba(0,0,0,0.15)` }}>
+                      Berakhir
+                    </span>
+                  )
                 ) : (
                   <span style={{ position: "absolute", top: 12, right: 12, fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 20, background: GOLD, color: "#fff", zIndex: 2, boxShadow: `0 4px 10px rgba(141,110,83,0.2)` }}>
                     Infaq

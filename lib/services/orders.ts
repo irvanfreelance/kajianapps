@@ -21,7 +21,7 @@ export async function getOrdersList() {
       o.city_name as "cityName", o.courier, o.courier_service as "courierService",
       o.shipping_cost as "shippingCost", o.resi,
       pm.name as "paymentMethod",
-      (SELECT json_agg(json_build_object('name', p.name, 'qty', oi.qty, 'price', oi.price))
+      (SELECT json_agg(json_build_object('name', p.name, 'qty', oi.qty, 'price', oi.price, 'jenis', p.jenis, 'link', p.link))
        FROM order_items oi
        JOIN products p ON oi.product_id = p.id
        WHERE oi.order_id = o.id) as items,
@@ -102,7 +102,7 @@ export async function getUserOrders(userId: number) {
       o.id, o.order_code as "orderCode", o.order_date as "date", 
       o.total, o.status, o.shipping_cost as "shippingCost", o.courier, o.courier_service as "courierService", o.resi,
       o.rating, o.testimonial, o.testimonial_images as "testimonialImages", o.testimonial_video as "testimonialVideo",
-      (SELECT json_agg(json_build_object('name', p.name, 'qty', oi.qty, 'price', oi.price))
+      (SELECT json_agg(json_build_object('name', p.name, 'qty', oi.qty, 'price', oi.price, 'jenis', p.jenis, 'link', p.link))
        FROM order_items oi
        JOIN products p ON oi.product_id = p.id
        WHERE oi.order_id = o.id) as items,

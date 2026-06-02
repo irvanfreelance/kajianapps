@@ -15,20 +15,21 @@ export async function POST(req: Request) {
     // Insert each row
     const results = [];
     for (const row of data) {
-      const { title, ustadz, category, date, time, type, price, spot, url_zoom, url_youtube, image } = row;
+      const { title, ustadz, category, date, time, type, price, spot, url_zoom, url_youtube, image, kajian_mode, kajianMode } = row;
       
       // Default empty image space if not provided
       const finalImage = image || " ";
       const finalPrice = price || 0;
       const finalType = type || "free";
       const finalSpot = spot || 0;
+      const finalKajianMode = kajian_mode || kajianMode || 'offline';
       
       const slug = slugify(title || "Kajian");
-
+ 
       try {
         const res = await sql(`
-          INSERT INTO kajian (title, ustadz, date, time_display, type, price, spot, filled, image, category, url_zoom, url_youtube, slug) 
-          VALUES ($1, $2, $3, $4, $5, $6, $7, 0, $8, $9, $10, $11, $12)
+          INSERT INTO kajian (title, ustadz, date, time_display, type, price, spot, filled, image, category, url_zoom, url_youtube, slug, kajian_mode) 
+          VALUES ($1, $2, $3, $4, $5, $6, $7, 0, $8, $9, $10, $11, $12, $13)
           RETURNING id
         `, [
           title || "Tanpa Judul", 
@@ -42,7 +43,8 @@ export async function POST(req: Request) {
           category || "Umum", 
           url_zoom || null, 
           url_youtube || null, 
-          slug + '-' + Math.floor(Math.random() * 1000) // prevent slug duplicate
+          slug + '-' + Math.floor(Math.random() * 1000), // prevent slug duplicate
+          finalKajianMode
         ]);
         results.push(res[0]);
       } catch (err: any) {

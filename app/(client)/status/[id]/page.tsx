@@ -387,6 +387,33 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
                 : <>Terima kasih! Pembayaran Anda untuk <strong>{code}</strong> telah kami terima.</>
               }
             </p>
+
+            {/* Digital download section */}
+            {data.items && data.items.some((item: any) => item.jenis === "digital") && (
+              <div style={{ background: CARD_BG, borderRadius: 20, padding: 20, border: `1.5px solid ${BORDER_COLOR}`, marginTop: 24, textAlign: "left" }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: GOLD, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12, margin: 0 }}>Link Unduhan Produk Digital</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 10 }}>
+                  {data.items
+                    .filter((item: any) => item.jenis === "digital")
+                    .map((item: any, i: number) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "rgba(141,110,83,0.03)", borderRadius: 12, border: `1px solid ${BORDER_COLOR}` }}>
+                        <div style={{ flex: 1, minWidth: 0, marginRight: 12 }}>
+                          <p style={{ fontSize: 13, fontWeight: 700, color: TEXT_DARK, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</p>
+                          <p style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2, margin: 0 }}>Tipe: Digital</p>
+                        </div>
+                        {item.link ? (
+                          <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 6, background: GOLD, color: "#fff", padding: "8px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, textDecoration: "none", cursor: "pointer", transition: "all 0.2s" }}>
+                            <Download size={14} /> Unduh
+                          </a>
+                        ) : (
+                          <span style={{ fontSize: 12, color: TEXT_MUTED, fontStyle: "italic" }}>Link belum tersedia</span>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
             <div style={{ marginTop: 32, display: "flex", flexDirection: "column", gap: 12 }}>
               <Link href={code.startsWith("REG") ? "/tiket" : "/profil"} style={{ display: "block", width: "100%", padding: "16px", boxSizing: "border-box", borderRadius: 16, background: GOLD, color: "#fff", fontSize: 15, fontWeight: 700, textDecoration: "none", textAlign: "center", boxShadow: `0 8px 20px rgba(141,110,83,0.2)` }}>
                 {code.startsWith("REG") ? "Lihat Tiket Saya" : "Lihat Histori"}

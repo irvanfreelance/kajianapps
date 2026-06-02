@@ -159,7 +159,7 @@ export function ProductView({ initialData }: { initialData: any[] }) {
           <button onClick={handleExport} style={styles.excelBtn}>
             <FileDown size={18} /> Export Excel
           </button>
-          <button onClick={() => { setFormData({ stock: 0, price: 0 }); setSelectedFile(null); setPreviewUrl(""); setIsModalOpen(true); }} style={styles.primaryBtn}>
+          <button onClick={() => { setFormData({ stock: 0, price: 0, jenis: 'fisik', link: '' }); setSelectedFile(null); setPreviewUrl(""); setIsModalOpen(true); }} style={styles.primaryBtn}>
             <Plus size={18} /> Tambah Produk
           </button>
         </div>
@@ -186,7 +186,21 @@ export function ProductView({ initialData }: { initialData: any[] }) {
                   <td style={styles.td}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                       <img src={p.image} style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover" }} alt="" />
-                      <p style={{ fontWeight: 600, color: "#0F172A", fontSize: 14 }}>{p.name}</p>
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <p style={{ fontWeight: 600, color: "#0F172A", fontSize: 14, margin: 0 }}>{p.name}</p>
+                        <span style={{ 
+                          fontSize: 10, 
+                          fontWeight: 700, 
+                          color: p.jenis === 'digital' ? '#D97706' : '#2563EB', 
+                          background: p.jenis === 'digital' ? '#FEF3C7' : '#DBEAFE', 
+                          padding: "1px 6px", 
+                          borderRadius: 4, 
+                          width: "fit-content",
+                          marginTop: 4
+                        }}>
+                          {p.jenis === 'digital' ? 'DIGITAL' : 'FISIK'}
+                        </span>
+                      </div>
                     </div>
                   </td>
                   <td style={styles.td}>
@@ -253,6 +267,31 @@ export function ProductView({ initialData }: { initialData: any[] }) {
                   <label style={styles.label}>Harga Coret (Opsional)</label>
                   <input value={formData.old_price || ""} onChange={e => setFormData({...formData, old_price: parseInt(e.target.value) || 0})} style={styles.inputForm} type="number" />
                 </div>
+                <div>
+                  <label style={styles.label}>Jenis Produk</label>
+                  <select 
+                    required 
+                    value={formData.jenis || "fisik"} 
+                    onChange={e => setFormData({...formData, jenis: e.target.value})} 
+                    style={styles.inputForm}
+                  >
+                    <option value="fisik">Fisik</option>
+                    <option value="digital">Digital</option>
+                  </select>
+                </div>
+                {formData.jenis === 'digital' && (
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <label style={styles.label}>Link Produk Digital</label>
+                    <input 
+                      required 
+                      value={formData.link || ""} 
+                      onChange={e => setFormData({...formData, link: e.target.value})} 
+                      placeholder="https://example.com/download-link"
+                      style={styles.inputForm} 
+                      type="text" 
+                    />
+                  </div>
+                )}
                 <div style={{ gridColumn: "1 / -1" }}>
                   <label style={styles.label}>Gambar Produk</label>
                   <div

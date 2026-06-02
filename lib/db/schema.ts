@@ -38,6 +38,19 @@ export const admins = pgTable('admins', {
   index('idx_admins_email').on(table.email)
 ]);
 
+export const kajianSeries = pgTable('kajian_series', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  title: varchar('title', { length: 150 }).notNull(),
+  ustadz: varchar('ustadz', { length: 100 }).notNull(),
+  category: varchar('category', { length: 50 }).notNull(),
+  image: text('image'),
+  description: text('description'),
+  slug: varchar('slug', { length: 200 }).unique(),
+  createdAt: timestamp('created_at').defaultNow()
+}, (table) => [
+  index('idx_kajian_series_slug').on(table.slug)
+]);
+
 export const kajian = pgTable('kajian', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
   title: varchar('title', { length: 150 }).notNull(),
@@ -55,6 +68,10 @@ export const kajian = pgTable('kajian', {
   urlZoom: varchar('url_zoom', { length: 255 }),
   urlYoutube: varchar('url_youtube', { length: 255 }),
   slug: varchar('slug', { length: 200 }).unique(),
+  seriesType: varchar('series_type', { length: 20 }).default('single').notNull(),
+  seriesId: bigint('series_id', { mode: 'number' }).references(() => kajianSeries.id, { onDelete: 'set null' }),
+  episodeNumber: integer('episode_number'),
+  kajianMode: varchar('kajian_mode', { length: 20 }).default('offline').notNull(),
   createdAt: timestamp('created_at').defaultNow()
 }, (table) => [
   index('idx_kajian_category').on(table.category),
@@ -73,6 +90,8 @@ export const products = pgTable('products', {
   sold: integer('sold').default(0),
   description: text('description'),
   slug: varchar('slug', { length: 200 }).unique(),
+  jenis: varchar('jenis', { length: 20 }).default('fisik').notNull(),
+  link: text('link'),
   createdAt: timestamp('created_at').defaultNow()
 }, (table) => [
   index('idx_products_category').on(table.category),

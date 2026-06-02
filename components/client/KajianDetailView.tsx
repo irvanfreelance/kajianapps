@@ -169,17 +169,19 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
             {kajian.description || "Kajian rutin yang membahas topik mendalam bersama ustadz pilihan. Terbuka untuk umum, ikhwan dan akhwat."}
           </p>
 
-          <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-              <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(141,110,83,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <MapPin size={18} color={GOLD} />
-              </div>
-              <div>
-                <p style={{ fontSize: 11, color: TEXT_MUTED, margin: 0 }}>Lokasi</p>
-                <p style={{ fontSize: 13, fontWeight: 600, color: TEXT_DARK, marginTop: 2, margin: 0 }}>{kajian.location || "Masjid Al-Latif, Bandung"}</p>
+          {kajian.kajian_mode !== 'online' && (
+            <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(141,110,83,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <MapPin size={18} color={GOLD} />
+                </div>
+                <div>
+                  <p style={{ fontSize: 11, color: TEXT_MUTED, margin: 0 }}>Lokasi</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: TEXT_DARK, marginTop: 2, margin: 0 }}>{kajian.location || "Masjid Al-Latif, Bandung"}</p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Info Note */}
@@ -258,21 +260,21 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
         <div>
           <p style={{ fontSize: 11, color: TEXT_MUTED, margin: 0 }}>Biaya Pendaftaran</p>
           <p style={{ fontSize: 20, fontWeight: 800, color: GOLD, margin: 0 }}>
-            {isPastKajian(kajian.date) ? "Selesai" : (kajian.type === "free" ? "Infak Terbaik" : fmt(kajian.price))}
+            {isPastKajian(kajian.date) && !kajian.url_youtube ? "Selesai" : (kajian.type === "free" ? "Infak Terbaik" : fmt(kajian.price))}
           </p>
         </div>
         <button
           onClick={handleRegisterAction}
-          disabled={loading || isPastKajian(kajian.date)}
+          disabled={loading || (isPastKajian(kajian.date) && !kajian.url_youtube)}
           style={{
-            background: (loading || isPastKajian(kajian.date)) ? "rgba(148, 163, 184, 0.4)" : GOLD,
-            color: (loading || isPastKajian(kajian.date)) ? "#64748B" : "#fff", padding: "13px 26px", borderRadius: 16,
+            background: (loading || (isPastKajian(kajian.date) && !kajian.url_youtube)) ? "rgba(148, 163, 184, 0.4)" : GOLD,
+            color: (loading || (isPastKajian(kajian.date) && !kajian.url_youtube)) ? "#64748B" : "#fff", padding: "13px 26px", borderRadius: 16,
             border: "none", fontSize: 14, fontWeight: 700,
-            cursor: (loading || isPastKajian(kajian.date)) ? "not-allowed" : "pointer",
-            boxShadow: isPastKajian(kajian.date) ? "none" : `0 6px 20px rgba(141,110,83,0.18)`
+            cursor: (loading || (isPastKajian(kajian.date) && !kajian.url_youtube)) ? "not-allowed" : "pointer",
+            boxShadow: (isPastKajian(kajian.date) && !kajian.url_youtube) ? "none" : `0 6px 20px rgba(141,110,83,0.18)`
           }}
         >
-          {isPastKajian(kajian.date) ? "Kajian Berakhir" : (loading ? "Memproses..." : "Daftar Sekarang")}
+          {loading ? "Memproses..." : (isPastKajian(kajian.date) ? (kajian.url_youtube ? "Menyimak Rekaman" : "Kajian Berakhir") : "Daftar Sekarang")}
         </button>
       </div>
 
