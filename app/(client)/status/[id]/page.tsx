@@ -222,6 +222,44 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
+  const [checkingStatus, setCheckingStatus] = useState(false);
+  const [checkNotice, setCheckNotice] = useState<string | null>(null);
+
+  const handleCheckStatus = async () => {
+    setCheckingStatus(true);
+    setCheckNotice(null);
+    try {
+      const res = await fetch(`/api/status/get?code=${code}&t=${Date.now()}`, {
+        cache: "no-store",
+      });
+      const result = await res.json();
+      if (result.data) {
+        const d = result.data;
+        setData(d);
+        const freshIsPaid = d.status === "PAID" || d.status === "SUCCESS" || d.status === "success";
+        if (!freshIsPaid) {
+          setCheckNotice("Pembayaran belum terkonfirmasi. Silakan coba lagi beberapa saat.");
+          setTimeout(() => {
+            setCheckNotice(null);
+          }, 5000);
+        }
+      } else {
+        setCheckNotice("Gagal memuat status terbaru. Silakan coba lagi.");
+        setTimeout(() => {
+          setCheckNotice(null);
+        }, 5000);
+      }
+    } catch (err) {
+      console.error(err);
+      setCheckNotice("Terjadi kesalahan koneksi. Silakan coba lagi.");
+      setTimeout(() => {
+        setCheckNotice(null);
+      }, 5000);
+    } finally {
+      setCheckingStatus(false);
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -565,6 +603,58 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
               </div>
             )}
 
+            {/* ── Cek Status Button ── */}
+            <div style={{ marginTop: 24 }}>
+              <button
+                onClick={handleCheckStatus}
+                disabled={checkingStatus}
+                style={{
+                  width: "100%",
+                  padding: "14px",
+                  background: GOLD,
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 16,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  transition: "all 0.2s",
+                  boxShadow: `0 4px 12px rgba(141,110,83,0.15)`,
+                  opacity: checkingStatus ? 0.7 : 1
+                }}
+              >
+                {checkingStatus ? (
+                  <>
+                    <div style={{ width: 16, height: 16, border: `2px solid #fff`, borderTop: `2px solid transparent`, borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+                    Mengecek Status...
+                  </>
+                ) : (
+                  "Cek Status Pembayaran"
+                )}
+              </button>
+              
+              {checkNotice && (
+                <div style={{
+                  marginTop: 12,
+                  padding: "10px 14px",
+                  background: "rgba(239, 68, 68, 0.06)",
+                  border: "1px solid rgba(239, 68, 68, 0.15)",
+                  borderRadius: 12,
+                  color: "#DC2626",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  textAlign: "center",
+                  animation: "fadeUp 0.2s ease"
+                }}>
+                  {checkNotice}
+                </div>
+              )}
+            </div>
+
             {/* Warning */}
             <div style={{ display: "flex", gap: 8, padding: "12px 16px", background: "rgba(217,119,6,0.06)", borderRadius: 12, marginTop: 20, textAlign: "left", border: `1px solid rgba(217,119,6,0.15)` }}>
               <Info size={15} color="#D97706" style={{ flexShrink: 0, marginTop: 1 }} />
@@ -607,6 +697,10 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(12px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
         .instruction-content ol {
           list-style: decimal;
