@@ -54,7 +54,7 @@ export async function getKajianList(limit?: number, offset?: number, category?: 
     query += ` WHERE ${conditions.join(' AND ')}`;
   }
 
-  query += ` ORDER BY k.id DESC`;
+  query += ` ORDER BY k.date DESC, k.id DESC`;
 
   if (limit) {
     query += ` LIMIT $${params.length + 1}`;

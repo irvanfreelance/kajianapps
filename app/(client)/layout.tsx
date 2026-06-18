@@ -17,7 +17,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   // Fetch WhatsApp number dynamically on mount
   useEffect(() => {
-    fetch("/api/settings/whatsapp")
+    fetch(`/api/settings/whatsapp?t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.whatsapp) {
