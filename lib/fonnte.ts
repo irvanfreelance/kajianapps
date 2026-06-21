@@ -53,7 +53,19 @@ export async function enqueueWhatsApp(params: EnqueueParams) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   if (!qstashUrl || !qstashToken || !baseUrl) {
-    console.error('QStash is not configured. Falling back to direct send is not implemented here.');
+    console.warn('QStash is not configured. Falling back to direct send.');
+    const localUrl = baseUrl || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    try {
+      fetch(`${localUrl}/api/notifications/send-wa`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(params)
+      }).catch(e => console.error('Error in direct send fallback fetch:', e));
+    } catch (e) {
+      console.error('Error in direct send fallback:', e);
+    }
     return;
   }
 

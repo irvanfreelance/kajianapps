@@ -13,7 +13,7 @@ const WhatsAppIcon = () => (
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [whatsappNumber, setWhatsappNumber] = useState("6281222527915");
+  const [whatsappNumber, setWhatsappNumber] = useState<string | null>(null);
 
   // Fetch WhatsApp number dynamically on mount
   useEffect(() => {
@@ -72,26 +72,28 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </main>
 
         {/* Dynamic Floating WhatsApp Bubble */}
-        <a
-          href={`https://wa.me/${whatsappNumber}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="wa-float-bubble"
-          style={{
-            width: 52,
-            height: 52,
-            borderRadius: "50%",
-            backgroundColor: "#25D366",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 4px 16px rgba(37,211,102,0.35)",
-            cursor: "pointer",
-          }}
-          title="Hubungi Customer Support"
-        >
-          <WhatsAppIcon />
-        </a>
+        {whatsappNumber && (
+          <a
+            href={`https://wa.me/${whatsappNumber}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="wa-float-bubble"
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: "50%",
+              backgroundColor: "#25D366",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 4px 16px rgba(37,211,102,0.35)",
+              cursor: "pointer",
+            }}
+            title="Hubungi Customer Support"
+          >
+            <WhatsAppIcon />
+          </a>
+        )}
 
         {showNav && <BottomNav />}
       </div>

@@ -11,10 +11,13 @@ export async function GET() {
       WHERE config_key = 'whatsapp_support' 
       LIMIT 1
     `);
-    const waNumber = rows[0]?.config_value || "6281222527915";
+    const waNumber = rows[0]?.config_value;
+    if (!waNumber) {
+      return NextResponse.json({ success: false, error: "WhatsApp number not configured" }, { status: 404 });
+    }
     return NextResponse.json({ success: true, whatsapp: waNumber });
   } catch (error: any) {
     console.error("Fetch WhatsApp setting error:", error);
-    return NextResponse.json({ success: false, whatsapp: "6281222527915" });
+    return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
   }
 }
