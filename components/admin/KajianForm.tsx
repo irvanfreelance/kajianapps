@@ -277,6 +277,19 @@ export default function KajianForm({ initialData }: { initialData?: any }) {
             </div>
 
             <div>
+              <label style={styles.label}>Kajian Terdekat (Featured)</label>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, height: 44, padding: "0 12px", background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 12 }}>
+                <input 
+                  type="checkbox" 
+                  checked={formData.isTerdekat || false} 
+                  onChange={e => setFormData({ ...formData, isTerdekat: e.target.checked })}
+                  style={{ width: 18, height: 18, accentColor: "#3B82F6", cursor: "pointer" }}
+                />
+                <span style={{ fontSize: 14, color: "#475569", fontWeight: 500 }}>Tandai sebagai Kajian Terdekat</span>
+              </div>
+            </div>
+
+            <div>
               <label style={styles.label}>Lokasi / Tempat</label>
               <input value={formData.location || ""} onChange={e => setFormData({ ...formData, location: e.target.value })} style={styles.inputForm} type="text" />
             </div>

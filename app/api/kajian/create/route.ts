@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { title, ustadz, category, date, time, type, price, image, spot,
             url_zoom, url_youtube, description, location,
-            series_type = 'single', series_id, episode_number, kajian_mode = 'offline' } = body;
+            series_type = 'single', series_id, episode_number, kajian_mode = 'offline', isTerdekat = false } = body;
 
     const requiredFields = { title, ustadz, category, date, time, type, image, spot };
     const missingFields = Object.entries(requiredFields).filter(([_, v]) => v === undefined || v === null || v === '');
@@ -24,12 +24,12 @@ export async function POST(req: Request) {
     const result = await sql(`
       INSERT INTO kajian (title, ustadz, date, time_display, type, price, spot, filled, image, category,
                           url_zoom, url_youtube, description, location, slug,
-                          series_type, series_id, episode_number, kajian_mode) 
-      VALUES ($1,$2,$3,$4,$5,$6,$7,0,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+                          series_type, series_id, episode_number, kajian_mode, is_terdekat) 
+      VALUES ($1,$2,$3,$4,$5,$6,$7,0,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
       RETURNING *
     `, [title, ustadz, date, time, type, price || 0, spot, image, category,
         url_zoom || null, url_youtube || null, description || null, location || null, slug,
-        series_type, series_id || null, episode_number || null, kajian_mode]);
+        series_type, series_id || null, episode_number || null, kajian_mode, isTerdekat]);
 
     await redis.flushall();
     return NextResponse.json({ success: true, data: result[0] });

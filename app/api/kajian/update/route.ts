@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { id, title, ustadz, category, date, time, type, price, image, spot,
             url_zoom, url_youtube, description, location,
-            series_type = 'single', series_id, episode_number, kajian_mode = 'offline' } = body;
+            series_type = 'single', series_id, episode_number, kajian_mode = 'offline', isTerdekat = false } = body;
 
     const requiredFields = { id, title, ustadz, category, date, time, type, image, spot };
     const missingFields = Object.entries(requiredFields).filter(([_, v]) => v === undefined || v === null || v === '');
@@ -26,12 +26,12 @@ export async function POST(req: Request) {
       SET title = $1, ustadz = $2, date = $3, time_display = $4, 
           type = $5, price = $6, spot = $7, image = $8, category = $9,
           url_zoom = $10, url_youtube = $11, description = $12, location = $13, slug = $14,
-          series_type = $15, series_id = $16, episode_number = $17, kajian_mode = $18
-      WHERE id = $19
+          series_type = $15, series_id = $16, episode_number = $17, kajian_mode = $18, is_terdekat = $19
+      WHERE id = $20
       RETURNING *
     `, [title, ustadz, date, time, type, price || 0, spot, image, category,
         url_zoom || null, url_youtube || null, description || null, location || null, slug,
-        series_type, series_id || null, episode_number || null, kajian_mode, id]);
+        series_type, series_id || null, episode_number || null, kajian_mode, isTerdekat, id]);
 
     await redis.flushall();
     return NextResponse.json({ success: true, data: result[0] });

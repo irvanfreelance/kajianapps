@@ -42,8 +42,8 @@ export default function HomeView({ kajian, products }: { kajian: any[], products
   const router = useRouter();
   const isLoggedIn = status === 'authenticated' && session?.user?.role === 'USER';
 
-  // Only show upcoming free/infak kajian in "Kajian Terdekat"
-  const upcoming = kajian.filter(k => k.type === 'free' && !isPastKajian(k.date)).slice(0, 3);
+  // Only show kajian that are manually flagged as "Kajian Terdekat"
+  const upcoming = kajian.filter(k => k.isTerdekat).slice(0, 3);
 
   return (
     <div style={{ paddingBottom: 20, background: DARK2, minHeight: "100vh" }}>

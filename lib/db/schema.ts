@@ -55,7 +55,7 @@ export const kajian = pgTable('kajian', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
   title: varchar('title', { length: 150 }).notNull(),
   ustadz: varchar('ustadz', { length: 100 }).notNull(),
-  dateDisplay: varchar('date_display', { length: 50 }).notNull(),
+  date: varchar('date', { length: 50 }).notNull(),
   timeDisplay: varchar('time_display', { length: 20 }).notNull(),
   type: varchar('type', { length: 20 }).notNull(),
   price: integer('price').default(0),
@@ -72,10 +72,12 @@ export const kajian = pgTable('kajian', {
   seriesId: bigint('series_id', { mode: 'number' }).references(() => kajianSeries.id, { onDelete: 'set null' }),
   episodeNumber: integer('episode_number'),
   kajianMode: varchar('kajian_mode', { length: 20 }).default('offline').notNull(),
+  isTerdekat: boolean('is_terdekat').default(false),
   createdAt: timestamp('created_at').defaultNow()
 }, (table) => [
   index('idx_kajian_category').on(table.category),
-  index('idx_kajian_slug').on(table.slug)
+  index('idx_kajian_slug').on(table.slug),
+  index('idx_kajian_terdekat').on(table.isTerdekat)
 ]);
 
 export const products = pgTable('products', {

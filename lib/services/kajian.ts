@@ -24,6 +24,7 @@ export async function getKajianList(limit?: number, offset?: number, category?: 
            k.url_zoom, k.url_youtube, k.kajian_mode,
            CASE WHEN k.series_type = 'series' THEN ks.description ELSE k.description END AS description, 
            k.location,
+           k.is_terdekat as "isTerdekat",
            k.series_type, k.series_id, k.episode_number,
            ks.title AS series_title, ks.slug AS series_slug,
            COALESCE(att.attendance_count, 0) AS attendance_count,
