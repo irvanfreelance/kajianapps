@@ -4,6 +4,7 @@ import { ArrowLeft, Upload, Loader2, Save } from "lucide-react";
 import { styles } from "./shared";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from 'sonner';
 
 export default function SeriesForm({ initialData }: { initialData?: any }) {
   const router = useRouter();
@@ -35,9 +36,9 @@ export default function SeriesForm({ initialData }: { initialData?: any }) {
       });
       const json = await res.json();
       if (json.success) { router.push('/panel/kajian/series'); router.refresh(); }
-      else alert("Gagal: " + json.error);
+      else toast.error("Gagal: " + json.error);
     } catch (err: any) {
-      alert("Error: " + err.message);
+      toast.error("Error: " + err.message);
     } finally { setIsSubmitting(false); }
   };
 

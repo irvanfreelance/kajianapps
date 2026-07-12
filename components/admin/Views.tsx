@@ -5,6 +5,7 @@ import { Search, Plus, Edit, Trash2, X, FileDown, Camera, CheckCircle, CreditCar
 import { styles, fmt, formatDate, Pagination, Toast, getStatusStyle } from "./shared";
 import { exportToExcel } from "@/lib/excel";
 import { useRouter } from "next/navigation";
+import { toast } from 'sonner';
 
 export function ProductView({ initialData }: { initialData: any[] }) {
   const [data, setData] = useState(initialData);
@@ -12,8 +13,7 @@ export function ProductView({ initialData }: { initialData: any[] }) {
   const [formData, setFormData] = useState<any>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [toast, setToast] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -40,11 +40,7 @@ export function ProductView({ initialData }: { initialData: any[] }) {
   const totalPages = Math.ceil(filtered.length / pageSize);
   const currentData = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
-  };
-
+  
   const handleExport = () => {
     const exportData = filtered.map((p, i) => ({
       'No': i + 1,
@@ -69,12 +65,12 @@ export function ProductView({ initialData }: { initialData: any[] }) {
         const json = await res.json();
         if (res.ok && json.success) {
           setData(data.filter(p => p.id !== id));
-          showToast("Produk berhasil dihapus");
+          toast.success("Produk berhasil dihapus");
         } else {
-          alert(json.error || "Gagal menghapus produk");
+          toast.error(json.error || "Gagal menghapus produk");
         }
       } catch (err) {
-        alert("Gagal menghapus produk: Terjadi kesalahan koneksi");
+        toast.error("Gagal menghapus produk: Terjadi kesalahan koneksi");
       }
     }
   };
@@ -90,7 +86,7 @@ export function ProductView({ initialData }: { initialData: any[] }) {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!previewUrl) {
-      alert("Gambar produk wajib diunggah!");
+      toast.error("Gambar produk wajib diunggah!");
       return;
     }
 
@@ -125,17 +121,17 @@ export function ProductView({ initialData }: { initialData: any[] }) {
       if (json.success) {
         if (isUpdate) {
           setData(data.map(p => p.id === formData.id ? { ...p, ...payload } : p));
-          showToast("Produk berhasil diperbarui");
+          toast.success("Produk berhasil diperbarui");
         } else {
           setData([{ ...json.data }, ...data]);
-          showToast("Produk baru ditambahkan");
+          toast.success("Produk baru ditambahkan");
         }
         setIsModalOpen(false);
       } else {
-        alert("Gagal menyimpan produk: " + json.error);
+        toast.error("Gagal menyimpan produk: " + json.error);
       }
     } catch (err: any) {
-      alert("Terjadi kesalahan: " + err.message);
+      toast.error("Terjadi kesalahan: " + err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -143,8 +139,7 @@ export function ProductView({ initialData }: { initialData: any[] }) {
 
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
-      {toast && <Toast msg={toast} />}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 16 }}>
         <div style={{ position: "relative", width: "100%", maxWidth: 300 }}>
           <Search size={18} color="#94A3B8" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
           <input 
@@ -351,14 +346,9 @@ export function OrderView({ initialData }: { initialData: any[] }) {
   const [methodFilter, setMethodFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrderForProof, setSelectedOrderForProof] = useState<any | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
-  const pageSize = 10;
+    const pageSize = 10;
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
-  };
-
+  
   const handleExport = () => {
     const exportData = filteredData.map((o, i) => {
       const subtotal = Array.isArray(o.items)
@@ -391,12 +381,12 @@ export function OrderView({ initialData }: { initialData: any[] }) {
       });
       if (res.ok) {
         setData(data.map(o => (o.id === id || o.order_code === id || o.orderCode === id) ? { ...o, status: newStatus } : o));
-        showToast(`Status pesanan diperbarui`);
+        toast.success(`Status pesanan diperbarui`);
       } else {
-        alert("Gagal memperbarui status pesanan");
+        toast.error("Gagal memperbarui status pesanan");
       }
     } catch (err) {
-      alert("Terjadi kesalahan sistem");
+      toast.error("Terjadi kesalahan sistem");
     }
   };
 
@@ -410,12 +400,12 @@ export function OrderView({ initialData }: { initialData: any[] }) {
       const json = await res.json();
       if (res.ok && json.success) {
         setData(data.filter(o => o.id !== id && o.order_code !== id && o.orderCode !== id));
-        showToast("Pesanan berhasil dihapus");
+        toast.success("Pesanan berhasil dihapus");
       } else {
-        alert("Gagal menghapus pesanan: " + json.error);
+        toast.error("Gagal menghapus pesanan: " + json.error);
       }
     } catch (err) {
-      alert("Terjadi kesalahan sistem saat menghapus");
+      toast.error("Terjadi kesalahan sistem saat menghapus");
     }
   };
 
@@ -451,8 +441,7 @@ export function OrderView({ initialData }: { initialData: any[] }) {
 
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
-      {toast && <Toast msg={toast} />}
-
+      
       {/* Scorecards */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
         <div style={{
@@ -830,18 +819,13 @@ export function UserView({ initialData }: { initialData: any[] }) {
   const [data, setData] = useState(initialData);
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [toast, setToast] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<any>({});
   const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pageSize = 10;
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
-  };
-
+  
   const filtered = data.filter(u => 
     u.name?.toLowerCase().includes(search.toLowerCase()) ||
     u.email?.toLowerCase().includes(search.toLowerCase()) ||
@@ -881,13 +865,13 @@ export function UserView({ initialData }: { initialData: any[] }) {
       const json = await res.json();
       if (json.success) {
         setData(data.map(u => u.id === formData.id ? { ...u, ...formData } : u));
-        showToast("Data jamaah berhasil diperbarui");
+        toast.success("Data jamaah berhasil diperbarui");
         setIsModalOpen(false);
       } else {
-        alert("Gagal menyimpan data: " + json.error);
+        toast.error("Gagal menyimpan data: " + json.error);
       }
     } catch (err) {
-      alert("Terjadi kesalahan sistem");
+      toast.error("Terjadi kesalahan sistem");
     }
   };
 
@@ -901,12 +885,12 @@ export function UserView({ initialData }: { initialData: any[] }) {
       const json = await res.json();
       if (res.ok && json.success) {
         setData(data.filter(u => u.id !== id));
-        showToast("Jamaah berhasil dihapus");
+        toast.success("Jamaah berhasil dihapus");
       } else {
-        alert("Gagal menghapus jamaah: " + json.error);
+        toast.error("Gagal menghapus jamaah: " + json.error);
       }
     } catch (err) {
-      alert("Terjadi kesalahan sistem saat menghapus");
+      toast.error("Terjadi kesalahan sistem saat menghapus");
     }
   };
 
@@ -955,14 +939,14 @@ export function UserView({ initialData }: { initialData: any[] }) {
 
         const json = await res.json();
         if (json.success) {
-          showToast(`Berhasil mengimpor ${json.count} jamaah. Silakan refresh halaman.`);
+          toast.success(`Berhasil mengimpor ${json.count} jamaah. Silakan refresh halaman.`);
           setTimeout(() => window.location.reload(), 2000);
         } else {
-          alert("Gagal mengimpor data: " + json.error);
+          toast.error("Gagal mengimpor data: " + json.error);
         }
       } catch (err) {
         console.error(err);
-        alert("Terjadi kesalahan saat membaca file Excel.");
+        toast.error("Terjadi kesalahan saat membaca file Excel.");
       } finally {
         setIsImporting(false);
         if (fileInputRef.current) fileInputRef.current.value = "";
@@ -1065,8 +1049,7 @@ export function UserView({ initialData }: { initialData: any[] }) {
 
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
-      {toast && <Toast msg={toast} />}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 16 }}>
         <div style={{ position: "relative", width: "100%", maxWidth: 300 }}>
           <Search size={18} color="#94A3B8" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
           <input 
@@ -1249,16 +1232,10 @@ export function UserView({ initialData }: { initialData: any[] }) {
 }
 
 export function SettingsView() {
-  const [toast, setToast] = useState<string | null>(null);
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
-  };
-
+    
   return (
     <div style={{ animation: "fadeIn 0.3s ease", maxWidth: 600 }}>
-       {toast && <Toast msg={toast} />}
-      <div style={styles.card}>
+             <div style={styles.card}>
         <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Pengaturan Umum</h3>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
@@ -1269,7 +1246,7 @@ export function SettingsView() {
             <label style={styles.label}>Email Admin</label>
             <input defaultValue="admin@majelis.id" style={styles.inputForm} type="email" />
           </div>
-          <button onClick={() => showToast("Pengaturan disimpan")} style={styles.primaryBtn}>Simpan Perubahan</button>
+          <button onClick={() => toast.success("Pengaturan disimpan")} style={styles.primaryBtn}>Simpan Perubahan</button>
         </div>
       </div>
     </div>

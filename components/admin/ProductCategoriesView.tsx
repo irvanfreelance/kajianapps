@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, X, Search, Layers, Loader2 } from "lucide-react";
 import { styles, Toast } from "./shared";
+import { toast } from 'sonner';
 
 interface ProductCategory {
   id: number;
@@ -22,13 +23,8 @@ export default function ProductCategoriesView() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<ProductCategory>>(EMPTY_CATEGORY);
   const [isSaving, setIsSaving] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
-
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
-  };
-
+  
+  
   const fetchCategories = async () => {
     setIsLoading(true);
     try {
@@ -37,11 +33,11 @@ export default function ProductCategoriesView() {
       if (json.success) {
         setCategories(json.data || []);
       } else {
-        alert("Gagal memuat kategori: " + json.error);
+        toast.error("Gagal memuat kategori: " + json.error);
       }
     } catch (err: any) {
       console.error(err);
-      alert("Terjadi kesalahan koneksi");
+      toast.error("Terjadi kesalahan koneksi");
     } finally {
       setIsLoading(false);
     }
@@ -67,19 +63,19 @@ export default function ProductCategoriesView() {
       const data = await res.json();
       if (data.success) {
         setCategories(prev => prev.filter(c => c.id !== id));
-        showToast("Kategori berhasil dihapus");
+        toast.success("Kategori berhasil dihapus");
       } else {
-        alert(data.error || "Gagal menghapus kategori");
+        toast.error(data.error || "Gagal menghapus kategori");
       }
     } catch (err: any) {
-      alert("Error: " + err.message);
+      toast.error("Error: " + err.message);
     }
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name?.trim() || !formData.slug?.trim()) {
-      alert("Nama dan Slug wajib diisi!");
+      toast.error("Nama dan Slug wajib diisi!");
       return;
     }
 
@@ -101,14 +97,14 @@ export default function ProductCategoriesView() {
       });
       const json = await res.json();
       if (json.success) {
-        showToast(isUpdate ? "Kategori berhasil diperbarui" : "Kategori berhasil ditambahkan");
+        toast.success(isUpdate ? "Kategori berhasil diperbarui" : "Kategori berhasil ditambahkan");
         setIsModalOpen(false);
         fetchCategories();
       } else {
-        alert(json.error || "Gagal menyimpan kategori");
+        toast.error(json.error || "Gagal menyimpan kategori");
       }
     } catch (err: any) {
-      alert("Error: " + err.message);
+      toast.error("Error: " + err.message);
     } finally {
       setIsSaving(false);
     }
@@ -140,8 +136,7 @@ export default function ProductCategoriesView() {
 
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
-      {toast && <Toast msg={toast} />}
-
+      
       {/* Header & Controls */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <div>

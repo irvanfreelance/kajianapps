@@ -4,6 +4,7 @@ import {
   Plus, Edit, Trash2, X, ToggleLeft, ToggleRight, MessageSquare, Copy, Check, Search, Info
 } from "lucide-react";
 import { styles, Toast } from "./shared";
+import { toast } from 'sonner';
 
 interface NotificationTemplate {
   id: number;
@@ -44,14 +45,9 @@ export function NotificationTemplateView({ initialData }: { initialData: Notific
   const [formData, setFormData] = useState<Partial<NotificationTemplate>>(EMPTY_TEMPLATE);
   const [isCustomTrigger, setIsCustomTrigger] = useState(false);
   const [customTriggerVal, setCustomTriggerVal] = useState("");
-  const [toast, setToast] = useState<string | null>(null);
-  const [copiedVar, setCopiedVar] = useState<string | null>(null);
+    const [copiedVar, setCopiedVar] = useState<string | null>(null);
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
-  };
-
+  
   const handleCopyVariable = (variable: string) => {
     navigator.clipboard.writeText(variable);
     setCopiedVar(variable);
@@ -69,13 +65,13 @@ export function NotificationTemplateView({ initialData }: { initialData: Notific
       });
       const data = await res.json();
       if (data.success) {
-        showToast(newActive ? `${template.eventTrigger} diaktifkan` : `${template.eventTrigger} dinonaktifkan`);
+        toast.success(newActive ? `${template.eventTrigger} diaktifkan` : `${template.eventTrigger} dinonaktifkan`);
       } else {
-        alert("Gagal memperbarui status: " + data.error);
+        toast.error("Gagal memperbarui status: " + data.error);
         setTemplates(prev => prev.map(t => t.id === template.id ? { ...t, isActive: !newActive } : t));
       }
     } catch (err: any) {
-      alert("Error: " + err.message);
+      toast.error("Error: " + err.message);
       setTemplates(prev => prev.map(t => t.id === template.id ? { ...t, isActive: !newActive } : t));
     }
   };
@@ -104,12 +100,12 @@ export function NotificationTemplateView({ initialData }: { initialData: Notific
       const data = await res.json();
       if (data.success) {
         setTemplates(prev => prev.filter(t => t.id !== id));
-        showToast("Template notifikasi berhasil dihapus");
+        toast.success("Template notifikasi berhasil dihapus");
       } else {
-        alert("Gagal menghapus: " + data.error);
+        toast.error("Gagal menghapus: " + data.error);
       }
     } catch (err: any) {
-      alert("Error: " + err.message);
+      toast.error("Error: " + err.message);
     }
   };
 
@@ -118,7 +114,7 @@ export function NotificationTemplateView({ initialData }: { initialData: Notific
     const finalTrigger = isCustomTrigger ? customTriggerVal.trim() : formData.eventTrigger;
     
     if (!finalTrigger) {
-      alert("Event trigger tidak boleh kosong!");
+      toast.error("Event trigger tidak boleh kosong!");
       return;
     }
 
@@ -142,17 +138,17 @@ export function NotificationTemplateView({ initialData }: { initialData: Notific
       if (json.success) {
         if (isUpdate) {
           setTemplates(prev => prev.map(t => t.id === json.data.id ? json.data : t));
-          showToast("Template notifikasi berhasil diperbarui");
+          toast.success("Template notifikasi berhasil diperbarui");
         } else {
           setTemplates(prev => [...prev, json.data]);
-          showToast("Template notifikasi berhasil ditambahkan");
+          toast.success("Template notifikasi berhasil ditambahkan");
         }
         setIsModalOpen(false);
       } else {
-        alert("Gagal menyimpan: " + json.error);
+        toast.error("Gagal menyimpan: " + json.error);
       }
     } catch (err: any) {
-      alert("Error: " + err.message);
+      toast.error("Error: " + err.message);
     }
   };
 
@@ -167,8 +163,7 @@ export function NotificationTemplateView({ initialData }: { initialData: Notific
 
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
-      {toast && <Toast msg={toast} />}
-
+      
       {/* Header & Controls */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <div>

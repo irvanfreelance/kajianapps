@@ -5,6 +5,7 @@ import { styles, fmt, Pagination, formatDate } from "./shared";
 import { exportToExcel } from "@/lib/excel";
 import Link from "next/link";
 import QRCode from "react-qr-code";
+import { toast } from 'sonner';
 
 export default function KajianParticipantsView({ kajian, initialData }: { kajian: any, initialData: any[] }) {
   const [data, setData] = useState(initialData);
@@ -38,7 +39,7 @@ export default function KajianParticipantsView({ kajian, initialData }: { kajian
 
   const handleToggleHadir = async (p: any) => {
     if (!p.ticket_code) {
-      alert("Ticket code tidak ditemukan untuk jamaah ini.");
+      toast.error("Ticket code tidak ditemukan untuk jamaah ini.");
       return;
     }
     setLoadingTicket(p.ticket_code);
@@ -58,10 +59,10 @@ export default function KajianParticipantsView({ kajian, initialData }: { kajian
           )
         );
       } else {
-        alert("Gagal: " + json.error);
+        toast.error("Gagal: " + json.error);
       }
     } catch {
-      alert("Terjadi kesalahan sistem");
+      toast.error("Terjadi kesalahan sistem");
     } finally {
       setLoadingTicket(null);
     }

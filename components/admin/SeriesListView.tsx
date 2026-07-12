@@ -3,13 +3,12 @@ import { useState } from "react";
 import { ArrowLeft, Plus, Edit, Trash2, Layers, Eye } from "lucide-react";
 import { styles, Toast } from "./shared";
 import Link from "next/link";
+import { toast } from 'sonner';
 
 export default function SeriesListView({ initialData }: { initialData: any[] }) {
   const [data, setData] = useState(initialData);
-  const [toast, setToast] = useState<string | null>(null);
-
-  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
-
+  
+  
   const handleDelete = async (id: number) => {
     if (!window.confirm("Hapus series ini? Semua episode akan kehilangan referensi series-nya.")) return;
     try {
@@ -19,15 +18,14 @@ export default function SeriesListView({ initialData }: { initialData: any[] }) 
       });
       if (res.ok) {
         setData(data.filter(s => s.id !== id));
-        showToast("Series berhasil dihapus");
+        toast.success("Series berhasil dihapus");
       }
-    } catch { alert("Gagal menghapus series"); }
+    } catch { toast.error("Gagal menghapus series"); }
   };
 
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
-      {toast && <Toast msg={toast} />}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <div>
           <Link href="/panel/kajian" style={{ display: "flex", alignItems: "center", gap: 6, color: "#64748B", fontSize: 13, textDecoration: "none", marginBottom: 8, fontWeight: 500 }}>
             <ArrowLeft size={14} /> Kembali ke Kajian

@@ -5,13 +5,13 @@ import { Search, Plus, Edit, Trash2, Users, FileDown, Layers } from "lucide-reac
 import { styles, fmt, Pagination, Toast, formatDate } from "./shared";
 import { exportToExcel } from "@/lib/excel";
 import Link from "next/link";
+import { toast } from 'sonner';
 
 export default function KajianView({ initialData }: { initialData: any[] }) {
   const [data, setData] = useState(initialData);
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [toast, setToast] = useState<string | null>(null);
-  const [isImporting, setIsImporting] = useState(false);
+    const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pageSize = 10;
   
@@ -23,11 +23,7 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
   const totalPages = Math.ceil(filtered.length / pageSize);
   const currentData = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
-  };
-
+  
   const handleExport = () => {
     const exportData = filtered.map((k, i) => ({
       'No': i + 1,
@@ -60,10 +56,10 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
         });
         if (res.ok) {
           setData(data.filter(k => k.id !== id));
-          showToast("Kajian berhasil dihapus");
+          toast.success("Kajian berhasil dihapus");
         }
       } catch (err) {
-        alert("Gagal menghapus kajian");
+        toast.error("Gagal menghapus kajian");
       }
     }
   };
@@ -122,14 +118,14 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
 
         const json = await res.json();
         if (json.success) {
-          showToast(`Berhasil mengimpor ${json.count} kajian. Silakan refresh halaman.`);
+          toast.success(`Berhasil mengimpor ${json.count} kajian. Silakan refresh halaman.`);
           setTimeout(() => window.location.reload(), 2000);
         } else {
-          alert("Gagal mengimpor data: " + json.error);
+          toast.error("Gagal mengimpor data: " + json.error);
         }
       } catch (err) {
         console.error(err);
-        alert("Terjadi kesalahan saat membaca file Excel.");
+        toast.error("Terjadi kesalahan saat membaca file Excel.");
       } finally {
         setIsImporting(false);
         if (fileInputRef.current) fileInputRef.current.value = "";
@@ -140,8 +136,7 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
 
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
-      {toast && <Toast msg={toast} />}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 16 }}>
         <div style={{ position: "relative", width: "100%", maxWidth: 300 }}>
           <Search size={18} color="#94A3B8" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
           <input 
@@ -187,6 +182,7 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
                 <th style={styles.th}>Info Kajian</th>
                 <th style={styles.th}>Jadwal</th>
                 <th style={styles.th}>Tipe & Harga</th>
+                <th style={styles.th}>Terdekat</th>
                 <th style={styles.th}>Kuota</th>
                 <th style={{...styles.th, minWidth: 160}}>Rasio Hadir</th>
                 <th style={styles.th}>Zoom</th>
@@ -222,6 +218,15 @@ export default function KajianView({ initialData }: { initialData: any[] }) {
                     <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 8px", borderRadius: 12, background: k.type === "free" ? "#F0FDF4" : "#FFF7ED", color: k.type === "free" ? "#15803D" : "#C2410C" }}>
                       {k.type === "free" ? "Infaq" : fmt(k.price)}
                     </span>
+                  </td>
+                  <td style={styles.td}>
+                    {k.isTerdekat ? (
+                      <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 8px", borderRadius: 12, background: "#FEF3C7", color: "#D97706" }}>
+                        Ya
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: 11, color: "#94A3B8" }}>Tidak</span>
+                    )}
                   </td>
                   <td style={styles.td}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { styles, Toast } from "./shared";
 import { TiptapEditor } from "./TiptapEditor";
+import { toast } from 'sonner';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface PaymentMethod {
@@ -197,10 +198,8 @@ function InstructionsPanel({ method }: { method: PaymentMethod }) {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<Instruction>>({});
-  const [toast, setToast] = useState<string | null>(null);
-
-  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
-
+  
+  
   const fetchInstructions = useCallback(async () => {
     setLoading(true);
     try {
@@ -236,8 +235,8 @@ function InstructionsPanel({ method }: { method: PaymentMethod }) {
     e.preventDefault();
     // Validate: content must not be empty or just an empty paragraph
     const strippedContent = (formData.content || "").replace(/<[^>]*>/g, "").trim();
-    if (!formData.title?.trim()) { alert("Judul instruksi wajib diisi"); return; }
-    if (!strippedContent) { alert("Konten instruksi wajib diisi"); return; }
+    if (!formData.title?.trim()) { toast.error("Judul instruksi wajib diisi"); return; }
+    if (!strippedContent) { toast.error("Konten instruksi wajib diisi"); return; }
 
     const isUpdate = !!formData.id;
     const endpoint = isUpdate
@@ -249,11 +248,11 @@ function InstructionsPanel({ method }: { method: PaymentMethod }) {
     });
     const json = await res.json();
     if (json.success) {
-      showToast(isUpdate ? "Instruksi diperbarui" : "Instruksi ditambahkan");
+      toast.success(isUpdate ? "Instruksi diperbarui" : "Instruksi ditambahkan");
       fetchInstructions();
       setIsModalOpen(false);
     } else {
-      alert("Gagal: " + json.error);
+      toast.error("Gagal: " + json.error);
     }
   };
 
@@ -265,14 +264,13 @@ function InstructionsPanel({ method }: { method: PaymentMethod }) {
     });
     if ((await res.json()).success) {
       setInstructions(prev => prev.filter(i => i.id !== id));
-      showToast("Instruksi dihapus");
+      toast.success("Instruksi dihapus");
     }
   };
 
   return (
     <div style={{ padding: "16px 16px 16px 56px", background: "#F8FAFC", borderTop: "1px solid #E2E8F0" }}>
-      {toast && <Toast msg={toast} />}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <p style={{ fontSize: 13, fontWeight: 700, color: "#475569", margin: 0 }}>
           Instruksi Pembayaran — <span style={{ color: "#0891B2" }}>{method.name}</span>
         </p>
@@ -351,10 +349,8 @@ export function PaymentMethodView({ initialData }: { initialData: PaymentMethod[
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<PaymentMethod>>(EMPTY_METHOD);
-  const [toast, setToast] = useState<string | null>(null);
-
-  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
-
+  
+  
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -372,7 +368,7 @@ export function PaymentMethodView({ initialData }: { initialData: PaymentMethod[
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ orderedIds: reordered.map(m => m.id) }),
     });
-    showToast("Urutan metode pembayaran disimpan");
+    toast.success("Urutan metode pembayaran disimpan");
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -389,14 +385,14 @@ export function PaymentMethodView({ initialData }: { initialData: PaymentMethod[
     if (json.success) {
       if (isUpdate) {
         setMethods(prev => prev.map(m => m.id === formData.id ? { ...m, ...formData } as PaymentMethod : m));
-        showToast("Metode pembayaran diperbarui");
+        toast.success("Metode pembayaran diperbarui");
       } else {
         setMethods(prev => [...prev, json.data]);
-        showToast("Metode pembayaran ditambahkan");
+        toast.success("Metode pembayaran ditambahkan");
       }
       setIsModalOpen(false);
     } else {
-      alert("Gagal: " + json.error);
+      toast.error("Gagal: " + json.error);
     }
   };
 
@@ -409,7 +405,7 @@ export function PaymentMethodView({ initialData }: { initialData: PaymentMethod[
     if ((await res.json()).success) {
       setMethods(prev => prev.filter(m => m.id !== id));
       if (expandedId === id) setExpandedId(null);
-      showToast("Metode pembayaran dihapus");
+      toast.success("Metode pembayaran dihapus");
     }
   };
 
@@ -420,13 +416,12 @@ export function PaymentMethodView({ initialData }: { initialData: PaymentMethod[
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: method.id, isActive: newActive }),
     });
-    showToast(newActive ? `${method.name} diaktifkan` : `${method.name} dinonaktifkan`);
+    toast.success(newActive ? `${method.name} diaktifkan` : `${method.name} dinonaktifkan`);
   };
 
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
-      {toast && <Toast msg={toast} />}
-
+      
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <div>

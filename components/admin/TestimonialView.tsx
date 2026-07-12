@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Search, FileDown, Trash2, Star, Image as ImageIcon, Video, AlertCircle } from "lucide-react";
 import { styles, formatDate, Pagination } from "./shared";
 import { exportToExcel } from "@/lib/excel";
+import { toast } from 'sonner';
 
 export function TestimonialView() {
   const [data, setData] = useState<any[]>([]);
@@ -45,13 +46,13 @@ export function TestimonialView() {
       });
       const json = await res.json();
       if (res.ok && json.success) {
-        alert("Testimoni berhasil dihapus");
+        toast.error("Testimoni berhasil dihapus");
         fetchTestimonials();
       } else {
-        alert(json.error || "Gagal menghapus testimoni");
+        toast.error(json.error || "Gagal menghapus testimoni");
       }
     } catch (err) {
-      alert("Terjadi kesalahan sistem saat menghapus testimoni");
+      toast.error("Terjadi kesalahan sistem saat menghapus testimoni");
     }
   };
 

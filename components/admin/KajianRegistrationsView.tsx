@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Search, FileDown, Ticket, CheckCircle, Clock, Plus, X, Trash2 } from "lucide-react";
 import { styles, fmt, Pagination, formatDate } from "./shared";
 import { exportToExcel } from "@/lib/excel";
+import { toast } from 'sonner';
 
 export default function KajianRegistrationsView({ initialData, users = [], kajianList = [] }: { initialData: any[], users?: any[], kajianList?: any[] }) {
   const [data, setData] = useState(initialData);
@@ -66,10 +67,10 @@ export default function KajianRegistrationsView({ initialData, users = [], kajia
         setData(prev => prev.map(r => r.id === id ? { ...r, status: 'PAID', is_approved: true } : r));
       } else {
         const err = await res.json();
-        alert("Gagal: " + err.error);
+        toast.error("Gagal: " + err.error);
       }
     } catch (err) {
-      alert("Terjadi kesalahan");
+      toast.error("Terjadi kesalahan");
     } finally {
       setLoadingId(null);
     }
@@ -86,17 +87,17 @@ export default function KajianRegistrationsView({ initialData, users = [], kajia
       if (json.success) {
         setData(prev => prev.filter(r => r.id !== id));
       } else {
-        alert("Gagal: " + json.error);
+        toast.error("Gagal: " + json.error);
       }
     } catch (err) {
-      alert("Terjadi kesalahan sistem saat menghapus");
+      toast.error("Terjadi kesalahan sistem saat menghapus");
     }
   };
 
   const handleSaveManual = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.userId || !formData.kajianId) {
-      alert("Jamaah dan Kajian wajib dipilih");
+      toast.error("Jamaah dan Kajian wajib dipilih");
       return;
     }
     
@@ -112,10 +113,10 @@ export default function KajianRegistrationsView({ initialData, users = [], kajia
         setIsModalOpen(false);
         setFormData({ status: 'PAID', isApproved: true, paidAmount: 0 });
       } else {
-        alert("Gagal: " + json.error);
+        toast.error("Gagal: " + json.error);
       }
     } catch (err) {
-      alert("Terjadi kesalahan sistem");
+      toast.error("Terjadi kesalahan sistem");
     }
   };
 

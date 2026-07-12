@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Save, Trash2, Edit, X, Plus, ShieldCheck } from "lucide-react";
 import { styles, Toast } from "./shared";
+import { toast } from 'sonner';
 
 export default function AdminSettingsView({ 
   settings: initialSettings, 
@@ -12,8 +13,7 @@ export default function AdminSettingsView({
 }) {
   const [settings, setSettings] = useState(initialSettings);
   const [admins, setAdmins] = useState(initialAdmins);
-  const [toast, setToast] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -50,11 +50,7 @@ export default function AdminSettingsView({
     }
   }, [selectedCity]);
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
-  };
-
+  
   const handleUpdateSetting = async (key: string, value: string) => {
     try {
       const res = await fetch('/api/admin/settings/update', {
@@ -63,7 +59,7 @@ export default function AdminSettingsView({
         body: JSON.stringify({ key, value })
       });
       if (res.ok) {
-        showToast("Pengaturan berhasil disimpan");
+        toast.success("Pengaturan berhasil disimpan");
         setSettings(prev => {
           const existing = prev.find(s => s.config_key === key);
           if (existing) return prev.map(s => s.config_key === key ? { ...s, config_value: value } : s);
@@ -72,7 +68,7 @@ export default function AdminSettingsView({
         if (key === 'site_title') document.title = value;
       }
     } catch (err) {
-      alert("Gagal menyimpan pengaturan");
+      toast.error("Gagal menyimpan pengaturan");
     }
   };
 
@@ -91,15 +87,15 @@ export default function AdminSettingsView({
       if (res.ok) {
         if (isUpdate) {
           setAdmins(admins.map(a => a.id === formData.id ? formData : a));
-          showToast("Data admin diperbarui");
+          toast.success("Data admin diperbarui");
         } else {
           setAdmins([...admins, json.data]);
-          showToast("Admin baru ditambahkan");
+          toast.success("Admin baru ditambahkan");
         }
         setIsModalOpen(false);
       }
     } catch (err) {
-      alert("Gagal menyimpan data admin");
+      toast.error("Gagal menyimpan data admin");
     } finally {
       setIsSubmitting(false);
     }
@@ -115,10 +111,10 @@ export default function AdminSettingsView({
       });
       if (res.ok) {
         setAdmins(admins.filter(a => a.id !== id));
-        showToast("Admin berhasil dihapus");
+        toast.success("Admin berhasil dihapus");
       }
     } catch (err) {
-      alert("Gagal menghapus admin");
+      toast.error("Gagal menghapus admin");
     }
   };
 
@@ -126,8 +122,7 @@ export default function AdminSettingsView({
 
   return (
     <div style={{ animation: "fadeIn 0.3s ease", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, alignItems: "start" }}>
-      {toast && <Toast msg={toast} />}
-
+      
       <div style={styles.card}>
         <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24, color: "#0F172A", display: "flex", alignItems: "center", gap: 10 }}>
           <Save size={20} color="#0891B2" /> Pengaturan Platform
@@ -166,7 +161,7 @@ export default function AdminSettingsView({
                     });
                     const blob = await res.json();
                     if (blob.url) {
-                      showToast("Favicon diperbarui");
+                      toast.success("Favicon diperbarui");
                       setSettings(prev => {
                         const existing = prev.find(s => s.config_key === 'site_favicon');
                         if (existing) return prev.map(s => s.config_key === 'site_favicon' ? { ...s, config_value: blob.url } : s);

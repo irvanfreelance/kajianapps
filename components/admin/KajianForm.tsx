@@ -4,6 +4,7 @@ import { ArrowLeft, Upload, Loader2, Save, Layers, FileText } from "lucide-react
 import { styles } from "./shared";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from 'sonner';
 
 export default function KajianForm({ initialData }: { initialData?: any }) {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function KajianForm({ initialData }: { initialData?: any }) {
     time: initialData.time || initialData.time_display || "",
     series_type: initialData.series_type || 'single',
     kajian_mode: initialData.kajian_mode || 'offline',
+    isTerdekat: initialData.is_terdekat || initialData.isTerdekat || false,
   } : {
     type: 'free',
     spot: 100,
@@ -84,10 +86,10 @@ export default function KajianForm({ initialData }: { initialData?: any }) {
         router.push('/panel/kajian');
         router.refresh();
       } else {
-        alert("Gagal menyimpan data: " + json.error);
+        toast.error("Gagal menyimpan data: " + json.error);
       }
     } catch (err: any) {
-      alert("Terjadi kesalahan: " + err.message);
+      toast.error("Terjadi kesalahan: " + err.message);
     } finally {
       setIsSubmitting(false);
     }

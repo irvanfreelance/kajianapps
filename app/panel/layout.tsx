@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Sidebar from "@/components/admin/Sidebar";
 import Header from "@/components/admin/Header";
 
+import { Toaster } from 'sonner';
 import { usePathname } from "next/navigation";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -27,6 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div style={styles.container}>
+      <Toaster position="top-center" richColors />
       <Sidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} isTablet={isTablet} />
       
       {/* Mobile Overlay */}
