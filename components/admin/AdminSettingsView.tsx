@@ -140,6 +140,42 @@ export default function AdminSettingsView({
           </div>
 
           <div>
+            <label style={styles.label}>LOGO UTAMA PLATFORM</label>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 8 }}>
+              <div style={{ width: 100, height: 48, borderRadius: 12, border: "1px solid #E2E8F0", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "#F8FAFC", padding: 4 }}>
+                <img 
+                  src={getSetting('site_logo') || '/64.png'} 
+                  style={{ width: "100%", height: "100%", objectFit: "contain" }} 
+                  alt="Logo Utama" 
+                />
+              </div>
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const res = await fetch(`/api/admin/settings/upload-logo?filename=${file.name}`, {
+                      method: 'POST',
+                      body: file,
+                    });
+                    const blob = await res.json();
+                    if (blob.url) {
+                      toast.success("Logo Utama diperbarui");
+                      setSettings(prev => {
+                        const existing = prev.find(s => s.config_key === 'site_logo');
+                        if (existing) return prev.map(s => s.config_key === 'site_logo' ? { ...s, config_value: blob.url } : s);
+                        return [...prev, { config_key: 'site_logo', config_value: blob.url }];
+                      });
+                    }
+                  }
+                }}
+                style={{ fontSize: 12 }}
+              />
+            </div>
+          </div>
+
+          <div>
             <label style={styles.label}>FAVICON PLATFORM</label>
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 8 }}>
               <div style={{ width: 48, height: 48, borderRadius: 12, border: "1px solid #E2E8F0", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "#F8FAFC" }}>
@@ -177,7 +213,7 @@ export default function AdminSettingsView({
             </div>
           </div>
 
-          {settings.filter(s => !['site_title', 'site_favicon', 'rajaongkir_origin_name'].includes(s.config_key)).map((s) => {
+          {settings.filter(s => !['site_title', 'site_favicon', 'site_logo', 'rajaongkir_origin_name'].includes(s.config_key)).map((s) => {
             if (s.config_key === 'rajaongkir_origin_district_id') {
               return (
                 <div key={s.config_key} style={{ padding: 16, background: "#F8FAFC", borderRadius: 12, border: "1px solid #E2E8F0" }}>

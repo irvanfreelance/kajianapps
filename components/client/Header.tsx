@@ -6,6 +6,8 @@ import { ChevronLeft, Search, LogIn, LogOut } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 
+import { useState, useEffect } from "react";
+
 const GOLD = "#8D6E53";
 const BORDER_COLOR = "#EFEAE0";
 
@@ -14,6 +16,18 @@ export default function Header() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const isLoggedIn = status === 'authenticated' && session?.user?.role === 'USER';
+  const [logoUrl, setLogoUrl] = useState<string>("/64.png");
+
+  useEffect(() => {
+    fetch("/api/settings/public")
+      .then(res => res.json())
+      .then(data => {
+        if (data?.settings?.site_logo) {
+          setLogoUrl(data.settings.site_logo);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const mainTabs = ["/", "/kajian", "/toko", "/tiket", "/profil"];
   const isMainTab = mainTabs.includes(pathname);
@@ -36,12 +50,13 @@ export default function Header() {
         )}
         <Link href="/" style={styles.logoLink}>
           <Image 
-            src="/64.png" 
+            src={logoUrl} 
             alt="Badar Logo" 
             width={95} 
             height={38} 
             style={{ objectFit: "contain" }} 
             priority
+            unoptimized
           />
         </Link>
       </div>

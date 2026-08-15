@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
+import { useState, useEffect } from "react";
+
 const navItems = [
   { id: "dashboard", href: "/panel", label: "Dashboard", Icon: LayoutDashboard },
   { id: "kajian", href: "/panel/kajian", label: "Kelola Kajian", Icon: BookOpen },
@@ -25,6 +27,18 @@ const navItems = [
 
 export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen, isTablet }: { isMobileMenuOpen: boolean, setIsMobileMenuOpen: (val: boolean) => void, isTablet: boolean }) {
   const pathname = usePathname();
+  const [logoUrl, setLogoUrl] = useState<string>("/badar.png");
+
+  useEffect(() => {
+    fetch("/api/settings/public")
+      .then(res => res.json())
+      .then(data => {
+        if (data?.settings?.site_logo) {
+          setLogoUrl(data.settings.site_logo);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <aside style={{ 
@@ -33,7 +47,7 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen, isTable
     } as React.CSSProperties}>
       <div style={styles.sidebarHeader}>
         <div style={{ width: 36, height: 36, borderRadius: 10, background: "#0891B2", padding: 6, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-          <img src="/badar.png" alt="Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+          <img src={logoUrl} alt="Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
         </div>
         <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0F172A" }}>Admin Panel</h2>
       </div>

@@ -105,6 +105,18 @@ async function main() {
     console.log('Error seeding site_title:', e.message);
   }
 
+  // Seed default site_logo to /64.png
+  try {
+    await sql(`
+      INSERT INTO settings (config_key, config_value)
+      VALUES ('site_logo', '/64.png')
+      ON CONFLICT (config_key) DO NOTHING
+    `);
+    console.log('Default site_logo seeded.');
+  } catch (e: any) {
+    console.log('Error seeding site_logo:', e.message);
+  }
+
   // Seed default whatsapp_support to 6281222527915
   try {
     await sql(`
