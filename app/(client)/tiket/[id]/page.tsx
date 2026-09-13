@@ -111,6 +111,17 @@ export default function TicketDetailPage() {
     ? (episodes.find((ep: any) => ep.id === activeEpisodeId) || registration)
     : registration;
 
+  const isPastEpisode = (() => {
+    const d = activeEpisode.kajian_date || activeEpisode.date;
+    if (!d) return false;
+    const date = new Date(d);
+    if (isNaN(date.getTime())) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+    return date.getTime() < today.getTime();
+  })();
+
   const fmtDate = (d: string) => {
     if (!d) return "-";
     try {
@@ -124,6 +135,31 @@ export default function TicketDetailPage() {
 
   return (
     <div style={{ background: "#ffffff", minHeight: "100vh", paddingBottom: 60, color: TEXT_DARK }}>
+      <style jsx>{`
+        .ticket-action-btn {
+          background: rgba(141, 110, 83, 0.08);
+          color: ${GOLD};
+          border: 1.5px solid rgba(141, 110, 83, 0.3);
+          transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+          cursor: pointer;
+        }
+        .ticket-action-btn:hover {
+          background: ${GOLD};
+          color: #fff;
+          border-color: ${GOLD};
+        }
+        .ticket-action-btn:active {
+          background: #6b5540;
+          border-color: #6b5540;
+          color: #fff;
+        }
+        .ticket-action-btn-disabled {
+          background: rgba(122, 106, 92, 0.06);
+          color: ${TEXT_MUTED};
+          border: 1.5px solid rgba(122, 106, 92, 0.15);
+          cursor: not-allowed;
+        }
+      `}</style>
       {/* Top Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "20px 20px 10px", borderBottom: `1px solid ${BORDER_COLOR}` }}>
         <button onClick={() => router.back()} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", color: GOLD, padding: 0 }}>
@@ -265,14 +301,26 @@ export default function TicketDetailPage() {
               {(registration.is_approved || registration.price === 0) && (activeEpisode.url_zoom || activeEpisode.url_youtube) && (
                 <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
                   {activeEpisode.url_zoom && (
-                    <a href={activeEpisode.url_zoom} target="_blank" rel="noreferrer" style={{ flex: 1, padding: "12px 0", borderRadius: 12, background: "rgba(141,110,83,0.06)", color: GOLD, fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1px solid rgba(141,110,83,0.15)` }}>
-                      <Video size={16} /> Zoom
-                    </a>
+                    isPastEpisode ? (
+                      <span className="ticket-action-btn-disabled" style={{ flex: 1, padding: "12px 0", borderRadius: 12, fontSize: 13, fontWeight: 700, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                        <Video size={16} /> Zoom
+                      </span>
+                    ) : (
+                      <a href={activeEpisode.url_zoom} target="_blank" rel="noreferrer" className="ticket-action-btn" style={{ flex: 1, padding: "12px 0", borderRadius: 12, fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                        <Video size={16} /> Zoom
+                      </a>
+                    )
                   )}
                   {activeEpisode.url_youtube && (
-                    <a href={activeEpisode.url_youtube} target="_blank" rel="noreferrer" style={{ flex: 1, padding: "12px 0", borderRadius: 12, background: "rgba(141,110,83,0.06)", color: GOLD, fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1px solid rgba(141,110,83,0.15)` }}>
-                      <Play size={16} /> YouTube
-                    </a>
+                    isPastEpisode ? (
+                      <span className="ticket-action-btn-disabled" style={{ flex: 1, padding: "12px 0", borderRadius: 12, fontSize: 13, fontWeight: 700, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                        <Play size={16} /> YouTube
+                      </span>
+                    ) : (
+                      <a href={activeEpisode.url_youtube} target="_blank" rel="noreferrer" className="ticket-action-btn" style={{ flex: 1, padding: "12px 0", borderRadius: 12, fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                        <Play size={16} /> YouTube
+                      </a>
+                    )
                   )}
                 </div>
               )}
@@ -293,7 +341,7 @@ export default function TicketDetailPage() {
                     </button>
                   </div>
 
-                  <button onClick={handleDownloadQR} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 20px", background: "rgba(141,110,83,0.08)", color: GOLD, border: `1px solid rgba(141,110,83,0.2)`, borderRadius: 12, fontSize: 12, fontWeight: 700, cursor: "pointer", marginTop: 14 }}>
+                  <button onClick={handleDownloadQR} className="ticket-action-btn" style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 20px", borderRadius: 12, fontSize: 12, fontWeight: 700, marginTop: 14 }}>
                     <Download size={14} /> Unduh QR Tiket
                   </button>
                 </div>

@@ -59,7 +59,8 @@ export default withAuth(
 
     // User protected routes
     const protectedUserRoutes = ['/profil', '/tiket', '/checkout'];
-    const isProtectedRoute = protectedUserRoutes.some((route) => req.nextUrl.pathname.startsWith(route));
+    const isInfaqRoute = /^\/kajian\/[^/]+\/infaq$/.test(req.nextUrl.pathname);
+    const isProtectedRoute = isInfaqRoute || protectedUserRoutes.some((route) => req.nextUrl.pathname.startsWith(route));
 
     if (isProtectedRoute) {
         if (token?.role === 'NEW_USER') {
@@ -94,6 +95,7 @@ export const config = {
     '/tiket/:path*',
     '/checkout',
     '/checkout/:path*',
+    '/kajian/:path*/infaq',
     '/login',
     '/register'
   ],

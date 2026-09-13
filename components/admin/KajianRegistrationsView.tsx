@@ -11,6 +11,7 @@ export default function KajianRegistrationsView({ initialData, users = [], kajia
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [methodFilter, setMethodFilter] = useState("all");
+  const [kajianFilter, setKajianFilter] = useState("all");
   const [activeProofUrl, setActiveProofUrl] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,11 +30,15 @@ export default function KajianRegistrationsView({ initialData, users = [], kajia
       (statusFilter === 'PENDING' && r.status !== 'PAID');
 
     const methodLabel = r.payment_method || 'Gratis';
-    const matchesMethod = 
-      methodFilter === 'all' || 
+    const matchesMethod =
+      methodFilter === 'all' ||
       methodLabel === methodFilter;
 
-    return matchesSearch && matchesStatus && matchesMethod;
+    const matchesKajian =
+      kajianFilter === 'all' ||
+      r.kajian_title === kajianFilter;
+
+    return matchesSearch && matchesStatus && matchesMethod && matchesKajian;
   });
 
   const totalPages = Math.ceil(filtered.length / pageSize);
@@ -122,41 +127,91 @@ export default function KajianRegistrationsView({ initialData, users = [], kajia
 
   // Extract unique payment methods dynamically
   const uniqueMethods = Array.from(new Set(data.map(r => r.payment_method || 'Gratis')));
+  const kajianDateByTitle = new Map<string, number>();
+  data.forEach(r => {
+    if (!r.kajian_title) return;
+    const t = new Date(r.kajian_date).getTime();
+    const existing = kajianDateByTitle.get(r.kajian_title);
+    if (!existing || (!isNaN(t) && t > existing)) {
+      kajianDateByTitle.set(r.kajian_title, isNaN(t) ? (existing || 0) : t);
+    }
+  });
+  const uniqueKajianTitles = Array.from(kajianDateByTitle.keys()).sort(
+    (a, b) => (kajianDateByTitle.get(b) || 0) - (kajianDateByTitle.get(a) || 0)
+  );
+
+  const totalPaid = filtered.filter(r => r.status === 'PAID').reduce((sum, r) => sum + (r.amount || 0), 0);
+  const totalPending = filtered.filter(r => r.status !== 'PAID').reduce((sum, r) => sum + (r.amount || 0), 0);
+  const countPaid = filtered.filter(r => r.status === 'PAID').length;
+  const countPending = filtered.filter(r => r.status !== 'PAID').length;
 
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
+      {/* Infak Totals Summary */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16, marginBottom: 20 }}>
+        <div style={{ background: "#fff", padding: 20, borderRadius: 16, border: "1px solid #E2E8F0", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)" }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "#DCFCE7", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <CheckCircle size={22} color="#16A34A" />
+          </div>
+          <div>
+            <p style={{ fontSize: 12, color: "#64748B", margin: 0, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Total Infak Lunas ({countPaid})</p>
+            <h3 style={{ fontSize: 22, fontWeight: 800, color: "#0F172A", margin: "4px 0 0" }}>{fmt(totalPaid)}</h3>
+          </div>
+        </div>
+        <div style={{ background: "#fff", padding: 20, borderRadius: 16, border: "1px solid #E2E8F0", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)" }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "#FEF3C7", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Clock size={22} color="#D97706" />
+          </div>
+          <div>
+            <p style={{ fontSize: 12, color: "#64748B", margin: 0, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Total Infak Menunggu ({countPending})</p>
+            <h3 style={{ fontSize: 22, fontWeight: 800, color: "#0F172A", margin: "4px 0 0" }}>{fmt(totalPending)}</h3>
+          </div>
+        </div>
+      </div>
+
       {/* Advanced Multi Filters */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 16 }}>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", flex: 1, maxWidth: "100%" }}>
-          <div style={{ position: "relative", width: "100%", maxWidth: 300 }}>
-            <Search size={18} color="#94A3B8" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
-            <input 
-              type="text" 
-              placeholder="Cari nama, judul, ID..." 
-              style={{...styles.searchInput, width: "100%"}} 
+          <div style={{ position: "relative", width: 180, flexShrink: 1 }}>
+            <Search size={16} color="#94A3B8" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)" }} />
+            <input
+              type="text"
+              placeholder="Cari nama, judul, ID..."
+              style={{...styles.searchInput, width: "100%", fontSize: 13, padding: "7px 10px 7px 32px"}}
               value={search}
               onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
             />
           </div>
 
-          <select 
-            value={statusFilter} 
-            onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }} 
-            style={{ ...styles.searchInput, width: "auto", minWidth: 140, padding: "8px 16px 8px 12px" }}
+          <select
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+            style={{ ...styles.searchInput, width: "auto", minWidth: 0, fontSize: 13, padding: "7px 12px 7px 10px" }}
           >
             <option value="all">Semua Status</option>
             <option value="PAID">Lunas (PAID)</option>
             <option value="PENDING">Menunggu (PENDING)</option>
           </select>
 
-          <select 
-            value={methodFilter} 
-            onChange={(e) => { setMethodFilter(e.target.value); setCurrentPage(1); }} 
-            style={{ ...styles.searchInput, width: "auto", minWidth: 160, padding: "8px 16px 8px 12px" }}
+          <select
+            value={methodFilter}
+            onChange={(e) => { setMethodFilter(e.target.value); setCurrentPage(1); }}
+            style={{ ...styles.searchInput, width: "auto", minWidth: 0, fontSize: 13, padding: "7px 12px 7px 10px" }}
           >
             <option value="all">Semua Metode</option>
             {uniqueMethods.map(m => (
               <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
+
+          <select
+            value={kajianFilter}
+            onChange={(e) => { setKajianFilter(e.target.value); setCurrentPage(1); }}
+            style={{ ...styles.searchInput, width: "auto", minWidth: 0, maxWidth: 180, fontSize: 13, padding: "7px 12px 7px 10px" }}
+          >
+            <option value="all">Semua Kajian</option>
+            {uniqueKajianTitles.map(title => (
+              <option key={title} value={title}>{title}</option>
             ))}
           </select>
         </div>

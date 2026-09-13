@@ -6,6 +6,7 @@ import {
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 
 const GOLD = "#8D6E53";
@@ -39,6 +40,7 @@ const isPastKajian = (dateStr: string) => {
 
 export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajian: any, relatedKajian?: any[] }) {
   const router = useRouter();
+  const { status } = useSession();
   const [loading, setLoading] = useState(false);
   const [fallbackRelated, setFallbackRelated] = useState<any[]>([]);
   const [showRegisteredModal, setShowRegisteredModal] = useState(false);
@@ -63,6 +65,14 @@ export default function KajianDetailView({ kajian, relatedKajian = [] }: { kajia
 
   // Check registration status before proceeding to infaq/checkout
   const handleRegisterAction = async () => {
+    if (status !== "authenticated") {
+      const target = kajian.type === "paid"
+        ? `/checkout?type=kajian&id=${kajian.id}&amount=${kajian.price}`
+        : `/kajian/${kajian.slug}/infaq`;
+      router.push(`/login?from=${encodeURIComponent(target)}`);
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch(`/api/kajian/check-registration?kajianId=${kajian.id}`);
