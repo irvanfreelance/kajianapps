@@ -306,21 +306,15 @@ export default function TicketDetailPage() {
                         <Video size={16} /> Zoom
                       </span>
                     ) : (
-                      <a href={activeEpisode.url_zoom} target="_blank" rel="noreferrer" className="ticket-action-btn" style={{ flex: 1, padding: "12px 0", borderRadius: 12, fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                      <a href={activeEpisode.url_zoom} target="_blank" rel="noreferrer" onTouchStart={() => {}} className="ticket-action-btn" style={{ flex: 1, padding: "12px 0", borderRadius: 12, fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                         <Video size={16} /> Zoom
                       </a>
                     )
                   )}
                   {activeEpisode.url_youtube && (
-                    isPastEpisode ? (
-                      <span className="ticket-action-btn-disabled" style={{ flex: 1, padding: "12px 0", borderRadius: 12, fontSize: 13, fontWeight: 700, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                        <Play size={16} /> YouTube
-                      </span>
-                    ) : (
-                      <a href={activeEpisode.url_youtube} target="_blank" rel="noreferrer" className="ticket-action-btn" style={{ flex: 1, padding: "12px 0", borderRadius: 12, fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                        <Play size={16} /> YouTube
-                      </a>
-                    )
+                    <a href={activeEpisode.url_youtube} target="_blank" rel="noreferrer" onTouchStart={() => {}} className="ticket-action-btn" style={{ flex: 1, padding: "12px 0", borderRadius: 12, fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                      <Play size={16} /> YouTube
+                    </a>
                   )}
                 </div>
               )}
@@ -341,7 +335,7 @@ export default function TicketDetailPage() {
                     </button>
                   </div>
 
-                  <button onClick={handleDownloadQR} className="ticket-action-btn" style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 20px", borderRadius: 12, fontSize: 12, fontWeight: 700, marginTop: 14 }}>
+                  <button onClick={handleDownloadQR} onTouchStart={() => {}} className="ticket-action-btn" style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 20px", borderRadius: 12, fontSize: 12, fontWeight: 700, marginTop: 14 }}>
                     <Download size={14} /> Unduh QR Tiket
                   </button>
                 </div>
