@@ -73,16 +73,14 @@ function UserLoginForm() {
 
       <div style={{ width: "100%", maxWidth: "420px", position: "relative", zIndex: 10 }}>
         <div style={{ textAlign: "center", marginBottom: 32, animation: "fadeInDown 0.6s ease-out" }}>
-          <div style={{ 
-            width: 80, height: 80, background: CARD_BG, backdropFilter: "blur(12px)", 
-            borderRadius: 24, margin: "0 auto 20px", display: "flex", alignItems: "center", justifyContent: "center",
+          <div style={{
+            width: 140, height: 140, background: CARD_BG, backdropFilter: "blur(12px)",
+            borderRadius: 32, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center",
             border: `1.5px solid ${BORDER_COLOR}`, boxShadow: "0 10px 30px rgba(141,110,83,0.05)",
             overflow: "hidden"
           }}>
-            <Image src={logoUrl} alt="Logo" width={64} height={64} style={{ objectFit: "contain" }} unoptimized />
+            <Image src={logoUrl} alt="Logo" width={112} height={112} style={{ objectFit: "contain" }} unoptimized />
           </div>
-          <h1 style={{ fontSize: 30, fontWeight: 800, color: TEXT_DARK, letterSpacing: "1px", margin: 0 }}>BADAR</h1>
-          <p style={{ fontSize: 14, color: TEXT_MUTED, marginTop: 4 }}>Baik Dari Rumah</p>
         </div>
 
         <div style={{ 
