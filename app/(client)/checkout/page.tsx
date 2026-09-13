@@ -9,6 +9,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import AddressSelector from "@/components/client/AddressSelector";
 import Image from "next/image";
+import { useSiteLogo } from "@/hooks/useSiteLogo";
 
 const GOLD = "#8D6E53";
 const DARK = "#ffffff";
@@ -123,6 +124,7 @@ function CheckoutView() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status: sessionStatus } = useSession();
+  const logoUrl = useSiteLogo();
 
   const type = searchParams.get("type");   // "product" | "kajian"
   const id = searchParams.get("id");
@@ -296,7 +298,7 @@ function CheckoutView() {
   return (
     <div style={{ background: DARK, minHeight: "100vh", position: "relative", color: TEXT_DARK }}>
       {/* Header */}
-      <div style={{ padding: "20px 24px 16px", display: "flex", alignItems: "center", gap: 16, borderBottom: `1px solid ${BORDER_COLOR}`, position: "sticky", top: 0, background: CARD_BG, zIndex: 10 }}>
+      <div style={{ padding: "10px 24px", display: "flex", alignItems: "center", gap: 16, borderBottom: `1px solid ${BORDER_COLOR}`, position: "sticky", top: 0, background: CARD_BG, zIndex: 10 }}>
         <button
           onClick={() => step === 1 ? router.back() : setStep(s => s - 1)}
           style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}
@@ -304,7 +306,7 @@ function CheckoutView() {
           <ChevronLeft size={24} color={GOLD} />
         </button>
         <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
-          <Image src="/64.png" alt="Badar Logo" width={80} height={32} style={{ objectFit: "contain" }} />
+          <Image src={logoUrl} alt="Badar Logo" width={130} height={52} style={{ objectFit: "contain", height: 44, width: "auto" }} unoptimized />
           <h1 style={{ fontSize: 16, fontWeight: 700, color: TEXT_DARK, margin: 0 }}>Checkout</h1>
         </div>
         {/* Step indicators */}

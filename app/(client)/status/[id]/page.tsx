@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import QRCode from "react-qr-code";
 import Image from "next/image";
+import { useSiteLogo } from "@/hooks/useSiteLogo";
 
 const GOLD = "#8D6E53";
 const DARK = "#ffffff";
@@ -210,6 +211,7 @@ function VirtualAccountDisplay({ vaNumber, bankName, copied, onCopy, accountName
 export default function StatusPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: code } = use(params);
   const router = useRouter();
+  const logoUrl = useSiteLogo();
   const [data, setData] = useState<any>(null);
   const [instructions, setInstructions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -385,16 +387,16 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
   return (
     <div style={{ background: DARK, minHeight: "100vh", color: TEXT_DARK, display: "flex", flexDirection: "column" }}>
       {/* Sticky Header */}
-      <div style={{ 
-        padding: "16px 24px", 
-        display: "flex", 
-        alignItems: "center", 
-        gap: 16, 
-        borderBottom: `1px solid ${BORDER_COLOR}`, 
-        position: "sticky", 
-        top: 0, 
-        background: CARD_BG, 
-        zIndex: 10 
+      <div style={{
+        padding: "10px 24px",
+        display: "flex",
+        alignItems: "center",
+        gap: 16,
+        borderBottom: `1px solid ${BORDER_COLOR}`,
+        position: "sticky",
+        top: 0,
+        background: CARD_BG,
+        zIndex: 10
       }}>
         <button
           onClick={() => router.push('/')}
@@ -404,7 +406,7 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
           <ChevronLeft size={24} color={GOLD} />
         </button>
         <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
-          <Image src="/64.png" alt="Badar Logo" width={80} height={32} style={{ objectFit: "contain" }} />
+          <Image src={logoUrl} alt="Badar Logo" width={130} height={52} style={{ objectFit: "contain", height: 44, width: "auto" }} unoptimized />
           <h1 style={{ fontSize: 16, fontWeight: 700, color: TEXT_DARK, margin: 0 }}>Status Transaksi</h1>
         </div>
       </div>

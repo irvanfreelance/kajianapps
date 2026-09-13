@@ -6,7 +6,7 @@ import { ChevronLeft, Search, LogIn, LogOut } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 
-import { useState, useEffect } from "react";
+import { useSiteLogo } from "@/hooks/useSiteLogo";
 
 const GOLD = "#8D6E53";
 const BORDER_COLOR = "#EFEAE0";
@@ -16,18 +16,7 @@ export default function Header() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const isLoggedIn = status === 'authenticated' && session?.user?.role === 'USER';
-  const [logoUrl, setLogoUrl] = useState<string>("/64.png");
-
-  useEffect(() => {
-    fetch("/api/settings/public")
-      .then(res => res.json())
-      .then(data => {
-        if (data?.settings?.site_logo) {
-          setLogoUrl(data.settings.site_logo);
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const logoUrl = useSiteLogo();
 
   const mainTabs = ["/", "/kajian", "/toko", "/tiket", "/profil"];
   const isMainTab = mainTabs.includes(pathname);
@@ -49,12 +38,12 @@ export default function Header() {
           </button>
         )}
         <Link href="/" style={styles.logoLink}>
-          <Image 
-            src={logoUrl} 
-            alt="Badar Logo" 
-            width={95} 
-            height={38} 
-            style={{ objectFit: "contain" }} 
+          <Image
+            src={logoUrl}
+            alt="Badar Logo"
+            width={130}
+            height={52}
+            style={{ objectFit: "contain", height: 44, width: "auto" }}
             priority
             unoptimized
           />
@@ -98,7 +87,7 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "12px 20px",
+    padding: "8px 20px",
     background: "#ffffff",
     borderBottom: `1px solid ${BORDER_COLOR}`,
     position: "sticky",

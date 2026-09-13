@@ -6,6 +6,7 @@ import { Suspense, useEffect } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import Script from 'next/script';
 import Image from 'next/image';
+import { useSiteLogo } from '@/hooks/useSiteLogo';
 
 const GOLD = "#8D6E53"; // Warm Gold-Brown
 const TEXT_DARK = "#2C1E15"; // Deep Coffee Brown
@@ -17,6 +18,7 @@ function UserLoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('from') || '/';
   const error = searchParams.get('error');
+  const logoUrl = useSiteLogo();
 
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
@@ -77,7 +79,7 @@ function UserLoginForm() {
             border: `1.5px solid ${BORDER_COLOR}`, boxShadow: "0 10px 30px rgba(141,110,83,0.05)",
             overflow: "hidden"
           }}>
-            <Image src="/64.png" alt="Logo" width={64} height={64} style={{ objectFit: "contain" }} />
+            <Image src={logoUrl} alt="Logo" width={64} height={64} style={{ objectFit: "contain" }} unoptimized />
           </div>
           <h1 style={{ fontSize: 30, fontWeight: 800, color: TEXT_DARK, letterSpacing: "1px", margin: 0 }}>BADAR</h1>
           <p style={{ fontSize: 14, color: TEXT_MUTED, marginTop: 4 }}>Baik Dari Rumah</p>

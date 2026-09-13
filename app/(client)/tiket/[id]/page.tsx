@@ -5,6 +5,7 @@ import { Calendar, ChevronLeft, Clock, MapPin, Video, Play, Download, PlayCircle
 import Image from "next/image";
 import Link from "next/link";
 import QRCode from "react-qr-code";
+import { useSiteLogo } from "@/hooks/useSiteLogo";
 
 const GOLD = "#8D6E53";
 const TEXT_DARK = "#2C1E15";
@@ -31,6 +32,7 @@ export default function TicketDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params?.id;
+  const logoUrl = useSiteLogo();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -161,12 +163,12 @@ export default function TicketDetailPage() {
         }
       `}</style>
       {/* Top Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "20px 20px 10px", borderBottom: `1px solid ${BORDER_COLOR}` }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "10px 20px", borderBottom: `1px solid ${BORDER_COLOR}` }}>
         <button onClick={() => router.back()} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", color: GOLD, padding: 0 }}>
           <ChevronLeft size={24} />
         </button>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Image src="/64.png" alt="Badar Logo" width={80} height={32} style={{ objectFit: "contain" }} />
+          <Image src={logoUrl} alt="Badar Logo" width={130} height={52} style={{ objectFit: "contain", height: 44, width: "auto" }} unoptimized />
           <h1 style={{ fontSize: 16, fontWeight: 800, color: TEXT_DARK, margin: 0 }}>Detail Tiket</h1>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ChevronLeft, CheckCircle2, Heart, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useSiteLogo } from "@/hooks/useSiteLogo";
 
 const GOLD = "#8D6E53";
 const TEXT_DARK = "#2C1E15";
@@ -17,6 +18,7 @@ const NOMINALS = [10000, 25000, 50000, 100000, 250000, 0];
 
 export default function KajianInfaqView({ kajian }: { kajian: any }) {
   const router = useRouter();
+  const logoUrl = useSiteLogo();
   const [infaqAmount, setInfaqAmount] = useState<number>(25000);
   const [customInput, setCustomInput] = useState<string>("");
   const [isCustomActive, setIsCustomActive] = useState(false);
@@ -43,7 +45,7 @@ export default function KajianInfaqView({ kajian }: { kajian: any }) {
     <div style={{ background: "#ffffff", minHeight: "100vh", position: "relative", color: TEXT_DARK }}>
       {/* Header */}
       <div style={{
-        padding: "20px 20px 16px",
+        padding: "10px 20px",
         display: "flex", alignItems: "center", gap: 14,
         borderBottom: `1px solid ${BORDER_COLOR}`,
         position: "sticky", top: 0, background: "#ffffff", zIndex: 10
@@ -52,11 +54,7 @@ export default function KajianInfaqView({ kajian }: { kajian: any }) {
           <ChevronLeft size={22} color={GOLD} />
         </button>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Image src="/64.png" alt="Badar Logo" width={80} height={32} style={{ objectFit: "contain" }} />
-          <div>
-            <h1 style={{ fontSize: 16, fontWeight: 800, color: TEXT_DARK, margin: 0 }}>Infak Terbaik</h1>
-            <p style={{ fontSize: 11, color: TEXT_MUTED, margin: "2px 0 0" }}>Pilih nominal kebaikanmu</p>
-          </div>
+          <Image src={logoUrl} alt="Badar Logo" width={130} height={52} style={{ objectFit: "contain", height: 44, width: "auto" }} unoptimized />
         </div>
       </div>
 
