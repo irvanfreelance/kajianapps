@@ -83,7 +83,7 @@ export default function RegisterPage() {
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <h2 style={{ fontSize: 26, fontWeight: 800, color: TEXT_DARK }}>Lengkapi Profil Anda</h2>
           <p style={{ fontSize: 14, color: TEXT_MUTED, marginTop: 8 }}>
-            Tinggal selangkah lagi untuk menikmati layanan BADAR
+            Tinggal selangkah lagi untuk menikmati layanan kami
           </p>
         </div>
 
